@@ -26,7 +26,6 @@
 #include <net/lwtunnel.h>
 #include <net/rtnetlink.h>
 #include <net/ip6_fib.h>
-#include <net/nexthop.h>
 
 #ifdef CONFIG_MODULES
 
@@ -40,12 +39,6 @@ static const char *lwtunnel_encap_str(enum lwtunnel_encap_types encap_type)
 		return "MPLS";
 	case LWTUNNEL_ENCAP_ILA:
 		return "ILA";
-	case LWTUNNEL_ENCAP_SEG6:
-		return "SEG6";
-	case LWTUNNEL_ENCAP_BPF:
-		return "BPF";
-	case LWTUNNEL_ENCAP_SEG6_LOCAL:
-		return "SEG6LOCAL";
 	case LWTUNNEL_ENCAP_IP6:
 	case LWTUNNEL_ENCAP_IP:
 	case LWTUNNEL_ENCAP_NONE:
@@ -122,12 +115,20 @@ int lwtunnel_build_state(u16 encap_type,
 	ret = -EOPNOTSUPP;
 	rcu_read_lock();
 	ops = rcu_dereference(lwtun_encaps[encap_type]);
-	if (likely(ops && ops->build_state && try_module_get(ops->owner))) {
-		found = true;
-		ret = ops->build_state(encap, family, cfg, lws, extack);
-		if (ret)
-			module_put(ops->owner);
+#ifdef CONFIG_MODULES
+	if (!ops) {
+		const char *encap_type_str = lwtunnel_encap_str(encap_type);
+
+		if (encap_type_str) {
+			rcu_read_unlock();
+			request_module("rtnl-lwt-%s", encap_type_str);
+			rcu_read_lock();
+			ops = rcu_dereference(lwtun_encaps[encap_type]);
+		}
 	}
+#endif
+	if (likely(ops && ops->build_state))
+		ret = ops->build_state(dev, encap, family, cfg, lws);
 	rcu_read_unlock();
 
 	/* don't rely on -EOPNOTSUPP to detect match as build_state
