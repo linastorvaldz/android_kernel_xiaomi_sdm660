@@ -324,20 +324,9 @@ static bool btf_type_is_fwd(const struct btf_type *t)
 	return BTF_INFO_KIND(t->info) == BTF_KIND_FWD;
 }
 
-static bool btf_type_is_func(const struct btf_type *t)
-{
-	return BTF_INFO_KIND(t->info) == BTF_KIND_FUNC;
-}
-
-static bool btf_type_is_func_proto(const struct btf_type *t)
-{
-	return BTF_INFO_KIND(t->info) == BTF_KIND_FUNC_PROTO;
-}
-
 static bool btf_type_nosize(const struct btf_type *t)
 {
-	return btf_type_is_void(t) || btf_type_is_fwd(t) ||
-	       btf_type_is_func(t) || btf_type_is_func_proto(t);
+	return btf_type_is_void(t) || btf_type_is_fwd(t);
 }
 
 static bool btf_type_nosize_or_null(const struct btf_type *t)
@@ -1434,6 +1423,10 @@ static int btf_modifier_resolve(struct btf_verifier_env *env,
 		return -EINVAL;
 	}
 
+	/* "typedef void new_void", "const void"...etc */
+	if (btf_type_is_void(next_type) || btf_type_is_fwd(next_type))
+		goto resolved;
+
 	if (!env_type_is_resolve_sink(env, next_type) &&
 	    !env_type_is_resolved(env, next_type_id))
 		return env_stack_push(env, next_type, next_type_id);
@@ -1444,16 +1437,10 @@ static int btf_modifier_resolve(struct btf_verifier_env *env,
 	 * save us a few type-following when we use it later (e.g. in
 	 * pretty print).
 	 */
-	if (!btf_type_id_size(btf, &next_type_id, &next_type_size)) {
-		if (env_type_is_resolved(env, next_type_id))
-			next_type = btf_type_id_resolve(btf, &next_type_id);
-
-		/* "typedef void new_void", "const void"...etc */
-		if (!btf_type_is_void(next_type) &&
-		    !btf_type_is_fwd(next_type)) {
-			btf_verifier_log_type(env, v->t, "Invalid type_id");
-			return -EINVAL;
-		}
+	if (!btf_type_id_size(btf, &next_type_id, &next_type_size) &&
+	    !btf_type_nosize(btf_type_id_resolve(btf, &next_type_id))) {
+		btf_verifier_log_type(env, v->t, "Invalid type_id");
+		return -EINVAL;
 	}
 
 	env_stack_pop_resolved(env, next_type_id, next_type_size);
@@ -1474,6 +1461,10 @@ static int btf_ptr_resolve(struct btf_verifier_env *env,
 		btf_verifier_log_type(env, v->t, "Invalid type_id");
 		return -EINVAL;
 	}
+
+	/* "void *" */
+	if (btf_type_is_void(next_type) || btf_type_is_fwd(next_type))
+		goto resolved;
 
 	if (!env_type_is_resolve_sink(env, next_type) &&
 	    !env_type_is_resolved(env, next_type_id))
@@ -1501,16 +1492,10 @@ static int btf_ptr_resolve(struct btf_verifier_env *env,
 					      resolved_type_id);
 	}
 
-	if (!btf_type_id_size(btf, &next_type_id, NULL)) {
-		if (env_type_is_resolved(env, next_type_id))
-			next_type = btf_type_id_resolve(btf, &next_type_id);
-
-		if (!btf_type_is_void(next_type) &&
-		    !btf_type_is_fwd(next_type) &&
-		    !btf_type_is_func_proto(next_type)) {
-			btf_verifier_log_type(env, v->t, "Invalid type_id");
-			return -EINVAL;
-		}
+	if (!btf_type_id_size(btf, &next_type_id, &next_type_size) &&
+	    !btf_type_nosize(btf_type_id_resolve(btf, &next_type_id))) {
+		btf_verifier_log_type(env, v->t, "Invalid type_id");
+		return -EINVAL;
 	}
 
 	env_stack_pop_resolved(env, next_type_id, 0);
