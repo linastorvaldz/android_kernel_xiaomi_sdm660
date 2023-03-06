@@ -303,6 +303,14 @@ struct ufs_qcom_pm_qos {
 	bool is_enabled;
 };
 
+struct ufs_uic_stats {
+	u32 pa_err_cnt_total;
+	u32 pa_err_cnt[UFS_EC_PA_MAX];
+	u32 dl_err_cnt_total;
+	u32 dl_err_cnt[UFS_EC_DL_MAX];
+	u32 dme_err_cnt;
+};
+
 struct ufs_qcom_host {
 	/*
 	 * Set this capability if host controller supports the QUniPro mode
@@ -335,6 +343,7 @@ struct ufs_qcom_host {
 	struct ufs_hba *hba;
 	struct ufs_qcom_bus_vote bus_vote;
 	struct ufs_pa_layer_attr dev_req_params;
+	struct ufs_uic_stats ufs_stats;
 	struct clk *rx_l0_sync_clk;
 	struct clk *tx_l0_sync_clk;
 	struct clk *rx_l1_sync_clk;

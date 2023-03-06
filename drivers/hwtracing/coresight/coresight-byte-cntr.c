@@ -24,7 +24,7 @@
 
 static struct tmc_drvdata *tmcdrvdata;
 
-static void tmc_etr_read_bytes(struct byte_cntr *byte_cntr_data, loff_t *ppos,
+static void tmc_etr_read_bytes(struct byte_cntr *byte_cntr_data, long offset,
 			       size_t bytes, size_t *len, char **bufp)
 {
 	struct etr_buf *etr_buf = tmcdrvdata->sysfs_buf;
@@ -32,12 +32,12 @@ static void tmc_etr_read_bytes(struct byte_cntr *byte_cntr_data, loff_t *ppos,
 
 	if (*len >= bytes)
 		*len = bytes;
-	else if (((uint32_t)*ppos % bytes) + *len > bytes)
-		*len = bytes - ((uint32_t)*ppos % bytes);
+	else if (((uint32_t)offset % bytes) + *len > bytes)
+		*len = bytes - ((uint32_t)offset % bytes);
 
-	actual = tmc_etr_buf_get_data(etr_buf, *ppos, *len, bufp);
+	actual = tmc_etr_buf_get_data(etr_buf, offset, *len, bufp);
 	*len = actual;
-	if (actual == bytes || (actual + (uint32_t)*ppos) % bytes == 0)
+	if (actual == bytes || (actual + (uint32_t)offset) % bytes == 0)
 		atomic_dec(&byte_cntr_data->irq_cnt);
 }
 
@@ -100,7 +100,7 @@ static ssize_t tmc_etr_byte_cntr_read(struct file *fp, char __user *data,
 
 		}
 
-		tmc_etr_read_bytes(byte_cntr_data, ppos,
+		tmc_etr_read_bytes(byte_cntr_data, byte_cntr_data->offset,
 				   byte_cntr_data->block_size, &len, &bufp);
 
 	} else {
@@ -127,7 +127,7 @@ static ssize_t tmc_etr_byte_cntr_read(struct file *fp, char __user *data,
 	if (*ppos + len >= tmcdrvdata->size)
 		*ppos = 0;
 	else
-		*ppos += len;
+		byte_cntr_data->offset += len;
 
 	goto out;
 

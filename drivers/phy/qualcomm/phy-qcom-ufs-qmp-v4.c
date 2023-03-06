@@ -48,6 +48,11 @@ int ufs_qcom_phy_qmp_v4_phy_calibrate(struct ufs_qcom_phy *ufs_qcom_phy,
 		ufs_qcom_phy_write_tbl(ufs_qcom_phy, phy_cal_table_rate_B,
 				       ARRAY_SIZE(phy_cal_table_rate_B));
 
+#ifdef CONFIG_UFS_EBUFF
+	if (!obtain_ebuffphy_info(ufs_qcom_phy))
+		dev_info(dev, "Failed to set ebuff to PHY\n");
+#endif
+
 	writel_relaxed(0x00, ufs_qcom_phy->mmio + UFS_PHY_SW_RESET);
 	/* flush buffered writes */
 	wmb();

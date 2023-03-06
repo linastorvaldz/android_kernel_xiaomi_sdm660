@@ -342,6 +342,8 @@ void cpuidle_install_idle_handler(void)
  */
 void cpuidle_uninstall_idle_handler(void)
 {
+	int cpu;
+
 	if (enabled_devices) {
 		initialized = 0;
 		wake_up_all_idle_cpus();

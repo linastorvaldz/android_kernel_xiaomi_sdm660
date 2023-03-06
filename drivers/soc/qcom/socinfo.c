@@ -961,8 +961,9 @@ msm_get_serial_number(struct device *dev,
 			struct device_attribute *attr,
 			char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "%u\n",
-		socinfo_get_serial_number());
+	uint64_t serial_num_h = socinfo_get_nproduct_id();
+	return snprintf(buf, PAGE_SIZE, "0x%016llx\n",
+		serial_num_h*0x100000000ULL + socinfo_get_serial_number());
 }
 
 static ssize_t

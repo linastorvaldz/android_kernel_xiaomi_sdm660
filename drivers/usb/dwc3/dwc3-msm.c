@@ -2019,6 +2019,7 @@ static void dwc3_msm_notify_event(struct dwc3 *dwc, unsigned int event,
 	u32 reg;
 	int i;
 
+	pr_info("%s : notify event is %d\n", __func__, event);
 	switch (event) {
 	case DWC3_CONTROLLER_ERROR_EVENT:
 		dev_info(mdwc->dev,
@@ -2593,6 +2594,7 @@ static int dwc3_msm_suspend(struct dwc3_msm *mdwc, bool enable_wakeup)
 	dwc3_set_phy_speed_flags(mdwc);
 	/* Suspend HS PHY */
 	usb_phy_set_suspend(mdwc->hs_phy, 1);
+	usb_phy_set_suspend(mdwc->ss_phy, 1);
 
 	/*
 	 * Synopsys Superspeed PHY does not support ss_phy_irq, so to detect
@@ -4692,6 +4694,7 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 	int ret = 0;
 	unsigned long delay = 0;
 	const char *state;
+	unsigned int timeout = 20;
 
 	if (mdwc->dwc3)
 		dwc = platform_get_drvdata(mdwc->dwc3);
@@ -4702,7 +4705,7 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 	}
 
 	state = dwc3_drd_state_string(mdwc->drd_state);
-	dev_dbg(mdwc->dev, "%s state\n", state);
+	dev_err(mdwc->dev, "%s state, mdwc->inputs is %d\n", state, mdwc->inputs);
 	dbg_event(0xFF, state, 0);
 
 	/* Check OTG state */
@@ -4735,6 +4738,21 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 		pm_runtime_enable(mdwc->dev);
 		/* fall-through */
 	case DRD_STATE_IDLE:
+		if (test_bit(WAIT_FOR_LPM, &mdwc->inputs)){
+			do {
+				msleep(20);
+			} while (--timeout && (test_bit(WAIT_FOR_LPM, &mdwc->inputs)));
+
+			if (!timeout) {
+				dev_info(mdwc->dev,
+						"Not in LPM after disconnect, forcing suspend...\n");
+				dbg_event(0xFF, "Force:SUSP",
+						atomic_read(&mdwc->dev->power.usage_count));
+				pm_runtime_suspend(mdwc->dev);
+			} else
+				dev_info(mdwc->dev, "enter in lpm after:%d ms\n",20*timeout);
+		}
+
 		if (test_bit(WAIT_FOR_LPM, &mdwc->inputs)) {
 			dev_dbg(mdwc->dev, "still not in lpm, wait.\n");
 			break;

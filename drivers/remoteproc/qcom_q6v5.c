@@ -23,6 +23,12 @@
  */
 int qcom_q6v5_prepare(struct qcom_q6v5 *q6v5)
 {
+	if (last_modem_sfr_entry == NULL) {
+		last_modem_sfr_entry = proc_create("last_mcrash", S_IFREG | S_IRUGO, NULL, &last_modem_sfr_file_ops);
+	}
+	if (!last_modem_sfr_entry) {
+		printk(KERN_ERR "pil: cannot create proc entry last_mcrash\n");
+	}
 	reinit_completion(&q6v5->start_done);
 	reinit_completion(&q6v5->stop_done);
 
@@ -62,10 +68,15 @@ static irqreturn_t q6v5_wdog_interrupt(int irq, void *data)
 	}
 
 	msg = qcom_smem_get(QCOM_SMEM_HOST_ANY, q6v5->crash_reason, &len);
-	if (!IS_ERR(msg) && len > 0 && msg[0])
+	if (!IS_ERR(msg) && len > 0 && msg[0]){
 		dev_err(q6v5->dev, "watchdog received: %s\n", msg);
-	else
+		dev_err(q6v5->dev, "subsystem failure reason: %s. \n", msg);
+        strlcpy(last_modem_sfr_reason, msg, MAX_SSR_REASON_LEN);
+	}else {
 		dev_err(q6v5->dev, "watchdog without message\n");
+		dev_err(q6v5->dev, "subsystem failure reason: watchdog without message. \n");
+        //strlcpy(last_modem_sfr_reason, msg, MAX_SSR_REASON_LEN);
+	}
 
 	rproc_report_crash(q6v5->rproc, RPROC_WATCHDOG);
 
@@ -79,11 +90,16 @@ static irqreturn_t q6v5_fatal_interrupt(int irq, void *data)
 	char *msg;
 
 	msg = qcom_smem_get(QCOM_SMEM_HOST_ANY, q6v5->crash_reason, &len);
-	if (!IS_ERR(msg) && len > 0 && msg[0])
+	if (!IS_ERR(msg) && len > 0 && msg[0]){
 		dev_err(q6v5->dev, "fatal error received: %s\n", msg);
-	else
+		dev_err(q6v5->dev, "subsystem failure reason: %s. \n", msg);
+        strlcpy(last_modem_sfr_reason, msg, MAX_SSR_REASON_LEN);
+	}else {
 		dev_err(q6v5->dev, "fatal error without message\n");
-
+		dev_err(q6v5->dev, "subsystem failure reason: fatal error without message. \n");
+        //strlcpy(last_modem_sfr_reason, msg, MAX_SSR_REASON_LEN);
+	}
+	
 	q6v5->running = false;
 	rproc_report_crash(q6v5->rproc, RPROC_FATAL_ERROR);
 
@@ -150,7 +166,12 @@ static irqreturn_t q6v5_stop_interrupt(int irq, void *data)
 int qcom_q6v5_request_stop(struct qcom_q6v5 *q6v5)
 {
 	int ret;
-
+    
+	if (last_modem_sfr_entry) {
+        remove_proc_entry("last_mcrash", NULL);
+        last_modem_sfr_entry = NULL;
+	}
+	
 	q6v5->running = false;
 
 	qcom_smem_state_update_bits(q6v5->state,
@@ -179,7 +200,12 @@ int qcom_q6v5_init(struct qcom_q6v5 *q6v5, struct platform_device *pdev,
 		   void (*handover)(struct qcom_q6v5 *q6v5))
 {
 	int ret;
-
+	if (last_modem_sfr_entry == NULL) {
+		last_modem_sfr_entry = proc_create("last_mcrash", S_IFREG | S_IRUGO, NULL, &last_modem_sfr_file_ops);
+	}
+	if (!last_modem_sfr_entry) {
+		printk(KERN_ERR "pil: cannot create proc entry last_mcrash\n");
+	}
 	q6v5->rproc = rproc;
 	q6v5->dev = &pdev->dev;
 	q6v5->crash_reason = crash_reason;

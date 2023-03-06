@@ -1211,7 +1211,7 @@ static int kgsl_release(struct inode *inodep, struct file *filep)
 static int kgsl_open_device(struct kgsl_device *device)
 {
 	int result = 0;
-
+	pr_info("kgsl: kgsl_open_device Enter\n");
 	mutex_lock(&device->mutex);
 	if (device->open_count == 0) {
 		/*
@@ -1246,6 +1246,7 @@ err:
 	}
 
 	mutex_unlock(&device->mutex);
+	pr_info("kgsl: kgsl_open_device Exit\n");
 	return result;
 }
 

@@ -24,6 +24,8 @@
 #include <linux/platform_device.h>
 #include <linux/reboot.h>
 #include <linux/regmap.h>
+#include <linux/nmi.h>
+#include <linux/sched/debug.h>
 
 #define PON_REV2			0x01
 
@@ -44,6 +46,11 @@
 
 #define PON_DBC_CTL			0x71
 #define  PON_DBC_DELAY_MASK		0x7
+
+#if IS_ENABLED(CONFIG_MTD_OOPS)
+extern int g_long_press_reason;
+extern void mtdoops_do_dump_if(int reason);
+#endif
 
 struct pm8941_data {
 	unsigned int pull_up_bit;
@@ -121,6 +128,35 @@ static int pm8941_reboot_notify(struct notifier_block *nb,
 		dev_err(pwrkey->dev, "unable to re-set enable: %d\n", error);
 
 	return NOTIFY_DONE;
+}
+
+
+void show_state_filter_single(unsigned long state_filter)
+{
+	struct task_struct *g, *p;
+
+#if BITS_PER_LONG == 32
+	printk(KERN_INFO
+		"  task 			   PC stack   pid father\n");
+#else
+	printk(KERN_INFO
+		"  task 					   PC stack   pid father\n");
+#endif
+	rcu_read_lock();
+	for_each_process_thread(g, p) {
+		/*
+		 * reset the NMI-timeout, listing all files on a slow
+		 * console might take a lot of time:
+		 * Also, reset softlockup watchdogs on all CPUs, because
+		 * another CPU might be blocked waiting for us to process
+		 * an IPI.
+		 */
+		touch_nmi_watchdog();
+		//touch_all_softlockup_watchdogs();
+		if (p->state == state_filter)
+			sched_show_task(p);
+	}
+	rcu_read_unlock();
 }
 
 static irqreturn_t pm8941_pwrkey_irq(int irq, void *_data)
@@ -312,6 +348,26 @@ static const struct pm8941_data pwrkey_data = {
 static const struct pm8941_data resin_data = {
 	.pull_up_bit = PON_RESIN_PULL_UP,
 	.status_bit = PON_RESIN_N_SET,
+};
+
+static const struct pm8941_data pon_gen3_pwrkey_bark_data = {
+	.status_bit = PON_GEN3_KPDPWR_N_SET,
+	.name = "pmic_pwrkey_bark",
+	.phys = "pmic_pwrkey_bark/input0",
+	.supports_ps_hold_poff_config = false,
+	.supports_debounce_config = false,
+	.needs_sw_debounce = true,
+	.has_pon_pbs = true,
+};
+
+static const struct pm8941_data pon_gen3_pwrkey_resin_bark_data = {
+	.status_bit = PON_GEN3_KPDPWR_N_SET,
+	.name = "pmic_pwrkey_resin_bark",
+	.phys = "pmic_pwrkey_resin_bark/input0",
+	.supports_ps_hold_poff_config = false,
+	.supports_debounce_config = false,
+	.needs_sw_debounce = true,
+	.has_pon_pbs = true,
 };
 
 static const struct of_device_id pm8941_pwr_key_id_table[] = {
