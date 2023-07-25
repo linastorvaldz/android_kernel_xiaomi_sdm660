@@ -106,6 +106,7 @@ fscrypt_get_dummy_context(struct super_block *sb)
 }
 
 /*
+<<<<<<< HEAD
  * When d_splice_alias() moves a directory's no-key alias to its plaintext alias
  * as a result of the encryption key being added, DCACHE_NOKEY_NAME must be
  * cleared.  Note that we don't have to support arbitrary moves of this flag
@@ -115,6 +116,17 @@ fscrypt_get_dummy_context(struct super_block *sb)
 static inline void fscrypt_handle_d_move(struct dentry *dentry)
 {
 	dentry->d_flags &= ~DCACHE_NOKEY_NAME;
+=======
+ * When d_splice_alias() moves a directory's encrypted alias to its decrypted
+ * alias as a result of the encryption key being added, DCACHE_ENCRYPTED_NAME
+ * must be cleared.  Note that we don't have to support arbitrary moves of this
+ * flag because fscrypt doesn't allow encrypted aliases to be the source or
+ * target of a rename().
+ */
+static inline void fscrypt_handle_d_move(struct dentry *dentry)
+{
+	dentry->d_flags &= ~DCACHE_ENCRYPTED_NAME;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 /**
@@ -143,7 +155,11 @@ static inline void fscrypt_handle_d_move(struct dentry *dentry)
  */
 static inline bool fscrypt_is_nokey_name(const struct dentry *dentry)
 {
+<<<<<<< HEAD
 	return dentry->d_flags & DCACHE_NOKEY_NAME;
+=======
+	return dentry->d_flags & DCACHE_ENCRYPTED_NAME;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 /* crypto.c */
@@ -174,6 +190,10 @@ static inline struct page *fscrypt_pagecache_page(struct page *bounce_page)
 }
 
 void fscrypt_free_bounce_page(struct page *bounce_page);
+<<<<<<< HEAD
+=======
+int fscrypt_d_revalidate(struct dentry *dentry, unsigned int flags);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /* policy.c */
 int fscrypt_ioctl_set_policy(struct file *filp, const void __user *arg);
@@ -206,8 +226,11 @@ int fscrypt_ioctl_add_key(struct file *filp, void __user *arg);
 int fscrypt_ioctl_remove_key(struct file *filp, void __user *arg);
 int fscrypt_ioctl_remove_key_all_users(struct file *filp, void __user *arg);
 int fscrypt_ioctl_get_key_status(struct file *filp, void __user *arg);
+<<<<<<< HEAD
 int fscrypt_register_key_removal_notifier(struct notifier_block *nb);
 int fscrypt_unregister_key_removal_notifier(struct notifier_block *nb);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /* keysetup.c */
 int fscrypt_get_encryption_info(struct inode *inode);
@@ -234,7 +257,10 @@ int fscrypt_fname_disk_to_usr(const struct inode *inode,
 bool fscrypt_match_name(const struct fscrypt_name *fname,
 			const u8 *de_name, u32 de_name_len);
 u64 fscrypt_fname_siphash(const struct inode *dir, const struct qstr *name);
+<<<<<<< HEAD
 int fscrypt_d_revalidate(struct dentry *dentry, unsigned int flags);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /* bio.c */
 void fscrypt_decrypt_bio(struct bio *bio);
@@ -418,6 +444,7 @@ static inline int fscrypt_ioctl_get_key_status(struct file *filp,
 	return -EOPNOTSUPP;
 }
 
+<<<<<<< HEAD
 static inline int fscrypt_register_key_removal_notifier(
 						struct notifier_block *nb)
 {
@@ -430,6 +457,8 @@ static inline int fscrypt_unregister_key_removal_notifier(
 	return 0;
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /* keysetup.c */
 static inline int fscrypt_get_encryption_info(struct inode *inode)
 {
@@ -506,12 +535,15 @@ static inline u64 fscrypt_fname_siphash(const struct inode *dir,
 	return 0;
 }
 
+<<<<<<< HEAD
 static inline int fscrypt_d_revalidate(struct dentry *dentry,
 				       unsigned int flags)
 {
 	return 1;
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /* bio.c */
 static inline void fscrypt_decrypt_bio(struct bio *bio)
 {
@@ -781,11 +813,17 @@ static inline int fscrypt_prepare_rename(struct inode *old_dir,
  * directory's encryption key is available, then the lookup is assumed to be by
  * plaintext name; otherwise, it is assumed to be by no-key name.
  *
+<<<<<<< HEAD
  * This will set DCACHE_NOKEY_NAME on the dentry if the lookup is by no-key
  * name.  In this case the filesystem must assign the dentry a dentry_operations
  * which contains fscrypt_d_revalidate (or contains a d_revalidate method that
  * calls fscrypt_d_revalidate), so that the dentry will be invalidated if the
  * directory's encryption key is later added.
+=======
+ * After calling this function, a filesystem should ensure that it's dentry
+ * operations contain fscrypt_d_revalidate if DCACHE_ENCRYPTED_NAME was set,
+ * so that the dentry can be invalidated if the key is later added.
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  *
  * Return: 0 on success; -ENOENT if the directory's key is unavailable but the
  * filename isn't a valid no-key name, so a negative dentry should be created;
@@ -905,4 +943,8 @@ static inline void fscrypt_finalize_bounce_page(struct page **pagep)
 		fscrypt_free_bounce_page(page);
 	}
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #endif	/* _LINUX_FSCRYPT_H */

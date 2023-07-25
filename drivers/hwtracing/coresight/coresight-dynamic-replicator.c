@@ -84,6 +84,7 @@ static int dynamic_replicator_enable(struct replicator_state *drvdata,
 	return rc;
 }
 
+<<<<<<< HEAD
 static bool is_replicator_disabled(struct coresight_device *csdev)
 {
 	int i;
@@ -96,6 +97,8 @@ static bool is_replicator_disabled(struct coresight_device *csdev)
 	return true;
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int replicator_enable(struct coresight_device *csdev, int inport,
 			     int outport)
 {
@@ -105,10 +108,13 @@ static int replicator_enable(struct coresight_device *csdev, int inport,
 	bool first_enable = false;
 
 	spin_lock_irqsave(&drvdata->spinlock, flags);
+<<<<<<< HEAD
 
 	if (is_replicator_disabled(csdev))
 		replicator_reset(drvdata);
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (atomic_read(&csdev->refcnt[outport]) == 0) {
 		rc = dynamic_replicator_enable(drvdata, inport, outport);
 		if (!rc)

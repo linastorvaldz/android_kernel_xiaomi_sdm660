@@ -105,6 +105,7 @@ int iommu_device_register(struct iommu_device *iommu)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(iommu_device_register);
+<<<<<<< HEAD
 
 #ifdef CONFIG_ARM_SMMU_SELFTEST
 struct iommu_device *get_iommu_by_fwnode(struct fwnode_handle *fwnode)
@@ -128,6 +129,8 @@ struct iommu_device *get_iommu_by_fwnode(struct fwnode_handle *fwnode)
 	return NULL;
 }
 #endif
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 void iommu_device_unregister(struct iommu_device *iommu)
 {
@@ -1561,12 +1564,20 @@ phys_addr_t iommu_iova_to_phys(struct iommu_domain *domain, dma_addr_t iova)
 EXPORT_SYMBOL_GPL(iommu_iova_to_phys);
 
 phys_addr_t iommu_iova_to_phys_hard(struct iommu_domain *domain,
+<<<<<<< HEAD
 				    dma_addr_t iova, unsigned long trans_flags)
+=======
+				    dma_addr_t iova)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	if (unlikely(domain->ops->iova_to_phys_hard == NULL))
 		return 0;
 
+<<<<<<< HEAD
 	return domain->ops->iova_to_phys_hard(domain, iova, trans_flags);
+=======
+	return domain->ops->iova_to_phys_hard(domain, iova);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 uint64_t iommu_iova_to_pte(struct iommu_domain *domain,

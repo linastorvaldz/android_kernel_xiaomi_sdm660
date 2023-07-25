@@ -183,9 +183,13 @@ static int snd_compr_update_tstamp(struct snd_compr_stream *stream,
 	int err = 0;
 	if (!stream->ops->pointer)
 		return -ENOTSUPP;
+<<<<<<< HEAD
 	err = stream->ops->pointer(stream, tstamp);
 	if (err)
 		return err;
+=======
+	stream->ops->pointer(stream, tstamp);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	pr_debug("dsp consumed till %d total %llu bytes\n",
 		tstamp->byte_offset, tstamp->copied_total);
 	if (stream->direction == SND_COMPRESS_PLAYBACK)
@@ -774,10 +778,13 @@ int snd_compr_stop_error(struct snd_compr_stream *stream,
 }
 EXPORT_SYMBOL_GPL(snd_compr_stop_error);
 
+<<<<<<< HEAD
 /* this fn is called without lock being held and we change stream states here
  * so while using the stream state auquire the lock but relase before invoking
  * DSP as the call will possibly take a while
  */
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int snd_compr_drain(struct snd_compr_stream *stream)
 {
 	int retval;
@@ -798,15 +805,21 @@ static int snd_compr_drain(struct snd_compr_stream *stream)
 	}
 	mutex_unlock(&stream->device->lock);
 	retval = stream->ops->trigger(stream, SND_COMPR_TRIGGER_DRAIN);
+<<<<<<< HEAD
 	mutex_lock(&stream->device->lock);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!retval) {
 		stream->runtime->state = SNDRV_PCM_STATE_DRAINING;
 		wake_up(&stream->runtime->sleep);
 		goto ret;
 	}
 
+<<<<<<< HEAD
 ret:
 	mutex_unlock(&stream->device->lock);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return retval;
 }
 

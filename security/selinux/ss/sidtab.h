@@ -14,10 +14,16 @@
 #include <linux/spinlock_types.h>
 #include <linux/log2.h>
 #include <linux/hashtable.h>
+<<<<<<< HEAD
 
 #include "context.h"
 #include "flask.h"
 
+=======
+
+#include "context.h"
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 struct sidtab_entry_leaf {
 	u32 sid;
 	struct context context;

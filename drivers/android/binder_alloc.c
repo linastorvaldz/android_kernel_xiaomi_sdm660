@@ -22,7 +22,10 @@
 #include <asm/cacheflush.h>
 #include <linux/uaccess.h>
 #include <linux/highmem.h>
+<<<<<<< HEAD
 #include <linux/sizes.h>
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #include "binder_alloc.h"
 #include "binder_trace.h"
 
@@ -358,7 +361,11 @@ static inline struct vm_area_struct *binder_alloc_get_vma(
 	return vma;
 }
 
+<<<<<<< HEAD
 static bool debug_low_async_space_locked(struct binder_alloc *alloc, int pid)
+=======
+static void debug_low_async_space_locked(struct binder_alloc *alloc, int pid)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	/*
 	 * Find the amount and size of buffers allocated by the current caller;
@@ -367,7 +374,11 @@ static bool debug_low_async_space_locked(struct binder_alloc *alloc, int pid)
 	 * and at some point we'll catch them in the act. This is more efficient
 	 * than keeping a map per pid.
 	 */
+<<<<<<< HEAD
 	struct rb_node *n;
+=======
+	struct rb_node *n = alloc->free_buffers.rb_node;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	struct binder_buffer *buffer;
 	size_t total_alloc_size = 0;
 	size_t num_buffers = 0;
@@ -386,19 +397,27 @@ static bool debug_low_async_space_locked(struct binder_alloc *alloc, int pid)
 
 	/*
 	 * Warn if this pid has more than 50 transactions, or more than 50% of
+<<<<<<< HEAD
 	 * async space (which is 25% of total buffer size). Oneway spam is only
 	 * detected when the threshold is exceeded.
+=======
+	 * async space (which is 25% of total buffer size).
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	 */
 	if (num_buffers > 50 || total_alloc_size > alloc->buffer_size / 4) {
 		binder_alloc_debug(BINDER_DEBUG_USER_ERROR,
 			     "%d: pid %d spamming oneway? %zd buffers allocated for a total size of %zd\n",
 			      alloc->pid, pid, num_buffers, total_alloc_size);
+<<<<<<< HEAD
 		if (!alloc->oneway_spam_detected) {
 			alloc->oneway_spam_detected = true;
 			return true;
 		}
 	}
 	return false;
+=======
+	}
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static struct binder_buffer *binder_alloc_new_buf_locked(
@@ -551,7 +570,10 @@ static struct binder_buffer *binder_alloc_new_buf_locked(
 	buffer->async_transaction = is_async;
 	buffer->extra_buffers_size = extra_buffers_size;
 	buffer->pid = pid;
+<<<<<<< HEAD
 	buffer->oneway_spam_suspect = false;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (is_async) {
 		alloc->free_async_space -= size + sizeof(struct binder_buffer);
 		binder_alloc_debug(BINDER_DEBUG_BUFFER_ALLOC_ASYNC,
@@ -563,9 +585,13 @@ static struct binder_buffer *binder_alloc_new_buf_locked(
 			 * of async space left (which is less than 10% of total
 			 * buffer size).
 			 */
+<<<<<<< HEAD
 			buffer->oneway_spam_suspect = debug_low_async_space_locked(alloc, pid);
 		} else {
 			alloc->oneway_spam_detected = false;
+=======
+			debug_low_async_space_locked(alloc, pid);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		}
 	}
 	return buffer;
@@ -780,6 +806,7 @@ int binder_alloc_mmap_handler(struct binder_alloc *alloc,
 		failure_string = "already mapped";
 		goto err_already_mapped;
 	}
+<<<<<<< HEAD
 	alloc->buffer_size = min_t(unsigned long, vma->vm_end - vma->vm_start,
 				   SZ_4M);
 	mutex_unlock(&binder_alloc_mmap_lock);
@@ -787,6 +814,13 @@ int binder_alloc_mmap_handler(struct binder_alloc *alloc,
 	alloc->buffer = (void __user *)vma->vm_start;
 
 	alloc->pages = kcalloc(alloc->buffer_size / PAGE_SIZE,
+=======
+
+	alloc->buffer = (void __user *)vma->vm_start;
+	mutex_unlock(&binder_alloc_mmap_lock);
+
+	alloc->pages = kcalloc((vma->vm_end - vma->vm_start) / PAGE_SIZE,
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			       sizeof(alloc->pages[0]),
 			       GFP_KERNEL);
 	if (alloc->pages == NULL) {
@@ -816,9 +850,14 @@ err_alloc_buf_struct_failed:
 	kfree(alloc->pages);
 	alloc->pages = NULL;
 err_alloc_pages_failed:
+<<<<<<< HEAD
 	alloc->buffer = NULL;
 	mutex_lock(&binder_alloc_mmap_lock);
 	alloc->buffer_size = 0;
+=======
+	mutex_lock(&binder_alloc_mmap_lock);
+	alloc->buffer = NULL;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 err_already_mapped:
 	mutex_unlock(&binder_alloc_mmap_lock);
 	binder_alloc_debug(BINDER_DEBUG_USER_ERROR,
@@ -1183,6 +1222,7 @@ static struct page *binder_alloc_get_page(struct binder_alloc *alloc,
 }
 
 /**
+<<<<<<< HEAD
  * binder_alloc_clear_buf() - zero out buffer
  * @alloc: binder_alloc for this proc
  * @buffer: binder buffer to be cleared
@@ -1213,6 +1253,8 @@ static void binder_alloc_clear_buf(struct binder_alloc *alloc,
 }
 
 /**
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  * binder_alloc_copy_user_to_buffer() - copy src user to tgt user
  * @alloc: binder_alloc for this proc
  * @buffer: binder buffer to be accessed
@@ -1256,6 +1298,7 @@ binder_alloc_copy_user_to_buffer(struct binder_alloc *alloc,
 	return 0;
 }
 
+<<<<<<< HEAD
 static int binder_alloc_do_buffer_copy(struct binder_alloc *alloc,
 				       bool to_buffer,
 				       struct binder_buffer *buffer,
@@ -1266,6 +1309,17 @@ static int binder_alloc_do_buffer_copy(struct binder_alloc *alloc,
 	/* All copies must be 32-bit aligned and 32-bit size */
 	if (!check_buffer(alloc, buffer, buffer_offset, bytes))
 		return -EINVAL;
+=======
+static void binder_alloc_do_buffer_copy(struct binder_alloc *alloc,
+					bool to_buffer,
+					struct binder_buffer *buffer,
+					binder_size_t buffer_offset,
+					void *ptr,
+					size_t bytes)
+{
+	/* All copies must be 32-bit aligned and 32-bit size */
+	BUG_ON(!check_buffer(alloc, buffer, buffer_offset, bytes));
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	while (bytes) {
 		unsigned long size;
@@ -1293,6 +1347,7 @@ static int binder_alloc_do_buffer_copy(struct binder_alloc *alloc,
 		ptr = ptr + size;
 		buffer_offset += size;
 	}
+<<<<<<< HEAD
 	return 0;
 }
 
@@ -1314,5 +1369,27 @@ int binder_alloc_copy_from_buffer(struct binder_alloc *alloc,
 {
 	return binder_alloc_do_buffer_copy(alloc, false, buffer, buffer_offset,
 					   dest, bytes);
+=======
+}
+
+void binder_alloc_copy_to_buffer(struct binder_alloc *alloc,
+				 struct binder_buffer *buffer,
+				 binder_size_t buffer_offset,
+				 void *src,
+				 size_t bytes)
+{
+	binder_alloc_do_buffer_copy(alloc, true, buffer, buffer_offset,
+				    src, bytes);
+}
+
+void binder_alloc_copy_from_buffer(struct binder_alloc *alloc,
+				   void *dest,
+				   struct binder_buffer *buffer,
+				   binder_size_t buffer_offset,
+				   size_t bytes)
+{
+	binder_alloc_do_buffer_copy(alloc, false, buffer, buffer_offset,
+				    dest, bytes);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 

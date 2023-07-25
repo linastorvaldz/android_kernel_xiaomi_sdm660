@@ -29,6 +29,7 @@ bool fscrypt_policies_equal(const union fscrypt_policy *policy1,
 	if (policy1->version != policy2->version)
 		return false;
 
+<<<<<<< HEAD
 	if (fscrypt_policy_contents_mode(policy1) == FSCRYPT_MODE_PRIVATE)
 		return(!memcmp(policy1->v1.master_key_descriptor,
 		       policy2->v1.master_key_descriptor,
@@ -43,6 +44,9 @@ bool fscrypt_policies_equal(const union fscrypt_policy *policy1,
 			~FSCRYPT_POLICY_FLAG_IV_INO_LBLK_32));
 	else
 		return !memcmp(policy1, policy2, fscrypt_policy_size(policy1));
+=======
+	return !memcmp(policy1, policy2, fscrypt_policy_size(policy1));
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static bool fscrypt_valid_enc_modes(u32 contents_mode, u32 filenames_mode)
@@ -59,10 +63,13 @@ static bool fscrypt_valid_enc_modes(u32 contents_mode, u32 filenames_mode)
 	    filenames_mode == FSCRYPT_MODE_ADIANTUM)
 		return true;
 
+<<<<<<< HEAD
 	if (contents_mode == FSCRYPT_MODE_PRIVATE &&
 	    filenames_mode == FSCRYPT_MODE_AES_256_CTS)
 		return true;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return false;
 }
 
@@ -149,8 +156,12 @@ static bool fscrypt_supported_v1_policy(const struct fscrypt_policy_v1 *policy,
 	}
 
 	if (policy->flags & ~(FSCRYPT_POLICY_FLAGS_PAD_MASK |
+<<<<<<< HEAD
 			      FSCRYPT_POLICY_FLAG_DIRECT_KEY |
 			      FSCRYPT_POLICY_FLAG_IV_INO_LBLK_32)) {
+=======
+			      FSCRYPT_POLICY_FLAG_DIRECT_KEY)) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		fscrypt_warn(inode, "Unsupported encryption flags (0x%02x)",
 			     policy->flags);
 		return false;
@@ -684,6 +695,7 @@ int fscrypt_inherit_context(struct inode *parent, struct inode *child,
 	if (ci == NULL)
 		return -ENOKEY;
 
+<<<<<<< HEAD
 	file_system_type = ci->ci_inode->i_sb->s_type->name;
 	if (!file_system_type)
 		return -EINVAL;
@@ -695,6 +707,10 @@ int fscrypt_inherit_context(struct inode *parent, struct inode *child,
 		if (res)
 			return res;
 	}
+=======
+	ctxsize = fscrypt_new_context_from_policy(&ctx, &ci->ci_policy);
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	BUILD_BUG_ON(sizeof(ctx) != FSCRYPT_SET_CONTEXT_MAX_SIZE);
 	res = parent->i_sb->s_cop->set_context(child, &ctx, ctxsize, fs_data);
 	if (res)

@@ -222,6 +222,13 @@ struct sec_entry {
 	unsigned int valid_blocks;	/* # of valid blocks in a section */
 };
 
+<<<<<<< HEAD
+=======
+struct segment_allocation {
+	void (*allocate_segment)(struct f2fs_sb_info *, int, bool);
+};
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #define MAX_SKIP_GC_COUNT			16
 
 struct revoke_entry {
@@ -330,6 +337,8 @@ struct sit_entry_set {
  */
 static inline struct curseg_info *CURSEG_I(struct f2fs_sb_info *sbi, int type)
 {
+	if (type == CURSEG_COLD_DATA_PINNED)
+		type = CURSEG_COLD_DATA;
 	return (struct curseg_info *)(SM_I(sbi)->curseg_array + type);
 }
 
@@ -361,6 +370,7 @@ static inline unsigned int get_valid_blocks(struct f2fs_sb_info *sbi,
 }
 
 static inline unsigned int get_ckpt_valid_blocks(struct f2fs_sb_info *sbi,
+<<<<<<< HEAD
 				unsigned int segno, bool use_section)
 {
 	if (use_section && __is_large_section(sbi)) {
@@ -375,6 +385,10 @@ static inline unsigned int get_ckpt_valid_blocks(struct f2fs_sb_info *sbi,
 		}
 		return blocks;
 	}
+=======
+				unsigned int segno)
+{
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return get_seg_entry(sbi, segno)->ckpt_valid_blocks;
 }
 
@@ -660,9 +674,13 @@ static inline int utilization(struct f2fs_sb_info *sbi)
  *                     pages over min_fsync_blocks. (=default option)
  * F2FS_IPU_ASYNC - do IPU given by asynchronous write requests.
  * F2FS_IPU_NOCACHE - disable IPU bio cache.
+<<<<<<< HEAD
  * F2FS_IPU_HONOR_OPU_WRITE - use OPU write prior to IPU write if inode has
  *                            FI_OPU_WRITE flag.
  * F2FS_IPU_DISABLE - disable IPU. (=default option in LFS mode)
+=======
+ * F2FS_IPUT_DISABLE - disable IPU. (=default option in LFS mode)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  */
 #define DEF_MIN_IPU_UTIL	70
 #define DEF_MIN_FSYNC_BLOCKS	20
@@ -678,7 +696,10 @@ enum {
 	F2FS_IPU_FSYNC,
 	F2FS_IPU_ASYNC,
 	F2FS_IPU_NOCACHE,
+<<<<<<< HEAD
 	F2FS_IPU_HONOR_OPU_WRITE,
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 static inline unsigned int curseg_segno(struct f2fs_sb_info *sbi,

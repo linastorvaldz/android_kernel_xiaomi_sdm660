@@ -15,20 +15,29 @@
 #include <linux/kdev_t.h>
 #include <linux/usb/ch9.h>
 
+<<<<<<< HEAD
 #ifdef CONFIG_USB_F_NCM
 #include "function/u_ncm.h"
 #endif
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #ifdef CONFIG_USB_CONFIGFS_F_ACC
 extern int acc_ctrlrequest_composite(struct usb_composite_dev *cdev,
 				const struct usb_ctrlrequest *ctrl);
 void acc_disconnect(void);
 #endif
+<<<<<<< HEAD
 
 static struct class *android_class;
 static struct device *android_device;
 static int index;
 static int gadget_index;
+=======
+static struct class *android_class;
+static struct device *android_device;
+static int index;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 struct device *create_function_device(char *name)
 {
@@ -1460,28 +1469,50 @@ static void android_work(struct work_struct *data)
 	spin_unlock_irqrestore(&cdev->lock, flags);
 
 	if (status[0]) {
+<<<<<<< HEAD
 		kobject_uevent_env(&gi->dev->kobj,
 					KOBJ_CHANGE, connected);
 		pr_debug("%s: sent uevent %s\n", __func__, connected[0]);
+=======
+		kobject_uevent_env(&android_device->kobj,
+					KOBJ_CHANGE, connected);
+		pr_info("%s: sent uevent %s\n", __func__, connected[0]);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		uevent_sent = true;
 	}
 
 	if (status[1]) {
+<<<<<<< HEAD
 		kobject_uevent_env(&gi->dev->kobj,
 					KOBJ_CHANGE, configured);
 		pr_debug("%s: sent uevent %s\n", __func__, configured[0]);
+=======
+		kobject_uevent_env(&android_device->kobj,
+					KOBJ_CHANGE, configured);
+		pr_info("%s: sent uevent %s\n", __func__, configured[0]);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		uevent_sent = true;
 	}
 
 	if (status[2]) {
+<<<<<<< HEAD
 		kobject_uevent_env(&gi->dev->kobj,
 					KOBJ_CHANGE, disconnected);
 		pr_debug("%s: sent uevent %s\n", __func__, disconnected[0]);
+=======
+		kobject_uevent_env(&android_device->kobj,
+					KOBJ_CHANGE, disconnected);
+		pr_info("%s: sent uevent %s\n", __func__, disconnected[0]);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		uevent_sent = true;
 	}
 
 	if (!uevent_sent) {
+<<<<<<< HEAD
 		pr_debug("%s: did not send uevent (%d %d %pK)\n", __func__,
+=======
+		pr_info("%s: did not send uevent (%d %d %p)\n", __func__,
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			gi->connected, gi->sw_connected, cdev->config);
 	}
 }
@@ -1626,6 +1657,7 @@ static void configfs_composite_resume(struct usb_gadget *gadget)
 static int android_setup(struct usb_gadget *gadget,
 			const struct usb_ctrlrequest *c)
 {
+<<<<<<< HEAD
 	struct usb_composite_dev *cdev;
 	unsigned long flags;
 	struct gadget_info *gi;
@@ -1643,20 +1675,36 @@ static int android_setup(struct usb_gadget *gadget,
 		return 0;
 	}
 
+=======
+	struct usb_composite_dev *cdev = get_gadget_data(gadget);
+	unsigned long flags;
+	struct gadget_info *gi = container_of(cdev, struct gadget_info, cdev);
+	int value = -EOPNOTSUPP;
+	struct usb_function_instance *fi;
+
+	spin_lock_irqsave(&cdev->lock, flags);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!gi->connected) {
 		gi->connected = 1;
 		schedule_work(&gi->work);
 	}
+<<<<<<< HEAD
 
 	list_for_each_entry(fi, &gi->available_func, cfs_list) {
 		if (fi != NULL && fi->f != NULL && fi->f->setup != NULL
 		    && fi->f->config != NULL) {
+=======
+	spin_unlock_irqrestore(&cdev->lock, flags);
+	list_for_each_entry(fi, &gi->available_func, cfs_list) {
+		if (fi != NULL && fi->f != NULL && fi->f->setup != NULL) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			value = fi->f->setup(fi->f, c);
 			if (value >= 0)
 				break;
 		}
 	}
 
+<<<<<<< HEAD
 #ifdef CONFIG_USB_F_NCM
 	if (value < 0)
 		value = ncm_ctrlrequest(cdev, c);
@@ -1669,6 +1717,8 @@ static int android_setup(struct usb_gadget *gadget,
 		return value;
 #endif
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #ifdef CONFIG_USB_CONFIGFS_F_ACC
 	if (value < 0)
 		value = acc_ctrlrequest_composite(cdev, c);
@@ -1677,14 +1727,55 @@ static int android_setup(struct usb_gadget *gadget,
 	if (value < 0)
 		value = composite_setup(gadget, c);
 
+<<<<<<< HEAD
+=======
+	spin_lock_irqsave(&cdev->lock, flags);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (c->bRequest == USB_REQ_SET_CONFIGURATION &&
 						cdev->config) {
 		schedule_work(&gi->work);
 	}
+<<<<<<< HEAD
 	spin_unlock_irqrestore(&gi->spinlock, flags);
 
 	return value;
 }
+=======
+	spin_unlock_irqrestore(&cdev->lock, flags);
+
+	return value;
+}
+
+static void android_disconnect(struct usb_gadget *gadget)
+{
+	struct usb_composite_dev        *cdev = get_gadget_data(gadget);
+	struct gadget_info *gi = container_of(cdev, struct gadget_info, cdev);
+
+	/* FIXME: There's a race between usb_gadget_udc_stop() which is likely
+	 * to set the gadget driver to NULL in the udc driver and this drivers
+	 * gadget disconnect fn which likely checks for the gadget driver to
+	 * be a null ptr. It happens that unbind (doing set_gadget_data(NULL))
+	 * is called before the gadget driver is set to NULL and the udc driver
+	 * calls disconnect fn which results in cdev being a null ptr.
+	 */
+	if (cdev == NULL) {
+		WARN(1, "%s: gadget driver already disconnected\n", __func__);
+		return;
+	}
+
+	/* accessory HID support can be active while the
+		accessory function is not actually enabled,
+		so we need to inform it when we are disconnected.
+	*/
+
+#ifdef CONFIG_USB_CONFIGFS_F_ACC
+	acc_disconnect();
+#endif
+	gi->connected = 0;
+	schedule_work(&gi->work);
+	composite_disconnect(gadget);
+}
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #endif
 
 static const struct usb_gadget_driver configfs_driver_template = {
@@ -1692,11 +1783,20 @@ static const struct usb_gadget_driver configfs_driver_template = {
 	.unbind         = configfs_composite_unbind,
 #ifdef CONFIG_USB_CONFIGFS_UEVENT
 	.setup          = android_setup,
+<<<<<<< HEAD
+=======
+	.reset          = android_disconnect,
+	.disconnect     = android_disconnect,
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #else
 	.setup          = configfs_composite_setup,
 #endif
 	.reset          = configfs_composite_disconnect,
 	.disconnect     = configfs_composite_disconnect,
+<<<<<<< HEAD
+=======
+#endif
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	.suspend	= configfs_composite_suspend,
 	.resume		= configfs_composite_resume,
 
@@ -1748,6 +1848,7 @@ static int android_device_create(struct gadget_info *gi)
 	struct device_attribute *attr;
 
 	INIT_WORK(&gi->work, android_work);
+<<<<<<< HEAD
 	gi->dev = device_create(android_class, NULL,
 			MKDEV(0, 0), NULL, "android%d", gadget_index++);
 	if (IS_ERR(gi->dev))
@@ -1758,15 +1859,30 @@ static int android_device_create(struct gadget_info *gi)
 	dev_set_drvdata(gi->dev, gi);
 	if (!android_device)
 		android_device = gi->dev;
+=======
+	android_device = device_create(android_class, NULL,
+				MKDEV(0, 0), NULL, "android0");
+	if (IS_ERR(android_device))
+		return PTR_ERR(android_device);
+
+	dev_set_drvdata(android_device, gi);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	attrs = android_usb_attributes;
 	while ((attr = *attrs++)) {
 		int err;
 
+<<<<<<< HEAD
 		err = device_create_file(gi->dev, attr);
 		if (err) {
 			device_destroy(gi->dev->class,
 				       gi->dev->devt);
+=======
+		err = device_create_file(android_device, attr);
+		if (err) {
+			device_destroy(android_device->class,
+				       android_device->devt);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			return err;
 		}
 	}
@@ -1774,11 +1890,16 @@ static int android_device_create(struct gadget_info *gi)
 	return 0;
 }
 
+<<<<<<< HEAD
 static void android_device_destroy(struct gadget_info *gi)
+=======
+static void android_device_destroy(void)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	struct device_attribute **attrs;
 	struct device_attribute *attr;
 
+<<<<<<< HEAD
 	if (!gi->dev)
 		return;
 
@@ -1787,6 +1908,12 @@ static void android_device_destroy(struct gadget_info *gi)
 		device_remove_file(gi->dev, attr);
 	device_destroy(gi->dev->class, gi->dev->devt);
 	gi->dev = NULL;
+=======
+	attrs = android_usb_attributes;
+	while ((attr = *attrs++))
+		device_remove_file(android_device, attr);
+	device_destroy(android_device->class, android_device->devt);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 #else
 static inline int android_device_create(struct gadget_info *gi)
@@ -1794,7 +1921,11 @@ static inline int android_device_create(struct gadget_info *gi)
 	return 0;
 }
 
+<<<<<<< HEAD
 static inline void android_device_destroy(struct gadget_info *gi)
+=======
+static inline void android_device_destroy(void)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 }
 #endif
@@ -1867,7 +1998,11 @@ static void gadgets_drop(struct config_group *group, struct config_item *item)
 
 	gi = container_of(to_config_group(item), struct gadget_info, group);
 	config_item_put(item);
+<<<<<<< HEAD
 	android_device_destroy(gi);
+=======
+	android_device_destroy();
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static struct configfs_group_operations gadgets_ops = {

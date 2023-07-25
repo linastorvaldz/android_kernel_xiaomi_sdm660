@@ -2351,9 +2351,12 @@ enum nl80211_commands {
  *	%NL80211_ATTR_AKM_SUITES are default capabilities if AKM suites not
  *	advertised for a specific interface type.
  *
+<<<<<<< HEAD
  * @NL80211_ATTR_HE_6GHZ_CAPABILITY: HE 6 GHz Band Capability element (from
  *	association request when used with NL80211_CMD_NEW_STATION).
  *
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  * @NUM_NL80211_ATTR: total number of nl80211_attrs available
  * @NL80211_ATTR_MAX: highest attribute number currently defined
  * @__NL80211_ATTR_AFTER_LAST: internal use
@@ -2821,8 +2824,11 @@ enum nl80211_attrs {
 	NL80211_ATTR_HE_BSS_COLOR,
 
 	NL80211_ATTR_IFTYPE_AKM_SUITES,
+<<<<<<< HEAD
 	NL80211_ATTR_HE_6GHZ_CAPABILITY =
 	NL80211_ATTR_WIPHY_EDMG_BW_CONFIG + 12,
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/* add attributes here, update the policy in nl80211.c */
 
@@ -5428,9 +5434,12 @@ enum nl80211_feature_flags {
  *
  * @NL80211_EXT_FEATURE_BEACON_PROTECTION: The driver supports Beacon protection
  *	and can receive key configuration for BIGTK using key indexes 6 and 7.
+<<<<<<< HEAD
  *
  * @NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION: Driver supports Operating
  *	Channel Validation (OCV) when using driver's SME for RSNA handshakes.
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  *
  * @NUM_NL80211_EXT_FEATURES: number of extended features.
  * @MAX_NL80211_EXT_FEATURES: highest extended feature index.
@@ -5478,6 +5487,7 @@ enum nl80211_ext_feature_index {
 	NL80211_EXT_FEATURE_VLAN_OFFLOAD,
 	NL80211_EXT_FEATURE_AQL,
 	NL80211_EXT_FEATURE_BEACON_PROTECTION,
+<<<<<<< HEAD
 	NL80211_EXT_FEATURE_CONTROL_PORT_NO_PREAUTH,
 	NL80211_EXT_FEATURE_PROTECTED_TWT,
 	NL80211_EXT_FEATURE_DEL_IBSS_STA,
@@ -5486,6 +5496,8 @@ enum nl80211_ext_feature_index {
 	NL80211_EXT_FEATURE_SCAN_FREQ_KHZ,
 	NL80211_EXT_FEATURE_CONTROL_PORT_OVER_NL80211_TX_STATUS,
 	NL80211_EXT_FEATURE_OPERATING_CHANNEL_VALIDATION,
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/* add new features before the definition below */
 	NUM_NL80211_EXT_FEATURES,

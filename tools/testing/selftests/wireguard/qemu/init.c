@@ -56,6 +56,7 @@ static void print_banner(void)
 
 static void seed_rng(void)
 {
+<<<<<<< HEAD
 	int bits = 256, fd;
 
 	pretty_message("[+] Fake seeding RNG...");
@@ -64,6 +65,28 @@ static void seed_rng(void)
 		panic("open(random)");
 	if (ioctl(fd, RNDADDTOENTCNT, &bits) < 0)
 		panic("ioctl(RNDADDTOENTCNT)");
+=======
+	int fd;
+	struct {
+		int entropy_count;
+		int buffer_size;
+		unsigned char buffer[256];
+	} entropy = {
+		.entropy_count = sizeof(entropy.buffer) * 8,
+		.buffer_size = sizeof(entropy.buffer),
+		.buffer = "Adding real entropy is not actually important for these tests. Don't try this at home, kids!"
+	};
+
+	if (mknod("/dev/urandom", S_IFCHR | 0644, makedev(1, 9)))
+		panic("mknod(/dev/urandom)");
+	fd = open("/dev/urandom", O_WRONLY);
+	if (fd < 0)
+		panic("open(urandom)");
+	for (int i = 0; i < 256; ++i) {
+		if (ioctl(fd, RNDADDENTROPY, &entropy) < 0)
+			panic("ioctl(urandom)");
+	}
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	close(fd);
 }
 
@@ -258,10 +281,17 @@ static void check_leaks(void)
 
 int main(int argc, char *argv[])
 {
+<<<<<<< HEAD
 	ensure_console();
 	print_banner();
 	mount_filesystems();
 	seed_rng();
+=======
+	seed_rng();
+	ensure_console();
+	print_banner();
+	mount_filesystems();
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	kmod_selftests();
 	enable_logging();
 	clear_leaks();

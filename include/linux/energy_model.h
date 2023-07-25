@@ -99,9 +99,12 @@ static inline unsigned long em_pd_energy(struct em_perf_domain *pd,
 	struct em_cap_state *cs;
 	int i, cpu;
 
+<<<<<<< HEAD
 	if (!sum_util)
 		return 0;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/*
 	 * In order to predict the capacity state, map the utilization of the
 	 * most utilized CPU of the performance domain to a requested frequency,

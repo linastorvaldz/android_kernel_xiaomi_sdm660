@@ -4948,7 +4948,10 @@ void regulator_unregister(struct regulator_dev *rdev)
 		regulator_put(rdev->supply);
 	}
 	regulator_proxy_consumer_unregister(rdev->proxy_consumer);
+<<<<<<< HEAD
 	rdev_deinit_debugfs(rdev);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	mutex_lock(&regulator_list_mutex);
 	flush_work(&rdev->disable_work.work);
 	WARN_ON(rdev->open_count);
@@ -4959,6 +4962,30 @@ void regulator_unregister(struct regulator_dev *rdev)
 	device_unregister(&rdev->dev);
 }
 EXPORT_SYMBOL_GPL(regulator_unregister);
+
+static int regulator_sync_supply(struct device *dev, void *data)
+{
+	struct regulator_dev *rdev = dev_to_rdev(dev);
+
+	if (rdev->dev.parent != data)
+		return 0;
+
+	if (!rdev->proxy_consumer)
+		return 0;
+
+	dev_dbg(data, "Removing regulator proxy consumer requests\n");
+	regulator_proxy_consumer_unregister(rdev->proxy_consumer);
+	rdev->proxy_consumer = NULL;
+
+	return 0;
+}
+
+void regulator_sync_state(struct device *dev)
+{
+	class_for_each_device(&regulator_class, NULL, dev,
+			      regulator_sync_supply);
+}
+EXPORT_SYMBOL_GPL(regulator_sync_state);
 
 #ifdef CONFIG_SUSPEND
 static int _regulator_suspend(struct device *dev, void *data)

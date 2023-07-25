@@ -115,6 +115,7 @@ struct fsverity_operations {
 
 static inline struct fsverity_info *fsverity_get_info(const struct inode *inode)
 {
+<<<<<<< HEAD
 	/*
 	 * Pairs with the cmpxchg_release() in fsverity_set_info().
 	 * I.e., another task may publish ->i_verity_info concurrently,
@@ -122,6 +123,10 @@ static inline struct fsverity_info *fsverity_get_info(const struct inode *inode)
 	 * to safely ACQUIRE the memory the other task published.
 	 */
 	return smp_load_acquire(&inode->i_verity_info);
+=======
+	/* pairs with the cmpxchg() in fsverity_set_info() */
+	return READ_ONCE(inode->i_verity_info);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 /* enable.c */
@@ -138,10 +143,13 @@ int fsverity_file_open(struct inode *inode, struct file *filp);
 int fsverity_prepare_setattr(struct dentry *dentry, struct iattr *attr);
 void fsverity_cleanup_inode(struct inode *inode);
 
+<<<<<<< HEAD
 /* read_metadata.c */
 
 int fsverity_ioctl_read_metadata(struct file *filp, const void __user *uarg);
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /* verify.c */
 
 bool fsverity_verify_page(struct page *page);
@@ -187,6 +195,7 @@ static inline void fsverity_cleanup_inode(struct inode *inode)
 {
 }
 
+<<<<<<< HEAD
 /* read_metadata.c */
 
 static inline int fsverity_ioctl_read_metadata(struct file *filp,
@@ -195,6 +204,8 @@ static inline int fsverity_ioctl_read_metadata(struct file *filp,
 	return -EOPNOTSUPP;
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /* verify.c */
 
 static inline bool fsverity_verify_page(struct page *page)

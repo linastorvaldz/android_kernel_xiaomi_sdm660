@@ -3547,9 +3547,12 @@ static const struct pid_entry tgid_base_stuff[] = {
 #ifdef CONFIG_CPU_FREQ_TIMES
 	ONE("time_in_state", 0444, proc_time_in_state_show),
 #endif
+<<<<<<< HEAD
 #ifdef CONFIG_PERF_HUMANTASK
 	REG("human_task", S_IRUGO|S_IWUGO, proc_tid_set_human_task_operations),
 #endif
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 static int proc_tgid_base_readdir(struct file *file, struct dir_context *ctx)

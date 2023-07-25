@@ -49,6 +49,32 @@ struct etr_perf_buffer {
 #define TMC_ETR_SW_USB_BUF_SIZE SZ_32M
 
 /*
+ * etr_perf_buffer - Perf buffer used for ETR
+ * @drvdata		- The ETR drvdaga this buffer has been allocated for.
+ * @etr_buf		- Actual buffer used by the ETR
+ * @pid			- The PID this etr_perf_buffer belongs to.
+ * @snaphost		- Perf session mode
+ * @head		- handle->head at the beginning of the session.
+ * @nr_pages		- Number of pages in the ring buffer.
+ * @pages		- Array of Pages in the ring buffer.
+ */
+struct etr_perf_buffer {
+	struct tmc_drvdata	*drvdata;
+	struct etr_buf		*etr_buf;
+	pid_t			pid;
+	bool			snapshot;
+	unsigned long		head;
+	int			nr_pages;
+	void			**pages;
+};
+
+/* Convert the perf index to an offset within the ETR buffer */
+#define PERF_IDX2OFF(idx, buf)	((idx) % ((buf)->nr_pages << PAGE_SHIFT))
+
+/* Lower limit for ETR hardware buffer */
+#define TMC_ETR_PERF_MIN_BUF_SIZE	SZ_1M
+
+/*
  * The TMC ETR SG has a page size of 4K. The SG table contains pointers
  * to 4KB buffers. However, the OS may use a PAGE_SIZE different from
  * 4K (i.e, 16KB or 64KB). This implies that a single OS page could
@@ -965,10 +991,6 @@ static void tmc_sync_etr_buf(struct tmc_drvdata *drvdata)
 	WARN_ON(!etr_buf->ops || !etr_buf->ops->sync);
 
 	etr_buf->ops->sync(etr_buf, rrp, rwp);
-
-	/* Insert barrier packets at the beginning, if there was an overflow */
-	if (etr_buf->full)
-		tmc_etr_buf_insert_barrier_packet(etr_buf, etr_buf->offset);
 }
 
 static void __tmc_etr_enable_hw(struct tmc_drvdata *drvdata)
@@ -1491,7 +1513,11 @@ static int tmc_enable_etr_sink_sysfs(struct coresight_device *csdev)
 	 */
 	if (drvdata->mode == CS_MODE_SYSFS) {
 		atomic_inc(csdev->refcnt);
+<<<<<<< HEAD
 		goto unlock_out;
+=======
+		goto out;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	/*
@@ -1504,6 +1530,7 @@ static int tmc_enable_etr_sink_sysfs(struct coresight_device *csdev)
 		drvdata->sysfs_buf = new_buf;
 	}
 
+<<<<<<< HEAD
 	if (drvdata->out_mode == TMC_ETR_OUT_MODE_MEM ||
 	    (drvdata->out_mode == TMC_ETR_OUT_MODE_USB
 	     && drvdata->byte_cntr->sw_usb)) {
@@ -1540,6 +1567,14 @@ static int tmc_enable_etr_sink_sysfs(struct coresight_device *csdev)
 	goto out;
 
 unlock_out:
+=======
+	ret = tmc_etr_enable_hw(drvdata, drvdata->sysfs_buf);
+	if (!ret) {
+		drvdata->mode = CS_MODE_SYSFS;
+		atomic_inc(csdev->refcnt);
+	}
+out:
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	spin_unlock_irqrestore(&drvdata->spinlock, flags);
 
 out:
@@ -1547,11 +1582,16 @@ out:
 	if (free_buf)
 		tmc_etr_free_sysfs_buf(free_buf);
 
+<<<<<<< HEAD
 	if (!ret) {
 		if (drvdata->out_mode == TMC_ETR_OUT_MODE_MEM)
 			tmc_etr_byte_cntr_start(drvdata->byte_cntr);
 		dev_info(drvdata->dev, "TMC-ETR enabled\n");
 	}
+=======
+	if (!ret)
+		dev_dbg(drvdata->dev, "TMC-ETR enabled\n");
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	return ret;
 }
@@ -1570,6 +1610,7 @@ alloc_etr_buf(struct tmc_drvdata *drvdata, struct perf_event *event,
 	int node;
 	struct etr_buf *etr_buf;
 	unsigned long size;
+<<<<<<< HEAD
 
 	node = (event->cpu == -1) ? NUMA_NO_NODE : cpu_to_node(event->cpu);
 	/*
@@ -1581,6 +1622,421 @@ alloc_etr_buf(struct tmc_drvdata *drvdata, struct perf_event *event,
 					    0, node, NULL);
 		if (!IS_ERR(etr_buf))
 			goto done;
+=======
+
+	node = (event->cpu == -1) ? NUMA_NO_NODE : cpu_to_node(event->cpu);
+	/*
+	 * Try to match the perf ring buffer size if it is larger
+	 * than the size requested via sysfs.
+	 */
+	if ((nr_pages << PAGE_SHIFT) > drvdata->size) {
+		etr_buf = tmc_alloc_etr_buf(drvdata, (nr_pages << PAGE_SHIFT),
+					    0, node, NULL);
+		if (!IS_ERR(etr_buf))
+			goto done;
+	}
+
+	/*
+	 * Else switch to configured size for this ETR
+	 * and scale down until we hit the minimum limit.
+	 */
+	size = drvdata->size;
+	do {
+		etr_buf = tmc_alloc_etr_buf(drvdata, size, 0, node, NULL);
+		if (!IS_ERR(etr_buf))
+			goto done;
+		size /= 2;
+	} while (size >= TMC_ETR_PERF_MIN_BUF_SIZE);
+
+	return ERR_PTR(-ENOMEM);
+
+done:
+	return etr_buf;
+}
+
+static struct etr_buf *
+get_perf_etr_buf_cpu_wide(struct tmc_drvdata *drvdata,
+			  struct perf_event *event, int nr_pages,
+			  void **pages, bool snapshot)
+{
+	int ret;
+	pid_t pid = task_pid_nr(event->owner);
+	struct etr_buf *etr_buf;
+
+retry:
+	/*
+	 * An etr_perf_buffer is associated with an event and holds a reference
+	 * to the AUX ring buffer that was created for that event.  In CPU-wide
+	 * N:1 mode multiple events (one per CPU), each with its own AUX ring
+	 * buffer, share a sink.  As such an etr_perf_buffer is created for each
+	 * event but a single etr_buf associated with the ETR is shared between
+	 * them.  The last event in a trace session will copy the content of the
+	 * etr_buf to its AUX ring buffer.  Ring buffer associated to other
+	 * events are simply not used an freed as events are destoyed.  We still
+	 * need to allocate a ring buffer for each event since we don't know
+	 * which event will be last.
+	 */
+
+	/*
+	 * The first thing to do here is check if an etr_buf has already been
+	 * allocated for this session.  If so it is shared with this event,
+	 * otherwise it is created.
+	 */
+	mutex_lock(&drvdata->idr_mutex);
+	etr_buf = idr_find(&drvdata->idr, pid);
+	if (etr_buf) {
+		refcount_inc(&etr_buf->refcount);
+		mutex_unlock(&drvdata->idr_mutex);
+		return etr_buf;
+	}
+
+	/* If we made it here no buffer has been allocated, do so now. */
+	mutex_unlock(&drvdata->idr_mutex);
+
+	etr_buf = alloc_etr_buf(drvdata, event, nr_pages, pages, snapshot);
+	if (IS_ERR(etr_buf))
+		return etr_buf;
+
+	/* Now that we have a buffer, add it to the IDR. */
+	mutex_lock(&drvdata->idr_mutex);
+	ret = idr_alloc(&drvdata->idr, etr_buf, pid, pid + 1, GFP_KERNEL);
+	mutex_unlock(&drvdata->idr_mutex);
+
+	/* Another event with this session ID has allocated this buffer. */
+	if (ret == -ENOSPC) {
+		tmc_free_etr_buf(etr_buf);
+		goto retry;
+	}
+
+	/* The IDR can't allocate room for a new session, abandon ship. */
+	if (ret == -ENOMEM) {
+		tmc_free_etr_buf(etr_buf);
+		return ERR_PTR(ret);
+	}
+
+
+	return etr_buf;
+}
+
+static struct etr_buf *
+get_perf_etr_buf_per_thread(struct tmc_drvdata *drvdata,
+			    struct perf_event *event, int nr_pages,
+			    void **pages, bool snapshot)
+{
+	/*
+	 * In per-thread mode the etr_buf isn't shared, so just go ahead
+	 * with memory allocation.
+	 */
+	return alloc_etr_buf(drvdata, event, nr_pages, pages, snapshot);
+}
+
+static struct etr_buf *
+get_perf_etr_buf(struct tmc_drvdata *drvdata, struct perf_event *event,
+		 int nr_pages, void **pages, bool snapshot)
+{
+	if (event->cpu == -1)
+		return get_perf_etr_buf_per_thread(drvdata, event, nr_pages,
+						   pages, snapshot);
+
+	return get_perf_etr_buf_cpu_wide(drvdata, event, nr_pages,
+					 pages, snapshot);
+}
+
+static struct etr_perf_buffer *
+tmc_etr_setup_perf_buf(struct tmc_drvdata *drvdata, struct perf_event *event,
+		       int nr_pages, void **pages, bool snapshot)
+{
+	int node;
+	struct etr_buf *etr_buf;
+	struct etr_perf_buffer *etr_perf;
+
+	node = (event->cpu == -1) ? NUMA_NO_NODE : cpu_to_node(event->cpu);
+
+	etr_perf = kzalloc_node(sizeof(*etr_perf), GFP_KERNEL, node);
+	if (!etr_perf)
+		return ERR_PTR(-ENOMEM);
+
+	etr_buf = get_perf_etr_buf(drvdata, event, nr_pages, pages, snapshot);
+	if (!IS_ERR(etr_buf))
+		goto done;
+
+	kfree(etr_perf);
+	return ERR_PTR(-ENOMEM);
+
+done:
+	/*
+	 * Keep a reference to the ETR this buffer has been allocated for
+	 * in order to have access to the IDR in tmc_free_etr_buffer().
+	 */
+	etr_perf->drvdata = drvdata;
+	etr_perf->etr_buf = etr_buf;
+
+	return etr_perf;
+}
+
+
+static void *tmc_alloc_etr_buffer(struct coresight_device *csdev,
+				  struct perf_event *event, void **pages,
+				  int nr_pages, bool snapshot)
+{
+	struct etr_perf_buffer *etr_perf;
+	struct tmc_drvdata *drvdata = dev_get_drvdata(csdev->dev.parent);
+
+	etr_perf = tmc_etr_setup_perf_buf(drvdata, event,
+					  nr_pages, pages, snapshot);
+	if (IS_ERR(etr_perf)) {
+		dev_dbg(drvdata->dev, "Unable to allocate ETR buffer\n");
+		return NULL;
+	}
+
+	etr_perf->pid = task_pid_nr(event->owner);
+	etr_perf->snapshot = snapshot;
+	etr_perf->nr_pages = nr_pages;
+	etr_perf->pages = pages;
+
+	return etr_perf;
+}
+
+static void tmc_free_etr_buffer(void *config)
+{
+	struct etr_perf_buffer *etr_perf = config;
+	struct tmc_drvdata *drvdata = etr_perf->drvdata;
+	struct etr_buf *buf, *etr_buf = etr_perf->etr_buf;
+
+	if (!etr_buf)
+		goto free_etr_perf_buffer;
+
+	mutex_lock(&drvdata->idr_mutex);
+	/* If we are not the last one to use the buffer, don't touch it. */
+	if (!refcount_dec_and_test(&etr_buf->refcount)) {
+		mutex_unlock(&drvdata->idr_mutex);
+		goto free_etr_perf_buffer;
+	}
+
+	/* We are the last one, remove from the IDR and free the buffer. */
+	buf = idr_remove(&drvdata->idr, etr_perf->pid);
+	mutex_unlock(&drvdata->idr_mutex);
+
+	/*
+	 * Something went very wrong if the buffer associated with this ID
+	 * is not the same in the IDR.  Leak to avoid use after free.
+	 */
+	if (buf && WARN_ON(buf != etr_buf))
+		goto free_etr_perf_buffer;
+
+	tmc_free_etr_buf(etr_perf->etr_buf);
+
+free_etr_perf_buffer:
+	kfree(etr_perf);
+}
+
+/*
+ * tmc_etr_sync_perf_buffer: Copy the actual trace data from the hardware
+ * buffer to the perf ring buffer.
+ */
+static void tmc_etr_sync_perf_buffer(struct etr_perf_buffer *etr_perf,
+				     unsigned long src_offset,
+				     unsigned long to_copy)
+{
+	long bytes;
+	long pg_idx, pg_offset;
+	unsigned long head = etr_perf->head;
+	char **dst_pages, *src_buf;
+	struct etr_buf *etr_buf = etr_perf->etr_buf;
+
+	head = etr_perf->head;
+	pg_idx = head >> PAGE_SHIFT;
+	pg_offset = head & (PAGE_SIZE - 1);
+	dst_pages = (char **)etr_perf->pages;
+
+	while (to_copy > 0) {
+		/*
+		 * In one iteration, we can copy minimum of :
+		 *  1) what is available in the source buffer,
+		 *  2) what is available in the source buffer, before it
+		 *     wraps around.
+		 *  3) what is available in the destination page.
+		 * in one iteration.
+		 */
+		if (src_offset >= etr_buf->size)
+			src_offset -= etr_buf->size;
+		bytes = tmc_etr_buf_get_data(etr_buf, src_offset, to_copy,
+					     &src_buf);
+		if (WARN_ON_ONCE(bytes <= 0))
+			break;
+		bytes = min(bytes, (long)(PAGE_SIZE - pg_offset));
+
+		memcpy(dst_pages[pg_idx] + pg_offset, src_buf, bytes);
+
+		to_copy -= bytes;
+
+		/* Move destination pointers */
+		pg_offset += bytes;
+		if (pg_offset == PAGE_SIZE) {
+			pg_offset = 0;
+			if (++pg_idx == etr_perf->nr_pages)
+				pg_idx = 0;
+		}
+
+		/* Move source pointers */
+		src_offset += bytes;
+	}
+}
+
+/*
+ * tmc_update_etr_buffer : Update the perf ring buffer with the
+ * available trace data. We use software double buffering at the moment.
+ *
+ * TODO: Add support for reusing the perf ring buffer.
+ */
+static unsigned long
+tmc_update_etr_buffer(struct coresight_device *csdev,
+		      struct perf_output_handle *handle,
+		      void *config)
+{
+	bool lost = false;
+	unsigned long flags, offset, size = 0;
+	struct tmc_drvdata *drvdata = dev_get_drvdata(csdev->dev.parent);
+	struct etr_perf_buffer *etr_perf = config;
+	struct etr_buf *etr_buf = etr_perf->etr_buf;
+
+	spin_lock_irqsave(&drvdata->spinlock, flags);
+
+	/* Don't do anything if another tracer is using this sink */
+	if (atomic_read(csdev->refcnt) != 1) {
+		spin_unlock_irqrestore(&drvdata->spinlock, flags);
+		goto out;
+	}
+
+	if (WARN_ON(drvdata->perf_buf != etr_buf)) {
+		lost = true;
+		spin_unlock_irqrestore(&drvdata->spinlock, flags);
+		goto out;
+	}
+
+	CS_UNLOCK(drvdata->base);
+
+	tmc_flush_and_stop(drvdata);
+	tmc_sync_etr_buf(drvdata);
+
+	CS_LOCK(drvdata->base);
+	spin_unlock_irqrestore(&drvdata->spinlock, flags);
+
+	lost = etr_buf->full;
+	offset = etr_buf->offset;
+	size = etr_buf->len;
+
+	/*
+	 * The ETR buffer may be bigger than the space available in the
+	 * perf ring buffer (handle->size).  If so advance the offset so that we
+	 * get the latest trace data.  In snapshot mode none of that matters
+	 * since we are expected to clobber stale data in favour of the latest
+	 * traces.
+	 */
+	if (!etr_perf->snapshot && size > handle->size) {
+		u32 mask = tmc_get_memwidth_mask(drvdata);
+
+		/*
+		 * Make sure the new size is aligned in accordance with the
+		 * requirement explained in function tmc_get_memwidth_mask().
+		 */
+		size = handle->size & mask;
+		offset = etr_buf->offset + etr_buf->len - size;
+
+		if (offset >= etr_buf->size)
+			offset -= etr_buf->size;
+		lost = true;
+	}
+
+	/* Insert barrier packets at the beginning, if there was an overflow */
+	if (lost)
+		tmc_etr_buf_insert_barrier_packet(etr_buf, offset);
+	tmc_etr_sync_perf_buffer(etr_perf, offset, size);
+
+	/*
+	 * In snapshot mode we simply increment the head by the number of byte
+	 * that were written.  User space function  cs_etm_find_snapshot() will
+	 * figure out how many bytes to get from the AUX buffer based on the
+	 * position of the head.
+	 */
+	if (etr_perf->snapshot)
+		handle->head += size;
+out:
+	/*
+	 * Don't set the TRUNCATED flag in snapshot mode because 1) the
+	 * captured buffer is expected to be truncated and 2) a full buffer
+	 * prevents the event from being re-enabled by the perf core,
+	 * resulting in stale data being send to user space.
+	 */
+	if (!etr_perf->snapshot && lost)
+		perf_aux_output_flag(handle, PERF_AUX_FLAG_TRUNCATED);
+	return size;
+}
+
+static int tmc_enable_etr_sink_perf(struct coresight_device *csdev, void *data)
+{
+	int rc = 0;
+	pid_t pid;
+	unsigned long flags;
+	struct tmc_drvdata *drvdata = dev_get_drvdata(csdev->dev.parent);
+	struct perf_output_handle *handle = data;
+	struct etr_perf_buffer *etr_perf = etm_perf_sink_config(handle);
+
+	spin_lock_irqsave(&drvdata->spinlock, flags);
+	 /* Don't use this sink if it is already claimed by sysFS */
+	if (drvdata->mode == CS_MODE_SYSFS) {
+		rc = -EBUSY;
+		goto unlock_out;
+	}
+
+	if (WARN_ON(!etr_perf || !etr_perf->etr_buf)) {
+		rc = -EINVAL;
+		goto unlock_out;
+	}
+
+	/* Get a handle on the pid of the process to monitor */
+	pid = etr_perf->pid;
+
+	/* Do not proceed if this device is associated with another session */
+	if (drvdata->pid != -1 && drvdata->pid != pid) {
+		rc = -EBUSY;
+		goto unlock_out;
+	}
+
+	etr_perf->head = PERF_IDX2OFF(handle->head, etr_perf);
+
+	/*
+	 * No HW configuration is needed if the sink is already in
+	 * use for this session.
+	 */
+	if (drvdata->pid == pid) {
+		atomic_inc(csdev->refcnt);
+		goto unlock_out;
+	}
+
+	rc = tmc_etr_enable_hw(drvdata, etr_perf->etr_buf);
+	if (!rc) {
+		/* Associate with monitored process. */
+		drvdata->pid = pid;
+		drvdata->mode = CS_MODE_PERF;
+		drvdata->perf_buf = etr_perf->etr_buf;
+		atomic_inc(csdev->refcnt);
+	}
+
+unlock_out:
+	spin_unlock_irqrestore(&drvdata->spinlock, flags);
+	return rc;
+}
+
+static int tmc_enable_etr_sink(struct coresight_device *csdev,
+			       u32 mode, void *data)
+{
+	switch (mode) {
+	case CS_MODE_SYSFS:
+		return tmc_enable_etr_sink_sysfs(csdev);
+	case CS_MODE_PERF:
+		return tmc_enable_etr_sink_perf(csdev, data);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	/*
@@ -1995,8 +2451,12 @@ static int tmc_enable_etr_sink(struct coresight_device *csdev,
 	return -EINVAL;
 }
 
+<<<<<<< HEAD
 static int _tmc_disable_etr_sink(struct coresight_device *csdev,
 			bool mode_switch)
+=======
+static int tmc_disable_etr_sink(struct coresight_device *csdev)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	unsigned long flags;
 	struct tmc_drvdata *drvdata = dev_get_drvdata(csdev->dev.parent);
@@ -2008,13 +2468,18 @@ static int _tmc_disable_etr_sink(struct coresight_device *csdev,
 		return -EBUSY;
 	}
 
+<<<<<<< HEAD
 	if (atomic_dec_return(csdev->refcnt) && !mode_switch) {
+=======
+	if (atomic_dec_return(csdev->refcnt)) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		spin_unlock_irqrestore(&drvdata->spinlock, flags);
 		return -EBUSY;
 	}
 
 	/* Complain if we (somehow) got out of sync */
 	WARN_ON_ONCE(drvdata->mode == CS_MODE_DISABLED);
+<<<<<<< HEAD
 	if (drvdata->mode != CS_MODE_DISABLED) {
 		drvdata->mode = CS_MODE_DISABLED;
 		if (drvdata->out_mode == TMC_ETR_OUT_MODE_USB) {
@@ -2042,11 +2507,18 @@ static int _tmc_disable_etr_sink(struct coresight_device *csdev,
 
 	/* Dissociate from monitored process. */
 	drvdata->pid = -1;
+=======
+	tmc_etr_disable_hw(drvdata);
+	/* Dissociate from monitored process. */
+	drvdata->pid = -1;
+	drvdata->mode = CS_MODE_DISABLED;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/* Reset perf specific data */
 	drvdata->perf_buf = NULL;
 
 	spin_unlock_irqrestore(&drvdata->spinlock, flags);
 
+<<<<<<< HEAD
 	if ((drvdata->out_mode == TMC_ETR_OUT_MODE_USB
 		&& drvdata->byte_cntr->sw_usb)
 		|| drvdata->out_mode == TMC_ETR_OUT_MODE_MEM) {
@@ -2120,6 +2592,9 @@ int tmc_etr_switch_mode(struct tmc_drvdata *drvdata, const char *out_mode)
 
 	mutex_unlock(&drvdata->mem_lock);
 	coresight_enable_all_source_link();
+=======
+	dev_dbg(drvdata->dev, "TMC-ETR disabled\n");
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return 0;
 }
 
@@ -2151,10 +2626,13 @@ int tmc_read_prepare_etr(struct tmc_drvdata *drvdata)
 		goto out;
 	}
 
+<<<<<<< HEAD
 	if (drvdata->out_mode == TMC_ETR_OUT_MODE_USB) {
 		ret = -EINVAL;
 		goto out;
 	}
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/*
 	 * We can safely allow reads even if the ETR is operating in PERF mode,
 	 * since the sysfs session is captured in mode specific data.
@@ -2165,10 +2643,16 @@ int tmc_read_prepare_etr(struct tmc_drvdata *drvdata)
 		goto out;
 	}
 
+<<<<<<< HEAD
 	if (drvdata->byte_cntr && drvdata->byte_cntr->enable) {
 		ret = -EINVAL;
 		goto out;
 	}
+=======
+	/* Disable the TMC if we are trying to read from a running session. */
+	if (drvdata->mode == CS_MODE_SYSFS)
+		__tmc_etr_disable_hw(drvdata);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	drvdata->reading = true;
 

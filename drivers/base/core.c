@@ -49,7 +49,10 @@ static DEFINE_MUTEX(wfs_lock);
 static LIST_HEAD(deferred_sync);
 static unsigned int defer_sync_state_count = 1;
 static unsigned int defer_fw_devlink_count;
+<<<<<<< HEAD
 static LIST_HEAD(deferred_fw_devlink);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static DEFINE_MUTEX(defer_fw_devlink_lock);
 
 #ifdef CONFIG_SRCU
@@ -460,7 +463,11 @@ reorder:
 	 */
 	device_reorder_to_tail(consumer, NULL);
 
+<<<<<<< HEAD
 	dev_dbg(consumer, "Linked as a consumer to %s\n", dev_name(supplier));
+=======
+	dev_info(consumer, "Linked as a consumer to %s\n", dev_name(supplier));
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 out:
 	device_pm_unlock();
@@ -757,11 +764,19 @@ static void __device_links_queue_sync_state(struct device *dev,
 	 */
 	dev->state_synced = true;
 
+<<<<<<< HEAD
 	if (WARN_ON(!list_empty(&dev->links.defer_hook)))
 		return;
 
 	get_device(dev);
 	list_add_tail(&dev->links.defer_hook, list);
+=======
+	if (WARN_ON(!list_empty(&dev->links.defer_sync)))
+		return;
+
+	get_device(dev);
+	list_add_tail(&dev->links.defer_sync, list);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 /**
@@ -779,8 +794,13 @@ static void device_links_flush_sync_list(struct list_head *list,
 {
 	struct device *dev, *tmp;
 
+<<<<<<< HEAD
 	list_for_each_entry_safe(dev, tmp, list, links.defer_hook) {
 		list_del_init(&dev->links.defer_hook);
+=======
+	list_for_each_entry_safe(dev, tmp, list, links.defer_sync) {
+		list_del_init(&dev->links.defer_sync);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		if (dev != dont_lock_dev)
 			device_lock(dev);
@@ -818,12 +838,21 @@ void device_links_supplier_sync_state_resume(void)
 	if (defer_sync_state_count)
 		goto out;
 
+<<<<<<< HEAD
 	list_for_each_entry_safe(dev, tmp, &deferred_sync, links.defer_hook) {
 		/*
 		 * Delete from deferred_sync list before queuing it to
 		 * sync_list because defer_hook is used for both lists.
 		 */
 		list_del_init(&dev->links.defer_hook);
+=======
+	list_for_each_entry_safe(dev, tmp, &deferred_sync, links.defer_sync) {
+		/*
+		 * Delete from deferred_sync list before queuing it to
+		 * sync_list because defer_sync is used for both lists.
+		 */
+		list_del_init(&dev->links.defer_sync);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		__device_links_queue_sync_state(dev, &sync_list);
 	}
 out:
@@ -841,8 +870,13 @@ late_initcall(sync_state_resume_initcall);
 
 static void __device_links_supplier_defer_sync(struct device *sup)
 {
+<<<<<<< HEAD
 	if (list_empty(&sup->links.defer_hook) && dev_has_sync_state(sup))
 		list_add_tail(&sup->links.defer_hook, &deferred_sync);
+=======
+	if (list_empty(&sup->links.defer_sync) && dev_has_sync_state(sup))
+		list_add_tail(&sup->links.defer_sync, &deferred_sync);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static void device_link_drop_managed(struct device_link *link)
@@ -1055,7 +1089,11 @@ void device_links_driver_cleanup(struct device *dev)
 		WRITE_ONCE(link->status, DL_STATE_DORMANT);
 	}
 
+<<<<<<< HEAD
 	list_del_init(&dev->links.defer_hook);
+=======
+	list_del_init(&dev->links.defer_sync);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	__device_links_no_driver(dev);
 
 	device_links_write_unlock();
@@ -1212,12 +1250,15 @@ static void fw_devlink_link_device(struct device *dev)
 		fw_ret = fwnode_call_int_op(dev->fwnode, add_links, dev);
 	} else {
 		fw_ret = -ENODEV;
+<<<<<<< HEAD
 		/*
 		 * defer_hook is not used to add device to deferred_sync list
 		 * until device is bound. Since deferred fw devlink also blocks
 		 * probing, same list hook can be used for deferred_fw_devlink.
 		 */
 		list_add_tail(&dev->links.defer_hook, &deferred_fw_devlink);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	if (fw_ret == -ENODEV)
@@ -1286,9 +1327,12 @@ void fw_devlink_pause(void)
  */
 void fw_devlink_resume(void)
 {
+<<<<<<< HEAD
 	struct device *dev, *tmp;
 	LIST_HEAD(probe_list);
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	mutex_lock(&defer_fw_devlink_lock);
 	if (!defer_fw_devlink_count) {
 		WARN(true, "Unmatched fw_devlink pause/resume!");
@@ -1300,6 +1344,7 @@ void fw_devlink_resume(void)
 		goto out;
 
 	device_link_add_missing_supplier_links();
+<<<<<<< HEAD
 	list_splice_tail_init(&deferred_fw_devlink, &probe_list);
 out:
 	mutex_unlock(&defer_fw_devlink_lock);
@@ -1313,6 +1358,10 @@ out:
 		list_del_init(&dev->links.defer_hook);
 		bus_probe_device(dev);
 	}
+=======
+out:
+	mutex_unlock(&defer_fw_devlink_lock);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 /* Device links support end. */
 
@@ -2135,7 +2184,11 @@ void device_initialize(struct device *dev)
 	INIT_LIST_HEAD(&dev->links.consumers);
 	INIT_LIST_HEAD(&dev->links.suppliers);
 	INIT_LIST_HEAD(&dev->links.needs_suppliers);
+<<<<<<< HEAD
 	INIT_LIST_HEAD(&dev->links.defer_hook);
+=======
+	INIT_LIST_HEAD(&dev->links.defer_sync);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	dev->links.status = DL_DEV_NO_DRIVER;
 	INIT_LIST_HEAD(&dev->iommu_map_list);
 	mutex_init(&dev->iommu_map_lock);

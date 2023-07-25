@@ -10,8 +10,11 @@
 #include <linux/nospec.h>
 
 #include <linux/kcov.h>
+<<<<<<< HEAD
 #include <linux/irq.h>
 #include <linux/delay.h>
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #include <linux/scs.h>
 
 #include <asm/switch_to.h>
@@ -407,6 +410,11 @@ static bool __wake_q_add(struct wake_q_head *head, struct task_struct *task)
 		return false;
 
 	head->count++;
+<<<<<<< HEAD
+=======
+
+	get_task_struct(task);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/*
 	 * The head is context local, there can be no concurrency.
@@ -416,6 +424,7 @@ static bool __wake_q_add(struct wake_q_head *head, struct task_struct *task)
 	return true;
 }
 
+<<<<<<< HEAD
 /**
  * wake_q_add() - queue a wakeup for 'later' waking.
  * @head: the wake_q_head to add @task to
@@ -457,6 +466,8 @@ void wake_q_add_safe(struct wake_q_head *head, struct task_struct *task)
 		put_task_struct(task);
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int
 try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags,
 	       int sibling_count_hint);
@@ -2918,16 +2929,22 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags,
 
 	cpu = select_task_rq(p, p->wake_cpu, SD_BALANCE_WAKE, wake_flags,
 			     sibling_count_hint);
+<<<<<<< HEAD
 #ifdef CONFIG_SONY_SCHED
 	src_cpu = task_cpu(p);
 	if (src_cpu != cpu) {
 #else
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (task_cpu(p) != cpu) {
 #endif
 		wake_flags |= WF_MIGRATED;
+<<<<<<< HEAD
 #ifdef CONFIG_SONY_SCHED
 		walt_prepare_migrate(p, src_cpu, cpu, false);
 #endif
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		psi_ttwu_dequeue(p);
 		set_task_cpu(p, cpu);
 		/*
@@ -5897,6 +5914,7 @@ out_put_task:
 	return retval;
 }
 EXPORT_SYMBOL_GPL(sched_setaffinity);
+<<<<<<< HEAD
 
 char sched_lib_name[LIB_PATH_LENGTH];
 unsigned int sched_lib_mask_force;
@@ -5964,6 +5982,8 @@ put_task_struct:
 	kfree(tmp_lib_name);
 	return found;
 }
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 static int get_user_cpu_mask(unsigned long __user *user_mask_ptr, unsigned len,
 			     struct cpumask *new_mask)

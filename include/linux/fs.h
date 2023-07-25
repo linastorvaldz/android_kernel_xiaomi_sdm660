@@ -1380,7 +1380,11 @@ extern int send_sigurg(struct fown_struct *fown);
 /* These flags relate to encoding and casefolding */
 #define SB_ENC_STRICT_MODE_FL	(1 << 0)
 
+<<<<<<< HEAD
 #define sb_has_strict_encoding(sb) \
+=======
+#define sb_has_enc_strict_mode(sb) \
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	(sb->s_encoding_flags & SB_ENC_STRICT_MODE_FL)
 
 /*
@@ -3377,7 +3381,23 @@ extern int generic_file_fsync(struct file *, loff_t, loff_t, int);
 
 extern int generic_check_addressable(unsigned, u64);
 
+<<<<<<< HEAD
 extern void generic_set_encrypted_ci_d_ops(struct dentry *dentry);
+=======
+#ifdef CONFIG_UNICODE
+extern int generic_ci_d_hash(const struct dentry *dentry, struct qstr *str);
+extern int generic_ci_d_compare(const struct dentry *dentry, unsigned int len,
+				const char *str, const struct qstr *name);
+extern bool needs_casefold(const struct inode *dir);
+#else
+static inline bool needs_casefold(const struct inode *dir)
+{
+	return 0;
+}
+#endif
+extern void generic_set_encrypted_ci_d_ops(struct inode *dir,
+					   struct dentry *dentry);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #ifdef CONFIG_MIGRATION
 extern int buffer_migrate_page(struct address_space *,

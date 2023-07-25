@@ -223,6 +223,7 @@ source "drivers/siox/Kconfig"
 
 source "drivers/slimbus/Kconfig"
 
+<<<<<<< HEAD
 source "drivers/esoc/Kconfig"
 
 source "drivers/sensors/Kconfig"
@@ -239,4 +240,7 @@ source "drivers/mihw/Kconfig"
 
 source "drivers/sandbox/Kconfig"
 
+=======
+source "drivers/energy_model/Kconfig"
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 endmenu

@@ -2201,10 +2201,13 @@ static int nl80211_send_wiphy(struct cfg80211_registered_device *rdev,
 				goto nla_put_failure;
 		}
 
+<<<<<<< HEAD
 		state->split_start++;
 		break;
 	case 14:
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		if (nl80211_put_iftype_akm_suites(rdev, msg))
 			goto nla_put_failure;
 
@@ -2493,8 +2496,12 @@ static int nl80211_parse_chandef(struct cfg80211_registered_device *rdev,
 		chandef->edmg.channels = 0;
 	}
 
+<<<<<<< HEAD
 	if (!cfg80211_chandef_valid(chandef)) {
 		NL_SET_ERR_MSG(extack, "invalid channel definition");
+=======
+	if (!cfg80211_chandef_valid(chandef))
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return -EINVAL;
 	}
 

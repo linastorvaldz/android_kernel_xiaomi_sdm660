@@ -820,6 +820,7 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &one,
 	},
 #endif
+<<<<<<< HEAD
 	{
 		.procname	= "sched_lib_name",
 		.data		= sched_lib_name,
@@ -837,6 +838,9 @@ static struct ctl_table kern_table[] = {
 		.extra2		= &two_hundred_fifty_five,
 	},
 #if defined(CONFIG_ENERGY_MODEL) && ((defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL) || defined(CONFIG_CPU_FREQ_GOV_SCHEDHORIZON)))
+=======
+#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	{
 		.procname	= "sched_energy_aware",
 		.data		= &sysctl_sched_energy_aware,

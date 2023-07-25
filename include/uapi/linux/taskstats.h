@@ -35,7 +35,10 @@
 
 
 #define TASKSTATS_VERSION	9
+<<<<<<< HEAD
 #define TASKSTATS2_VERSION	2
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #define TS_COMM_LEN		32	/* should be >= TASK_COMM_LEN
 					 * in linux/sched.h */
 

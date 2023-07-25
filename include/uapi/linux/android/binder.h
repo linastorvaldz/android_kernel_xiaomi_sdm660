@@ -67,7 +67,10 @@ enum flat_binder_object_flags {
 	 * @FLAT_BINDER_FLAG_ACCEPTS_FDS: whether the node accepts fds.
 	 */
 	FLAT_BINDER_FLAG_ACCEPTS_FDS = 0x100,
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/**
 	 * @FLAT_BINDER_FLAG_SCHED_POLICY_MASK: bit-mask for scheduling policy
 	 *
@@ -265,6 +268,7 @@ struct binder_node_info_for_ref {
 	__u32            reserved3;
 };
 
+<<<<<<< HEAD
 struct binder_freeze_info {
 	__u32            pid;
 	__u32            enable;
@@ -284,6 +288,8 @@ struct binder_frozen_status_info {
 	__u32            async_recv;
 };
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #define BINDER_WRITE_READ		_IOWR('b', 1, struct binder_write_read)
 #define BINDER_SET_IDLE_TIMEOUT		_IOW('b', 3, __s64)
 #define BINDER_SET_MAX_THREADS		_IOW('b', 5, __u32)
@@ -294,9 +300,12 @@ struct binder_frozen_status_info {
 #define BINDER_GET_NODE_DEBUG_INFO	_IOWR('b', 11, struct binder_node_debug_info)
 #define BINDER_GET_NODE_INFO_FOR_REF	_IOWR('b', 12, struct binder_node_info_for_ref)
 #define BINDER_SET_CONTEXT_MGR_EXT	_IOW('b', 13, struct flat_binder_object)
+<<<<<<< HEAD
 #define BINDER_FREEZE			_IOW('b', 14, struct binder_freeze_info)
 #define BINDER_GET_FROZEN_INFO		_IOWR('b', 15, struct binder_frozen_status_info)
 #define BINDER_ENABLE_ONEWAY_SPAM_DETECTION	_IOW('b', 16, __u32)
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /*
  * NOTE: Two special error codes you should check for when calling

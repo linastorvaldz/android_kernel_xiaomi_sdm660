@@ -179,6 +179,8 @@ bool f2fs_need_SSR(struct f2fs_sb_info *sbi)
 		return true;
 	if (unlikely(is_sbi_flag_set(sbi, SBI_CP_DISABLED)))
 		return true;
+	if (unlikely(is_sbi_flag_set(sbi, SBI_CP_DISABLED)))
+		return true;
 
 	return free_sections(sbi) <= (node_secs + 2 * dent_secs + imeta_secs +
 			SM_I(sbi)->min_ssr_sections + reserved_sections(sbi));
@@ -186,11 +188,16 @@ bool f2fs_need_SSR(struct f2fs_sb_info *sbi)
 
 void f2fs_abort_atomic_write(struct inode *inode, bool clean)
 {
+<<<<<<< HEAD
 	struct f2fs_inode_info *fi = F2FS_I(inode);
+=======
+	struct inmem_pages *new;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (!f2fs_is_atomic_file(inode))
 		return;
 
+<<<<<<< HEAD
 	clear_inode_flag(fi->cow_inode, FI_COW_FILE);
 	iput(fi->cow_inode);
 	fi->cow_inode = NULL;
@@ -204,6 +211,24 @@ void f2fs_abort_atomic_write(struct inode *inode, bool clean)
 		truncate_inode_pages_final(inode->i_mapping);
 		f2fs_i_size_write(inode, fi->original_i_size);
 	}
+=======
+	f2fs_set_page_private(page, (unsigned long)ATOMIC_WRITTEN_PAGE);
+
+	new = f2fs_kmem_cache_alloc(inmem_entry_slab, GFP_NOFS);
+
+	/* add atomic page indices to the list */
+	new->page = page;
+	INIT_LIST_HEAD(&new->list);
+
+	/* increase reference count with clean state */
+	get_page(page);
+	mutex_lock(&F2FS_I(inode)->inmem_lock);
+	list_add_tail(&new->list, &F2FS_I(inode)->inmem_pages);
+	inc_page_count(F2FS_I_SB(inode), F2FS_INMEM_PAGES);
+	mutex_unlock(&F2FS_I(inode)->inmem_lock);
+
+	trace_f2fs_register_inmem_page(page, INMEM);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static int __replace_atomic_write_block(struct inode *inode, pgoff_t index,
@@ -264,9 +289,72 @@ static void __complete_revoke_list(struct inode *inode, struct list_head *head,
 	bool truncate = is_inode_flag_set(inode, FI_ATOMIC_REPLACE);
 
 	list_for_each_entry_safe(cur, tmp, head, list) {
+<<<<<<< HEAD
 		if (revoke)
 			__replace_atomic_write_block(inode, cur->index,
 						cur->old_addr, NULL, true);
+=======
+		struct page *page = cur->page;
+
+		if (drop)
+			trace_f2fs_commit_inmem_page(page, INMEM_DROP);
+
+		if (trylock) {
+			/*
+			 * to avoid deadlock in between page lock and
+			 * inmem_lock.
+			 */
+			if (!trylock_page(page))
+				continue;
+		} else {
+			lock_page(page);
+		}
+
+		f2fs_wait_on_page_writeback(page, DATA, true, true);
+
+		if (recover) {
+			struct dnode_of_data dn;
+			struct node_info ni;
+
+			trace_f2fs_commit_inmem_page(page, INMEM_REVOKE);
+retry:
+			set_new_dnode(&dn, inode, NULL, NULL, 0);
+			err = f2fs_get_dnode_of_data(&dn, page->index,
+								LOOKUP_NODE);
+			if (err) {
+				if (err == -ENOMEM) {
+					congestion_wait(BLK_RW_ASYNC,
+							DEFAULT_IO_TIMEOUT);
+					cond_resched();
+					goto retry;
+				}
+				err = -EAGAIN;
+				goto next;
+			}
+
+			err = f2fs_get_node_info(sbi, dn.nid, &ni);
+			if (err) {
+				f2fs_put_dnode(&dn);
+				return err;
+			}
+
+			if (cur->old_addr == NEW_ADDR) {
+				f2fs_invalidate_blocks(sbi, dn.data_blkaddr);
+				f2fs_update_data_blkaddr(&dn, NEW_ADDR);
+			} else
+				f2fs_replace_block(sbi, &dn, dn.data_blkaddr,
+					cur->old_addr, ni.version, true, true);
+			f2fs_put_dnode(&dn);
+		}
+next:
+		/* we don't need to invalidate this in the sccessful status */
+		if (drop || recover) {
+			ClearPageUptodate(page);
+			clear_cold_data(page);
+		}
+		f2fs_clear_page_private(page);
+		f2fs_put_page(page, 1);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		list_del(&cur->list);
 		kmem_cache_free(revoke_entry_slab, cur);
@@ -276,6 +364,7 @@ static void __complete_revoke_list(struct inode *inode, struct list_head *head,
 		f2fs_do_truncate_blocks(inode, 0, false);
 }
 
+<<<<<<< HEAD
 static int __f2fs_commit_atomic_write(struct inode *inode)
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
@@ -288,12 +377,125 @@ static int __f2fs_commit_atomic_write(struct inode *inode)
 	pgoff_t len = DIV_ROUND_UP(i_size_read(inode), PAGE_SIZE);
 	pgoff_t off = 0, blen, index;
 	int ret = 0, i;
+=======
+void f2fs_drop_inmem_pages_all(struct f2fs_sb_info *sbi, bool gc_failure)
+{
+	struct list_head *head = &sbi->inode_list[ATOMIC_FILE];
+	struct inode *inode;
+	struct f2fs_inode_info *fi;
+	unsigned int count = sbi->atomic_files;
+	unsigned int looped = 0;
+next:
+	spin_lock(&sbi->inode_lock[ATOMIC_FILE]);
+	if (list_empty(head)) {
+		spin_unlock(&sbi->inode_lock[ATOMIC_FILE]);
+		return;
+	}
+	fi = list_first_entry(head, struct f2fs_inode_info, inmem_ilist);
+	inode = igrab(&fi->vfs_inode);
+	if (inode)
+		list_move_tail(&fi->inmem_ilist, head);
+	spin_unlock(&sbi->inode_lock[ATOMIC_FILE]);
+
+	if (inode) {
+		if (gc_failure) {
+			if (!fi->i_gc_failures[GC_FAILURE_ATOMIC])
+				goto skip;
+		}
+		set_inode_flag(inode, FI_ATOMIC_REVOKE_REQUEST);
+		f2fs_drop_inmem_pages(inode);
+skip:
+		iput(inode);
+	}
+	congestion_wait(BLK_RW_ASYNC, DEFAULT_IO_TIMEOUT);
+	cond_resched();
+	if (gc_failure) {
+		if (++looped >= count)
+			return;
+	}
+	goto next;
+}
+
+void f2fs_drop_inmem_pages(struct inode *inode)
+{
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+	struct f2fs_inode_info *fi = F2FS_I(inode);
+
+	while (!list_empty(&fi->inmem_pages)) {
+		mutex_lock(&fi->inmem_lock);
+		__revoke_inmem_pages(inode, &fi->inmem_pages,
+						true, false, true);
+		mutex_unlock(&fi->inmem_lock);
+	}
+
+	fi->i_gc_failures[GC_FAILURE_ATOMIC] = 0;
+
+	spin_lock(&sbi->inode_lock[ATOMIC_FILE]);
+	if (!list_empty(&fi->inmem_ilist))
+		list_del_init(&fi->inmem_ilist);
+	if (f2fs_is_atomic_file(inode)) {
+		clear_inode_flag(inode, FI_ATOMIC_FILE);
+		sbi->atomic_files--;
+	}
+	spin_unlock(&sbi->inode_lock[ATOMIC_FILE]);
+}
+
+void f2fs_drop_inmem_page(struct inode *inode, struct page *page)
+{
+	struct f2fs_inode_info *fi = F2FS_I(inode);
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+	struct list_head *head = &fi->inmem_pages;
+	struct inmem_pages *cur = NULL;
+	struct inmem_pages *tmp;
+
+	f2fs_bug_on(sbi, !IS_ATOMIC_WRITTEN_PAGE(page));
+
+	mutex_lock(&fi->inmem_lock);
+	list_for_each_entry(tmp, head, list) {
+		if (tmp->page == page) {
+			cur = tmp;
+			break;
+		}
+	}
+
+	f2fs_bug_on(sbi, !cur);
+	list_del(&cur->list);
+	mutex_unlock(&fi->inmem_lock);
+
+	dec_page_count(sbi, F2FS_INMEM_PAGES);
+	kmem_cache_free(inmem_entry_slab, cur);
+
+	ClearPageUptodate(page);
+	f2fs_clear_page_private(page);
+	f2fs_put_page(page, 0);
+
+	trace_f2fs_commit_inmem_page(page, INMEM_INVALIDATE);
+}
+
+static int __f2fs_commit_inmem_pages(struct inode *inode)
+{
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+	struct f2fs_inode_info *fi = F2FS_I(inode);
+	struct inmem_pages *cur, *tmp;
+	struct f2fs_io_info fio = {
+		.sbi = sbi,
+		.ino = inode->i_ino,
+		.type = DATA,
+		.op = REQ_OP_WRITE,
+		.op_flags = REQ_SYNC | REQ_PRIO,
+		.io_type = FS_DATA_IO,
+	};
+	struct list_head revoke_list;
+	bool submit_bio = false;
+	int err = 0;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	INIT_LIST_HEAD(&revoke_list);
 
 	while (len) {
 		blen = min_t(pgoff_t, ADDRS_PER_BLOCK(cow_inode), len);
 
+<<<<<<< HEAD
 		set_new_dnode(&dn, cow_inode, NULL, NULL, 0);
 		ret = f2fs_get_dnode_of_data(&dn, off, LOOKUP_NODE_RA);
 		if (ret && ret != -ENOENT) {
@@ -303,6 +505,38 @@ static int __f2fs_commit_atomic_write(struct inode *inode)
 			if (dn.max_level == 0)
 				goto out;
 			goto next;
+=======
+		lock_page(page);
+		if (page->mapping == inode->i_mapping) {
+			trace_f2fs_commit_inmem_page(page, INMEM);
+
+			f2fs_wait_on_page_writeback(page, DATA, true, true);
+
+			set_page_dirty(page);
+			if (clear_page_dirty_for_io(page)) {
+				inode_dec_dirty_pages(inode);
+				f2fs_remove_dirty_inode(inode);
+			}
+retry:
+			fio.page = page;
+			fio.old_blkaddr = NULL_ADDR;
+			fio.encrypted_page = NULL;
+			fio.need_lock = LOCK_DONE;
+			err = f2fs_do_write_data_page(&fio);
+			if (err) {
+				if (err == -ENOMEM) {
+					congestion_wait(BLK_RW_ASYNC,
+							DEFAULT_IO_TIMEOUT);
+					cond_resched();
+					goto retry;
+				}
+				unlock_page(page);
+				break;
+			}
+			/* record old blkaddr for revoking */
+			cur->old_addr = fio.old_blkaddr;
+			submit_bio = true;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		}
 
 		blen = min((pgoff_t)ADDRS_PER_PAGE(dn.node_page, cow_inode),
@@ -343,9 +577,30 @@ next:
 		len -= blen;
 	}
 
+<<<<<<< HEAD
 out:
 	if (ret) {
 		sbi->revoked_atomic_block += fi->atomic_write_cnt;
+=======
+	if (submit_bio)
+		f2fs_submit_merged_write_cond(sbi, inode, NULL, 0, DATA);
+
+	if (err) {
+		/*
+		 * try to revoke all committed pages, but still we could fail
+		 * due to no memory or other reason, if that happened, EAGAIN
+		 * will be returned, which means in such case, transaction is
+		 * already not integrity, caller should use journal to do the
+		 * recovery or rewrite & commit last transaction. For other
+		 * error number, revoking was done by filesystem itself.
+		 */
+		err = __revoke_inmem_pages(inode, &revoke_list,
+						false, true, false);
+
+		/* drop all uncommitted pages */
+		__revoke_inmem_pages(inode, &fi->inmem_pages,
+						true, false, false);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	} else {
 		sbi->committed_atomic_block += fi->atomic_write_cnt;
 		set_inode_flag(inode, FI_ATOMIC_COMMITTED);
@@ -369,7 +624,15 @@ int f2fs_commit_atomic_write(struct inode *inode)
 	f2fs_down_write(&fi->i_gc_rwsem[WRITE]);
 	f2fs_lock_op(sbi);
 
+<<<<<<< HEAD
 	err = __f2fs_commit_atomic_write(inode);
+=======
+	mutex_lock(&fi->inmem_lock);
+	err = __f2fs_commit_inmem_pages(inode);
+	mutex_unlock(&fi->inmem_lock);
+
+	clear_inode_flag(inode, FI_ATOMIC_COMMIT);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	f2fs_unlock_op(sbi);
 	f2fs_up_write(&fi->i_gc_rwsem[WRITE]);
@@ -385,7 +648,11 @@ void f2fs_balance_fs(struct f2fs_sb_info *sbi, bool need)
 {
 	if (time_to_inject(sbi, FAULT_CHECKPOINT)) {
 		f2fs_show_injection_info(sbi, FAULT_CHECKPOINT);
+<<<<<<< HEAD
 		f2fs_stop_checkpoint(sbi, false, STOP_CP_REASON_FAULT_INJECT);
+=======
+		f2fs_stop_checkpoint(sbi, false);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	/* balance_fs_bg is able to be pending */
@@ -400,6 +667,7 @@ void f2fs_balance_fs(struct f2fs_sb_info *sbi, bool need)
 	 * dir/node pages without enough free segments.
 	 */
 	if (has_not_enough_free_secs(sbi, 0, 0)) {
+<<<<<<< HEAD
 		if (test_opt(sbi, GC_MERGE) && sbi->gc_thread &&
 					sbi->gc_thread->f2fs_gc_task) {
 			DEFINE_WAIT(wait);
@@ -442,6 +710,13 @@ static inline bool excess_dirty_threshold(struct f2fs_sb_info *sbi)
 	return dents + qdata + nodes + meta + imeta >  global_threshold;
 }
 
+=======
+		down_write(&sbi->gc_lock);
+		f2fs_gc(sbi, false, false, NULL_SEGNO);
+	}
+}
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 void f2fs_balance_fs_bg(struct f2fs_sb_info *sbi, bool from_bg)
 {
 	if (unlikely(is_sbi_flag_set(sbi, SBI_POR_DOING)))
@@ -466,6 +741,7 @@ void f2fs_balance_fs_bg(struct f2fs_sb_info *sbi, bool from_bg)
 	else
 		f2fs_build_free_nids(sbi, false, false);
 
+<<<<<<< HEAD
 	if (excess_dirty_nats(sbi) || excess_dirty_threshold(sbi) ||
 		excess_prefree_segs(sbi) || !f2fs_space_for_roll_forward(sbi))
 		goto do_sync;
@@ -495,6 +771,32 @@ do_sync:
 		blk_finish_plug(&plug);
 
 		mutex_unlock(&sbi->flush_lock);
+=======
+	if (!is_idle(sbi, REQ_TIME) &&
+		(!excess_dirty_nats(sbi) && !excess_dirty_nodes(sbi)))
+		return;
+
+	/* checkpoint is the only way to shrink partial cached entries */
+	if (!f2fs_available_free_memory(sbi, NAT_ENTRIES) ||
+			!f2fs_available_free_memory(sbi, INO_ENTRIES) ||
+			excess_prefree_segs(sbi) ||
+			excess_dirty_nats(sbi) ||
+			excess_dirty_nodes(sbi) ||
+			f2fs_time_over(sbi, CP_TIME)) {
+		if (test_opt(sbi, DATA_FLUSH) && from_bg) {
+			struct blk_plug plug;
+
+			mutex_lock(&sbi->flush_lock);
+
+			blk_start_plug(&plug);
+			f2fs_sync_dirty_inodes(sbi, FILE_INODE);
+			blk_finish_plug(&plug);
+
+			mutex_unlock(&sbi->flush_lock);
+		}
+		f2fs_sync_fs(sbi->sb, true);
+		stat_inc_bg_cp_count(sbi->stat_info);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 	f2fs_sync_fs(sbi->sb, 1);
 	stat_inc_bg_cp_count(sbi->stat_info);
@@ -503,7 +805,21 @@ do_sync:
 static int __submit_flush_wait(struct f2fs_sb_info *sbi,
 				struct block_device *bdev)
 {
+<<<<<<< HEAD
 	int ret = blkdev_issue_flush(bdev, GFP_NOFS, NULL);
+=======
+	struct bio *bio;
+	int ret;
+
+	bio = f2fs_bio_alloc(sbi, 0, false);
+	if (!bio)
+		return -ENOMEM;
+
+	bio->bi_opf = REQ_OP_WRITE | REQ_SYNC | REQ_PREFLUSH;
+	bio_set_dev(bio, bdev);
+	ret = submit_bio_wait(bio);
+	bio_put(bio);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	trace_f2fs_issue_flush(bdev, test_opt(sbi, NOBARRIER),
 				test_opt(sbi, FLUSH_MERGE), ret);
@@ -660,9 +976,14 @@ init_thread:
 	fcc->f2fs_issue_flush = kthread_run(issue_flush_thread, sbi,
 				"f2fs_flush-%u:%u", MAJOR(dev), MINOR(dev));
 	if (IS_ERR(fcc->f2fs_issue_flush)) {
+<<<<<<< HEAD
 		int err = PTR_ERR(fcc->f2fs_issue_flush);
 
 		kfree(fcc);
+=======
+		err = PTR_ERR(fcc->f2fs_issue_flush);
+		kvfree(fcc);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		SM_I(sbi)->fcc_info = NULL;
 		return err;
 	}
@@ -681,7 +1002,7 @@ void f2fs_destroy_flush_cmd_control(struct f2fs_sb_info *sbi, bool free)
 		kthread_stop(flush_thread);
 	}
 	if (free) {
-		kfree(fcc);
+		kvfree(fcc);
 		SM_I(sbi)->fcc_info = NULL;
 	}
 }
@@ -775,14 +1096,19 @@ static void __remove_dirty_segment(struct f2fs_sb_info *sbi, unsigned int segno,
 		if (test_and_clear_bit(segno, dirty_i->dirty_segmap[t]))
 			dirty_i->nr_dirty[t]--;
 
+<<<<<<< HEAD
 		valid_blocks = get_valid_blocks(sbi, segno, true);
 		if (valid_blocks == 0) {
+=======
+		if (get_valid_blocks(sbi, segno, true) == 0) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			clear_bit(GET_SEC_FROM_SEG(sbi, segno),
 						dirty_i->victim_secmap);
 #ifdef CONFIG_F2FS_CHECK_FS
 			clear_bit(segno, SIT_I(sbi)->invalid_segmap);
 #endif
 		}
+<<<<<<< HEAD
 		if (__is_large_section(sbi)) {
 			unsigned int secno = GET_SEC_FROM_SEG(sbi, segno);
 
@@ -795,6 +1121,8 @@ static void __remove_dirty_segment(struct f2fs_sb_info *sbi, unsigned int segno,
 			if (!IS_CURSEC(sbi, secno))
 				set_bit(secno, dirty_i->dirty_secmap);
 		}
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 }
 
@@ -807,7 +1135,10 @@ static void locate_dirty_segment(struct f2fs_sb_info *sbi, unsigned int segno)
 {
 	struct dirty_seglist_info *dirty_i = DIRTY_I(sbi);
 	unsigned short valid_blocks, ckpt_valid_blocks;
+<<<<<<< HEAD
 	unsigned int usable_blocks;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (segno == NULL_SEGNO || IS_CURSEG(sbi, segno))
 		return;
@@ -816,10 +1147,17 @@ static void locate_dirty_segment(struct f2fs_sb_info *sbi, unsigned int segno)
 	mutex_lock(&dirty_i->seglist_lock);
 
 	valid_blocks = get_valid_blocks(sbi, segno, false);
+<<<<<<< HEAD
 	ckpt_valid_blocks = get_ckpt_valid_blocks(sbi, segno, false);
 
 	if (valid_blocks == 0 && (!is_sbi_flag_set(sbi, SBI_CP_DISABLED) ||
 		ckpt_valid_blocks == usable_blocks)) {
+=======
+	ckpt_valid_blocks = get_ckpt_valid_blocks(sbi, segno);
+
+	if (valid_blocks == 0 && (!is_sbi_flag_set(sbi, SBI_CP_DISABLED) ||
+				ckpt_valid_blocks == sbi->blocks_per_seg)) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		__locate_dirty_segment(sbi, segno, PRE);
 		__remove_dirty_segment(sbi, segno, DIRTY);
 	} else if (valid_blocks < usable_blocks) {
@@ -865,6 +1203,7 @@ block_t f2fs_get_unusable_blocks(struct f2fs_sb_info *sbi)
 	for_each_set_bit(segno, dirty_i->dirty_segmap[DIRTY], MAIN_SEGS(sbi)) {
 		se = get_seg_entry(sbi, segno);
 		if (IS_NODESEG(se->type))
+<<<<<<< HEAD
 			holes[NODE] += f2fs_usable_blks_in_seg(sbi, segno) -
 							se->valid_blocks;
 		else
@@ -874,6 +1213,15 @@ block_t f2fs_get_unusable_blocks(struct f2fs_sb_info *sbi)
 	mutex_unlock(&dirty_i->seglist_lock);
 
 	unusable = max(holes[DATA], holes[NODE]);
+=======
+			holes[NODE] += sbi->blocks_per_seg - se->valid_blocks;
+		else
+			holes[DATA] += sbi->blocks_per_seg - se->valid_blocks;
+	}
+	mutex_unlock(&dirty_i->seglist_lock);
+
+	unusable = holes[DATA] > holes[NODE] ? holes[DATA] : holes[NODE];
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (unusable > ovp_holes)
 		return unusable - ovp_holes;
 	return 0;
@@ -901,7 +1249,11 @@ static unsigned int get_free_segment(struct f2fs_sb_info *sbi)
 	for_each_set_bit(segno, dirty_i->dirty_segmap[DIRTY], MAIN_SEGS(sbi)) {
 		if (get_valid_blocks(sbi, segno, false))
 			continue;
+<<<<<<< HEAD
 		if (get_ckpt_valid_blocks(sbi, segno, false))
+=======
+		if (get_ckpt_valid_blocks(sbi, segno))
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			continue;
 		mutex_unlock(&dirty_i->seglist_lock);
 		return segno;
@@ -1085,7 +1437,11 @@ static void __init_discard_policy(struct f2fs_sb_info *sbi,
 	} else if (discard_type == DPOLICY_UMOUNT) {
 		dpolicy->io_aware = false;
 		/* we need to issue all to keep CP_TRIMMED_FLAG */
+<<<<<<< HEAD
 		dpolicy->granularity = MIN_DISCARD_GRANULARITY;
+=======
+		dpolicy->granularity = 1;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		dpolicy->timeout = true;
 	}
 }
@@ -1366,7 +1722,11 @@ static void __queue_discard_cmd(struct f2fs_sb_info *sbi,
 	block_t lblkstart = blkstart;
 
 	if (!f2fs_bdev_support_discard(bdev))
+<<<<<<< HEAD
 		return;
+=======
+		return 0;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	trace_f2fs_queue_discard(bdev, blkstart, blklen);
 
@@ -1726,7 +2086,11 @@ static int issue_discard_thread(void *data)
 		if (issued > 0) {
 			__wait_all_discard_cmd(sbi, &dpolicy);
 			wait_ms = dpolicy.min_interval;
+<<<<<<< HEAD
 		} else if (issued == -1) {
+=======
+		} else if (issued == -1){
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			wait_ms = f2fs_time_to_wait(sbi, DISCARD_TIME);
 			if (!wait_ms)
 				wait_ms = dpolicy.mid_interval;
@@ -1777,8 +2141,12 @@ static int __f2fs_issue_discard_zone(struct f2fs_sb_info *sbi,
 	}
 
 	/* For conventional zones, use regular discard if supported */
+<<<<<<< HEAD
 	__queue_discard_cmd(sbi, bdev, lblkstart, blklen);
 	return 0;
+=======
+	return __queue_discard_cmd(sbi, bdev, lblkstart, blklen);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 #endif
 
@@ -1936,11 +2304,15 @@ void f2fs_clear_prefree_segments(struct f2fs_sb_info *sbi,
 	unsigned int start = 0, end = -1;
 	unsigned int secno, start_segno;
 	bool force = (cpc->reason & CP_DISCARD);
+<<<<<<< HEAD
 	bool section_alignment = F2FS_OPTION(sbi).discard_unit ==
 						DISCARD_UNIT_SECTION;
 
 	if (f2fs_lfs_mode(sbi) && __is_large_section(sbi))
 		section_alignment = true;
+=======
+	bool need_align = f2fs_lfs_mode(sbi) && __is_large_section(sbi);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	mutex_lock(&dirty_i->seglist_lock);
 
@@ -2097,9 +2469,17 @@ static int create_discard_cmd_control(struct f2fs_sb_info *sbi)
 	init_waitqueue_head(&dcc->discard_wait_queue);
 	SM_I(sbi)->dcc_info = dcc;
 init_thread:
+<<<<<<< HEAD
 	err = f2fs_start_discard_thread(sbi);
 	if (err) {
 		kfree(dcc);
+=======
+	dcc->f2fs_issue_discard = kthread_run(issue_discard_thread, sbi,
+				"f2fs_discard-%u:%u", MAJOR(dev), MINOR(dev));
+	if (IS_ERR(dcc->f2fs_issue_discard)) {
+		err = PTR_ERR(dcc->f2fs_issue_discard);
+		kvfree(dcc);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		SM_I(sbi)->dcc_info = NULL;
 	}
 
@@ -2119,9 +2499,16 @@ static void destroy_discard_cmd_control(struct f2fs_sb_info *sbi)
 	 * Recovery can cache discard commands, so in error path of
 	 * fill_super(), it needs to give a chance to handle them.
 	 */
+<<<<<<< HEAD
 	f2fs_issue_discard_timeout(sbi);
 
 	kfree(dcc);
+=======
+	if (unlikely(atomic_read(&dcc->discard_cmd_cnt)))
+		f2fs_issue_discard_timeout(sbi);
+
+	kvfree(dcc);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	SM_I(sbi)->dcc_info = NULL;
 }
 
@@ -2560,11 +2947,18 @@ static unsigned int __get_next_segno(struct f2fs_sb_info *sbi, int type)
 
 	/* if segs_per_sec is large than 1, we need to keep original policy. */
 	if (__is_large_section(sbi))
+<<<<<<< HEAD
 		return curseg->segno;
 
 	/* inmem log may not locate on any segment after mount */
 	if (!curseg->inited)
 		return 0;
+
+	if (unlikely(is_sbi_flag_set(sbi, SBI_CP_DISABLED)))
+		return 0;
+=======
+		return CURSEG_I(sbi, type)->segno;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (unlikely(is_sbi_flag_set(sbi, SBI_CP_DISABLED)))
 		return 0;
@@ -2686,11 +3080,15 @@ static void change_curseg(struct f2fs_sb_info *sbi, int type)
 	curseg->next_blkoff = __next_free_blkoff(sbi, curseg->segno, 0);
 
 	sum_page = f2fs_get_sum_page(sbi, new_segno);
+<<<<<<< HEAD
 	if (IS_ERR(sum_page)) {
 		/* GC won't be able to use stale summary pages by cp_error */
 		memset(curseg->sum_blk, 0, SUM_ENTRY_SIZE);
 		return;
 	}
+=======
+	f2fs_bug_on(sbi, IS_ERR(sum_page));
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	sum_node = (struct f2fs_summary_block *)page_address(sum_page);
 	memcpy(curseg->sum_blk, sum_node, SUM_ENTRY_SIZE);
 	f2fs_put_page(sum_page, 1);
@@ -2852,6 +3250,15 @@ static int get_ssr_segment(struct f2fs_sb_info *sbi, int type,
 			return 1;
 		}
 	}
+
+	/* find valid_blocks=0 in dirty list */
+	if (unlikely(is_sbi_flag_set(sbi, SBI_CP_DISABLED))) {
+		segno = get_free_segment(sbi);
+		if (segno != NULL_SEGNO) {
+			curseg->next_segno = segno;
+			return 1;
+		}
+	}
 	return 0;
 }
 
@@ -2859,6 +3266,7 @@ static bool need_new_seg(struct f2fs_sb_info *sbi, int type)
 {
 	struct curseg_info *curseg = CURSEG_I(sbi, type);
 
+<<<<<<< HEAD
 	if (!is_set_ckpt_flags(sbi, CP_CRC_RECOVERY_FLAG) &&
 	    curseg->seg_type == CURSEG_WARM_NODE)
 		return true;
@@ -2886,6 +3294,17 @@ void f2fs_allocate_segment_for_resize(struct f2fs_sb_info *sbi, int type,
 		goto unlock;
 
 	if (f2fs_need_SSR(sbi) && get_ssr_segment(sbi, type, SSR, 0))
+=======
+	if (force)
+		new_curseg(sbi, type, true);
+	else if (!is_set_ckpt_flags(sbi, CP_CRC_RECOVERY_FLAG) &&
+					type == CURSEG_WARM_NODE)
+		new_curseg(sbi, type, false);
+	else if (curseg->alloc_type == LFS && is_next_segment_free(sbi, type) &&
+			likely(!is_sbi_flag_set(sbi, SBI_CP_DISABLED)))
+		new_curseg(sbi, type, false);
+	else if (f2fs_need_SSR(sbi) && get_ssr_segment(sbi, type))
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		change_curseg(sbi, type);
 	else
 		new_curseg(sbi, type, true);
@@ -2941,14 +3360,65 @@ void f2fs_allocate_new_section(struct f2fs_sb_info *sbi, int type, bool force)
 	f2fs_up_read(&SM_I(sbi)->curseg_lock);
 }
 
-void f2fs_allocate_new_segments(struct f2fs_sb_info *sbi)
+void allocate_segment_for_resize(struct f2fs_sb_info *sbi, int type,
+					unsigned int start, unsigned int end)
+{
+	struct curseg_info *curseg = CURSEG_I(sbi, type);
+	unsigned int segno;
+
+	down_read(&SM_I(sbi)->curseg_lock);
+	mutex_lock(&curseg->curseg_mutex);
+	down_write(&SIT_I(sbi)->sentry_lock);
+
+	segno = CURSEG_I(sbi, type)->segno;
+	if (segno < start || segno > end)
+		goto unlock;
+
+	if (f2fs_need_SSR(sbi) && get_ssr_segment(sbi, type))
+		change_curseg(sbi, type);
+	else
+		new_curseg(sbi, type, true);
+
+	stat_inc_seg_type(sbi, curseg);
+
+	locate_dirty_segment(sbi, segno);
+unlock:
+	up_write(&SIT_I(sbi)->sentry_lock);
+
+	if (segno != curseg->segno)
+		f2fs_notice(sbi, "For resize: curseg of type %d: %u ==> %u",
+			    type, segno, curseg->segno);
+
+	mutex_unlock(&curseg->curseg_mutex);
+	up_read(&SM_I(sbi)->curseg_lock);
+}
+
+void f2fs_allocate_new_segments(struct f2fs_sb_info *sbi, int type)
 {
 	int i;
 
 	f2fs_down_read(&SM_I(sbi)->curseg_lock);
 	down_write(&SIT_I(sbi)->sentry_lock);
+<<<<<<< HEAD
 	for (i = CURSEG_HOT_DATA; i <= CURSEG_COLD_DATA; i++)
 		__allocate_new_segment(sbi, i, false, false);
+=======
+
+	for (i = CURSEG_HOT_DATA; i <= CURSEG_COLD_DATA; i++) {
+		if (type != NO_CHECK_TYPE && i != type)
+			continue;
+
+		curseg = CURSEG_I(sbi, i);
+		if (type == NO_CHECK_TYPE || curseg->next_blkoff ||
+				get_valid_blocks(sbi, curseg->segno, false) ||
+				get_ckpt_valid_blocks(sbi, curseg->segno)) {
+			old_segno = curseg->segno;
+			SIT_I(sbi)->s_ops->allocate_segment(sbi, i, true);
+			locate_dirty_segment(sbi, old_segno);
+		}
+	}
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	up_write(&SIT_I(sbi)->sentry_lock);
 	f2fs_up_read(&SM_I(sbi)->curseg_lock);
 }
@@ -3025,7 +3495,11 @@ next:
 			blk_finish_plug(&plug);
 			mutex_unlock(&dcc->cmd_lock);
 			trimmed += __wait_all_discard_cmd(sbi, NULL);
+<<<<<<< HEAD
 			f2fs_io_schedule_timeout(DEFAULT_IO_TIMEOUT);
+=======
+			congestion_wait(BLK_RW_ASYNC, DEFAULT_IO_TIMEOUT);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			goto next;
 		}
 skip:
@@ -3084,9 +3558,15 @@ int f2fs_trim_fs(struct f2fs_sb_info *sbi, struct fstrim_range *range)
 	if (sbi->discard_blks == 0)
 		goto out;
 
+<<<<<<< HEAD
 	f2fs_down_write(&sbi->gc_lock);
 	err = f2fs_write_checkpoint(sbi, &cpc);
 	f2fs_up_write(&sbi->gc_lock);
+=======
+	down_write(&sbi->gc_lock);
+	err = f2fs_write_checkpoint(sbi, &cpc);
+	up_write(&sbi->gc_lock);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (err)
 		goto out;
 
@@ -3181,6 +3661,7 @@ static int __get_segment_type_6(struct f2fs_io_info *fio)
 		struct inode *inode = fio->page->mapping->host;
 		int type;
 
+<<<<<<< HEAD
 		if (is_inode_flag_set(inode, FI_ALIGNED_WRITE))
 			return CURSEG_COLD_DATA_PINNED;
 
@@ -3193,6 +3674,10 @@ static int __get_segment_type_6(struct f2fs_io_info *fio)
 				return CURSEG_COLD_DATA;
 		}
 		if (file_is_cold(inode) || f2fs_need_compress_data(inode))
+=======
+		if (is_cold_data(fio->page) || file_is_cold(inode) ||
+				f2fs_compressed_file(inode))
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			return CURSEG_COLD_DATA;
 
 		type = __get_age_segment_type(inode, fio->page->index);
@@ -3246,9 +3731,33 @@ void f2fs_allocate_data_block(struct f2fs_sb_info *sbi, struct page *page,
 {
 	struct sit_info *sit_i = SIT_I(sbi);
 	struct curseg_info *curseg = CURSEG_I(sbi, type);
+<<<<<<< HEAD
 	unsigned long long old_mtime;
 	bool from_gc = (type == CURSEG_ALL_DATA_ATGC);
 	struct seg_entry *se = NULL;
+=======
+	bool put_pin_sem = false;
+
+	if (type == CURSEG_COLD_DATA) {
+		/* GC during CURSEG_COLD_DATA_PINNED allocation */
+		if (down_read_trylock(&sbi->pin_sem)) {
+			put_pin_sem = true;
+		} else {
+			type = CURSEG_WARM_DATA;
+			curseg = CURSEG_I(sbi, type);
+		}
+	} else if (type == CURSEG_COLD_DATA_PINNED) {
+		type = CURSEG_COLD_DATA;
+	}
+
+	/*
+	 * We need to wait for node_write to avoid block allocation during
+	 * checkpoint. This can only happen to quota writes which can cause
+	 * the below discard race condition.
+	 */
+	if (IS_DATASEG(type))
+		down_write(&sbi->node_write);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	f2fs_down_read(&SM_I(sbi)->curseg_lock);
 
@@ -3328,7 +3837,14 @@ void f2fs_allocate_data_block(struct f2fs_sb_info *sbi, struct page *page,
 		f2fs_inode_chksum_set(sbi, page);
 	}
 
+<<<<<<< HEAD
 	if (fio) {
+=======
+	if (F2FS_IO_ALIGNED(sbi))
+		fio->retry = false;
+
+	if (add_list) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		struct f2fs_bio_info *io;
 
 		if (F2FS_IO_ALIGNED(sbi))
@@ -3344,7 +3860,17 @@ void f2fs_allocate_data_block(struct f2fs_sb_info *sbi, struct page *page,
 
 	mutex_unlock(&curseg->curseg_mutex);
 
+<<<<<<< HEAD
 	f2fs_up_read(&SM_I(sbi)->curseg_lock);
+=======
+	up_read(&SM_I(sbi)->curseg_lock);
+
+	if (IS_DATASEG(type))
+		up_write(&sbi->node_write);
+
+	if (put_pin_sem)
+		up_read(&sbi->pin_sem);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 void f2fs_update_device_state(struct f2fs_sb_info *sbi, nid_t ino,
@@ -3472,9 +3998,13 @@ int f2fs_inplace_write_data(struct f2fs_io_info *fio)
 		set_sbi_flag(sbi, SBI_NEED_FSCK);
 		f2fs_warn(sbi, "%s: incorrect segment(%u) type, run fsck to fix.",
 			  __func__, segno);
+<<<<<<< HEAD
 		err = -EFSCORRUPTED;
 		f2fs_handle_error(sbi, ERROR_INCONSISTENT_SUM_TYPE);
 		goto drop_bio;
+=======
+		return -EFSCORRUPTED;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	if (f2fs_cp_error(sbi)) {
@@ -3493,6 +4023,7 @@ int f2fs_inplace_write_data(struct f2fs_io_info *fio)
 	else
 		err = f2fs_submit_page_bio(fio);
 	if (!err) {
+<<<<<<< HEAD
 		f2fs_update_device_state(fio->sbi, fio->ino,
 						fio->new_blkaddr, 1);
 		f2fs_update_iostat(fio->sbi, fio->io_type, F2FS_BLKSIZE);
@@ -3502,6 +4033,11 @@ int f2fs_inplace_write_data(struct f2fs_io_info *fio)
 drop_bio:
 	if (fio->bio && *(fio->bio)) {
 		struct bio *bio = *(fio->bio);
+=======
+		update_device_state(fio);
+		f2fs_update_iostat(fio->sbi, fio->io_type, F2FS_BLKSIZE);
+	}
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		bio->bi_status = BLK_STS_IOERR;
 		bio_endio(bio);
@@ -3666,6 +4202,7 @@ void f2fs_wait_on_block_writeback(struct inode *inode, block_t blkaddr)
 void f2fs_wait_on_block_writeback_range(struct inode *inode, block_t blkaddr,
 								block_t len)
 {
+<<<<<<< HEAD
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
 	block_t i;
 
@@ -3676,6 +4213,12 @@ void f2fs_wait_on_block_writeback_range(struct inode *inode, block_t blkaddr,
 		f2fs_wait_on_block_writeback(inode, blkaddr + i);
 
 	invalidate_mapping_pages(META_MAPPING(sbi), blkaddr, blkaddr + len - 1);
+=======
+	block_t i;
+
+	for (i = 0; i < len; i++)
+		f2fs_wait_on_block_writeback(inode, blkaddr + i);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static int read_compacted_summaries(struct f2fs_sb_info *sbi)
@@ -3852,7 +4395,11 @@ static int restore_curseg_summaries(struct f2fs_sb_info *sbi)
 	/* sanity check for summary blocks */
 	if (nats_in_cursum(nat_j) > NAT_JOURNAL_ENTRIES ||
 			sits_in_cursum(sit_j) > SIT_JOURNAL_ENTRIES) {
+<<<<<<< HEAD
 		f2fs_err(sbi, "invalid journal entries nats %u sits %u",
+=======
+		f2fs_err(sbi, "invalid journal entries nats %u sits %u\n",
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			 nats_in_cursum(nat_j), sits_in_cursum(sit_j));
 		return -EINVAL;
 	}
@@ -4210,7 +4757,10 @@ static int build_sit_info(struct f2fs_sb_info *sbi)
 	unsigned int sit_segs, start;
 	char *src_bitmap, *bitmap;
 	unsigned int bitmap_size, main_bitmap_size, sit_bitmap_size;
+<<<<<<< HEAD
 	unsigned int discard_map = f2fs_block_unit_discard(sbi) ? 1 : 0;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/* allocate memory for SIT information */
 	sit_i = f2fs_kzalloc(sbi, sizeof(struct sit_info), GFP_KERNEL);
@@ -4233,9 +4783,15 @@ static int build_sit_info(struct f2fs_sb_info *sbi)
 		return -ENOMEM;
 
 #ifdef CONFIG_F2FS_CHECK_FS
+<<<<<<< HEAD
 	bitmap_size = MAIN_SEGS(sbi) * SIT_VBLOCK_MAP_SIZE * (3 + discard_map);
 #else
 	bitmap_size = MAIN_SEGS(sbi) * SIT_VBLOCK_MAP_SIZE * (2 + discard_map);
+=======
+	bitmap_size = MAIN_SEGS(sbi) * SIT_VBLOCK_MAP_SIZE * 4;
+#else
+	bitmap_size = MAIN_SEGS(sbi) * SIT_VBLOCK_MAP_SIZE * 3;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #endif
 	sit_i->bitmap = f2fs_kvzalloc(sbi, bitmap_size, GFP_KERNEL);
 	if (!sit_i->bitmap)
@@ -4255,10 +4811,15 @@ static int build_sit_info(struct f2fs_sb_info *sbi)
 		bitmap += SIT_VBLOCK_MAP_SIZE;
 #endif
 
+<<<<<<< HEAD
 		if (discard_map) {
 			sit_i->sentries[start].discard_map = bitmap;
 			bitmap += SIT_VBLOCK_MAP_SIZE;
 		}
+=======
+		sit_i->sentries[start].discard_map = bitmap;
+		bitmap += SIT_VBLOCK_MAP_SIZE;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	sit_i->tmp_map = f2fs_kzalloc(sbi, SIT_VBLOCK_MAP_SIZE, GFP_KERNEL);
@@ -4290,6 +4851,15 @@ static int build_sit_info(struct f2fs_sb_info *sbi)
 					sit_bitmap_size, GFP_KERNEL);
 	if (!sit_i->sit_bitmap_mir)
 		return -ENOMEM;
+<<<<<<< HEAD
+=======
+
+	sit_i->invalid_segmap = f2fs_kvzalloc(sbi,
+					main_bitmap_size, GFP_KERNEL);
+	if (!sit_i->invalid_segmap)
+		return -ENOMEM;
+#endif
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	sit_i->invalid_segmap = f2fs_kvzalloc(sbi,
 					main_bitmap_size, GFP_KERNEL);
@@ -4423,6 +4993,7 @@ static int build_sit_entries(struct f2fs_sb_info *sbi)
 				return -EFSCORRUPTED;
 			}
 
+<<<<<<< HEAD
 			sit_valid_blocks[SE_PAGETYPE(se)] += se->valid_blocks;
 
 			if (f2fs_block_unit_discard(sbi)) {
@@ -4440,6 +5011,8 @@ static int build_sit_entries(struct f2fs_sb_info *sbi)
 				}
 			}
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			if (__is_large_section(sbi))
 				get_sec_entry(sbi, start)->valid_blocks +=
 							se->valid_blocks;
@@ -4480,6 +5053,7 @@ static int build_sit_entries(struct f2fs_sb_info *sbi)
 			break;
 		}
 
+<<<<<<< HEAD
 		sit_valid_blocks[SE_PAGETYPE(se)] += se->valid_blocks;
 
 		if (f2fs_block_unit_discard(sbi)) {
@@ -4493,6 +5067,8 @@ static int build_sit_entries(struct f2fs_sb_info *sbi)
 			}
 		}
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		if (__is_large_section(sbi)) {
 			get_sec_entry(sbi, start)->valid_blocks +=
 							se->valid_blocks;
@@ -4502,6 +5078,7 @@ static int build_sit_entries(struct f2fs_sb_info *sbi)
 	}
 	up_read(&curseg->journal_rwsem);
 
+<<<<<<< HEAD
 	if (err)
 		return err;
 
@@ -4510,6 +5087,12 @@ static int build_sit_entries(struct f2fs_sb_info *sbi)
 			 sit_valid_blocks[NODE], valid_node_count(sbi));
 		f2fs_handle_error(sbi, ERROR_INCONSISTENT_NODE_COUNT);
 		return -EFSCORRUPTED;
+=======
+	if (!err && total_node_blocks != valid_node_count(sbi)) {
+		f2fs_err(sbi, "SIT is corrupted node# %u vs %u",
+			 total_node_blocks, valid_node_count(sbi));
+		err = -EFSCORRUPTED;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	if (sit_valid_blocks[DATA] + sit_valid_blocks[NODE] >
@@ -4686,7 +5269,10 @@ out:
 				 "Current segment's next free block offset is inconsistent with bitmap, logtype:%u, segno:%u, type:%u, next_blkoff:%u, blkofs:%u",
 				 i, curseg->segno, curseg->alloc_type,
 				 curseg->next_blkoff, blkofs);
+<<<<<<< HEAD
 			f2fs_handle_error(sbi, ERROR_INVALID_CURSEG);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			return -EFSCORRUPTED;
 		}
 	}
@@ -4866,7 +5452,7 @@ static void destroy_dirty_segmap(struct f2fs_sb_info *sbi)
 
 	destroy_victim_secmap(sbi);
 	SM_I(sbi)->dirty_info = NULL;
-	kfree(dirty_i);
+	kvfree(dirty_i);
 }
 
 static void destroy_curseg(struct f2fs_sb_info *sbi)
@@ -4878,10 +5464,10 @@ static void destroy_curseg(struct f2fs_sb_info *sbi)
 		return;
 	SM_I(sbi)->curseg_array = NULL;
 	for (i = 0; i < NR_CURSEG_TYPE; i++) {
-		kfree(array[i].sum_blk);
-		kfree(array[i].journal);
+		kvfree(array[i].sum_blk);
+		kvfree(array[i].journal);
 	}
-	kfree(array);
+	kvfree(array);
 }
 
 static void destroy_free_segmap(struct f2fs_sb_info *sbi)
@@ -4893,7 +5479,7 @@ static void destroy_free_segmap(struct f2fs_sb_info *sbi)
 	SM_I(sbi)->free_info = NULL;
 	kvfree(free_i->free_segmap);
 	kvfree(free_i->free_secmap);
-	kfree(free_i);
+	kvfree(free_i);
 }
 
 static void destroy_sit_info(struct f2fs_sb_info *sbi)
@@ -4905,7 +5491,11 @@ static void destroy_sit_info(struct f2fs_sb_info *sbi)
 
 	if (sit_i->sentries)
 		kvfree(sit_i->bitmap);
+<<<<<<< HEAD
 	kfree(sit_i->tmp_map);
+=======
+	kvfree(sit_i->tmp_map);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	kvfree(sit_i->sentries);
 	kvfree(sit_i->sec_entries);
@@ -4917,7 +5507,7 @@ static void destroy_sit_info(struct f2fs_sb_info *sbi)
 	kvfree(sit_i->sit_bitmap_mir);
 	kvfree(sit_i->invalid_segmap);
 #endif
-	kfree(sit_i);
+	kvfree(sit_i);
 }
 
 void f2fs_destroy_segment_manager(struct f2fs_sb_info *sbi)
@@ -4933,7 +5523,7 @@ void f2fs_destroy_segment_manager(struct f2fs_sb_info *sbi)
 	destroy_free_segmap(sbi);
 	destroy_sit_info(sbi);
 	sbi->sm_info = NULL;
-	kfree(sm_info);
+	kvfree(sm_info);
 }
 
 int __init f2fs_create_segment_manager_caches(void)
@@ -4953,9 +5543,15 @@ int __init f2fs_create_segment_manager_caches(void)
 	if (!sit_entry_set_slab)
 		goto destroy_discard_cmd;
 
+<<<<<<< HEAD
 	revoke_entry_slab = f2fs_kmem_cache_create("f2fs_revoke_entry",
 			sizeof(struct revoke_entry));
 	if (!revoke_entry_slab)
+=======
+	inmem_entry_slab = f2fs_kmem_cache_create("f2fs_inmem_page_entry",
+			sizeof(struct inmem_pages));
+	if (!inmem_entry_slab)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		goto destroy_sit_entry_set;
 	return 0;
 

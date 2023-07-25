@@ -335,12 +335,19 @@ int swap_readpage(struct page *page, bool synchronous)
 		goto out;
 	}
 
+<<<<<<< HEAD
 	if (sis->flags & SWP_SYNCHRONOUS_IO) {
 		ret = bdev_read_page(sis->bdev, map_swap_page(page, &sis->bdev), page);
 		if (!ret) {
 			count_vm_event(PSWPIN);
 			goto out;
 		}
+=======
+	ret = bdev_read_page(sis->bdev, map_swap_page(page, &sis->bdev), page);
+	if (!ret) {
+		count_vm_event(PSWPIN);
+		goto out;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	ret = 0;

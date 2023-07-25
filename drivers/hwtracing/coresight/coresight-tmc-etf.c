@@ -313,9 +313,12 @@ static int tmc_disable_etf_sink(struct coresight_device *csdev)
 
 	spin_unlock_irqrestore(&drvdata->spinlock, flags);
 
+<<<<<<< HEAD
 	coresight_cti_unmap_trigin(drvdata->cti_reset, 0, 0);
 	coresight_cti_unmap_trigout(drvdata->cti_flush, 1, 0);
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	dev_dbg(drvdata->dev, "TMC-ETB/ETF disabled\n");
 	return 0;
 }
@@ -597,12 +600,18 @@ int tmc_read_prepare_etb(struct tmc_drvdata *drvdata)
 	}
 
 	/* Disable the TMC if need be */
+<<<<<<< HEAD
 	if (drvdata->mode == CS_MODE_SYSFS) {
 		spin_unlock_irqrestore(&drvdata->spinlock, flags);
 		coresight_disable_all_source_link();
 		spin_lock_irqsave(&drvdata->spinlock, flags);
 		__tmc_etb_disable_hw(drvdata);
 	}
+=======
+	if (drvdata->mode == CS_MODE_SYSFS)
+		__tmc_etb_disable_hw(drvdata);
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	drvdata->reading = true;
 out:
 	spin_unlock_irqrestore(&drvdata->spinlock, flags);
@@ -642,9 +651,12 @@ int tmc_read_unprepare_etb(struct tmc_drvdata *drvdata)
 		 */
 		memset(drvdata->buf, 0, drvdata->size);
 		__tmc_etb_enable_hw(drvdata);
+<<<<<<< HEAD
 		spin_unlock_irqrestore(&drvdata->spinlock, flags);
 		coresight_enable_all_source_link();
 		spin_lock_irqsave(&drvdata->spinlock, flags);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	} else {
 		/*
 		 * The ETB/ETF is not tracing and the buffer was just read.

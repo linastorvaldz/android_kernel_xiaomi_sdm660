@@ -302,6 +302,7 @@ void wg_noise_set_static_identity_private_key(
 		static_identity->static_public, private_key);
 }
 
+<<<<<<< HEAD
 static void hmac(u8 *out, const u8 *in, const u8 *key, const size_t inlen, const size_t keylen)
 {
 	struct blake2s_state state;
@@ -337,6 +338,8 @@ static void hmac(u8 *out, const u8 *in, const u8 *key, const size_t inlen, const
 	memzero_explicit(i_hash, BLAKE2S_HASH_SIZE);
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /* This is Hugo Krawczyk's HKDF:
  *  - https://eprint.iacr.org/2010/264.pdf
  *  - https://tools.ietf.org/html/rfc5869
@@ -357,14 +360,22 @@ static void kdf(u8 *first_dst, u8 *second_dst, u8 *third_dst, const u8 *data,
 		 ((third_len || third_dst) && (!second_len || !second_dst))));
 
 	/* Extract entropy from data into secret */
+<<<<<<< HEAD
 	hmac(secret, data, chaining_key, data_len, NOISE_HASH_LEN);
+=======
+	blake2s256_hmac(secret, data, chaining_key, data_len, NOISE_HASH_LEN);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (!first_dst || !first_len)
 		goto out;
 
 	/* Expand first key: key = secret, data = 0x1 */
 	output[0] = 1;
+<<<<<<< HEAD
 	hmac(output, output, secret, 1, BLAKE2S_HASH_SIZE);
+=======
+	blake2s256_hmac(output, output, secret, 1, BLAKE2S_HASH_SIZE);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	memcpy(first_dst, output, first_len);
 
 	if (!second_dst || !second_len)
@@ -372,7 +383,12 @@ static void kdf(u8 *first_dst, u8 *second_dst, u8 *third_dst, const u8 *data,
 
 	/* Expand second key: key = secret, data = first-key || 0x2 */
 	output[BLAKE2S_HASH_SIZE] = 2;
+<<<<<<< HEAD
 	hmac(output, output, secret, BLAKE2S_HASH_SIZE + 1, BLAKE2S_HASH_SIZE);
+=======
+	blake2s256_hmac(output, output, secret, BLAKE2S_HASH_SIZE + 1,
+			BLAKE2S_HASH_SIZE);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	memcpy(second_dst, output, second_len);
 
 	if (!third_dst || !third_len)
@@ -380,7 +396,12 @@ static void kdf(u8 *first_dst, u8 *second_dst, u8 *third_dst, const u8 *data,
 
 	/* Expand third key: key = secret, data = second-key || 0x3 */
 	output[BLAKE2S_HASH_SIZE] = 3;
+<<<<<<< HEAD
 	hmac(output, output, secret, BLAKE2S_HASH_SIZE + 1, BLAKE2S_HASH_SIZE);
+=======
+	blake2s256_hmac(output, output, secret, BLAKE2S_HASH_SIZE + 1,
+			BLAKE2S_HASH_SIZE);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	memcpy(third_dst, output, third_len);
 
 out:

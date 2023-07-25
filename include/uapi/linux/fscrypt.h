@@ -28,8 +28,13 @@
 #define FSCRYPT_MODE_AES_128_CBC		5
 #define FSCRYPT_MODE_AES_128_CTS		6
 #define FSCRYPT_MODE_ADIANTUM			9
+<<<<<<< HEAD
 #define FSCRYPT_MODE_PRIVATE			127
 #define __FSCRYPT_MODE_MAX			127
+=======
+#define __FSCRYPT_MODE_MAX			9
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * Legacy policy version; ad-hoc KDF and no key verification.
  * For new encrypted directories, use fscrypt_policy_v2 instead.
@@ -191,7 +196,10 @@ struct fscrypt_get_key_status_arg {
 #define FS_ENCRYPTION_MODE_SPECK128_256_XTS	7	/* removed */
 #define FS_ENCRYPTION_MODE_SPECK128_256_CTS	8	/* removed */
 #define FS_ENCRYPTION_MODE_ADIANTUM	FSCRYPT_MODE_ADIANTUM
+<<<<<<< HEAD
 #define FS_ENCRYPTION_MODE_PRIVATE	FSCRYPT_MODE_PRIVATE
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #define FS_KEY_DESC_PREFIX		FSCRYPT_KEY_DESC_PREFIX
 #define FS_KEY_DESC_PREFIX_SIZE		FSCRYPT_KEY_DESC_PREFIX_SIZE
 #define FS_MAX_KEY_SIZE			FSCRYPT_MAX_KEY_SIZE

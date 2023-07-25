@@ -21,7 +21,10 @@
 #include <linux/uuid.h>
 #include <linux/file.h>
 #include <linux/nls.h>
+<<<<<<< HEAD
 #include <linux/sched/signal.h>
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #include "f2fs.h"
 #include "node.h"
@@ -31,6 +34,7 @@
 #include "gc.h"
 #include "iostat.h"
 #include <trace/events/f2fs.h>
+#include <trace/events/android_fs.h>
 
 static vm_fault_t f2fs_filemap_fault(struct vm_fault *vmf)
 {
@@ -40,6 +44,12 @@ static vm_fault_t f2fs_filemap_fault(struct vm_fault *vmf)
 	f2fs_down_read(&F2FS_I(inode)->i_mmap_sem);
 	ret = filemap_fault(vmf);
 	f2fs_up_read(&F2FS_I(inode)->i_mmap_sem);
+
+	if (!ret)
+		f2fs_update_iostat(F2FS_I_SB(inode), APP_MAPPED_READ_IO,
+							F2FS_BLKSIZE);
+
+	trace_f2fs_filemap_fault(inode, vmf->pgoff, (unsigned long)ret);
 
 	if (!ret)
 		f2fs_update_iostat(F2FS_I_SB(inode), APP_MAPPED_READ_IO,
@@ -58,30 +68,39 @@ static vm_fault_t f2fs_vm_page_mkwrite(struct vm_fault *vmf)
 	struct dnode_of_data dn;
 	bool need_alloc = true;
 	int err = 0;
+<<<<<<< HEAD
 
 	if (unlikely(IS_IMMUTABLE(inode)))
 		return VM_FAULT_SIGBUS;
 
 	if (is_inode_flag_set(inode, FI_COMPRESS_RELEASED))
 		return VM_FAULT_SIGBUS;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (unlikely(f2fs_cp_error(sbi))) {
 		err = -EIO;
 		goto err;
 	}
 
+<<<<<<< HEAD
 	/* should do out of any locked page */
 	f2fs_balance_fs(sbi, true);
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!f2fs_is_checkpoint_ready(sbi)) {
 		err = -ENOSPC;
 		goto err;
 	}
 
+<<<<<<< HEAD
 	err = f2fs_convert_inline_inode(inode);
 	if (err)
 		goto err;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #ifdef CONFIG_F2FS_FS_COMPRESSION
 	if (f2fs_compressed_file(inode)) {
 		int ret = f2fs_is_compressed_cluster(inode, page->index);
@@ -90,6 +109,13 @@ static vm_fault_t f2fs_vm_page_mkwrite(struct vm_fault *vmf)
 			err = ret;
 			goto err;
 		} else if (ret) {
+<<<<<<< HEAD
+=======
+			if (ret < F2FS_I(inode)->i_cluster_size) {
+				err = -EAGAIN;
+				goto err;
+			}
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			need_alloc = false;
 		}
 	}
@@ -115,10 +141,18 @@ static vm_fault_t f2fs_vm_page_mkwrite(struct vm_fault *vmf)
 
 	if (need_alloc) {
 		/* block allocation */
+<<<<<<< HEAD
 		f2fs_do_map_lock(sbi, F2FS_GET_BLOCK_PRE_AIO, true);
 		set_new_dnode(&dn, inode, NULL, NULL, 0);
 		err = f2fs_get_block(&dn, page->index);
 		f2fs_do_map_lock(sbi, F2FS_GET_BLOCK_PRE_AIO, false);
+=======
+		__do_map_lock(sbi, F2FS_GET_BLOCK_PRE_AIO, true);
+		set_new_dnode(&dn, inode, NULL, NULL, 0);
+		err = f2fs_get_block(&dn, page->index);
+		f2fs_put_dnode(&dn);
+		__do_map_lock(sbi, F2FS_GET_BLOCK_PRE_AIO, false);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 #ifdef CONFIG_F2FS_FS_COMPRESSION
@@ -161,7 +195,11 @@ static vm_fault_t f2fs_vm_page_mkwrite(struct vm_fault *vmf)
 
 	trace_f2fs_vm_page_mkwrite(page, DATA);
 out_sem:
+<<<<<<< HEAD
 	f2fs_up_read(&F2FS_I(inode)->i_mmap_sem);
+=======
+	up_read(&F2FS_I(inode)->i_mmap_sem);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	sb_end_pagefault(inode->i_sb);
 err:
@@ -267,6 +305,15 @@ static int f2fs_do_sync_file(struct file *file, loff_t start, loff_t end,
 		return 0;
 
 	trace_f2fs_sync_file_enter(inode);
+
+	if (trace_android_fs_fsync_start_enabled()) {
+		char *path, pathbuf[MAX_TRACE_PATHBUF_LEN];
+
+		path = android_fstrace_get_pathname(pathbuf,
+				MAX_TRACE_PATHBUF_LEN, inode);
+		trace_android_fs_fsync_start(inode,
+				current->pid, path, current->comm);
+	}
 
 	if (S_ISDIR(inode->i_mode))
 		goto go_write;
@@ -385,6 +432,12 @@ flush_out:
 	f2fs_update_time(sbi, REQ_TIME);
 out:
 	trace_f2fs_sync_file_exit(inode, cp_reason, datasync, ret);
+<<<<<<< HEAD
+=======
+	f2fs_trace_ios(NULL, 1);
+	trace_android_fs_fsync_end(inode, start, end - start);
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return ret;
 }
 
@@ -548,6 +601,14 @@ static int f2fs_file_mmap(struct file *file, struct vm_area_struct *vma)
 
 	if (!f2fs_is_compress_backend_ready(inode))
 		return -EOPNOTSUPP;
+<<<<<<< HEAD
+=======
+
+	/* we don't need to use inline_data strictly */
+	err = f2fs_convert_inline_inode(inode);
+	if (err)
+		return err;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	file_accessed(file);
 	vma->vm_ops = &f2fs_file_vm_ops;
@@ -584,7 +645,11 @@ void f2fs_truncate_data_blocks_range(struct dnode_of_data *dn, int count)
 	bool compressed_cluster = false;
 	int cluster_index = 0, valid_blocks = 0;
 	int cluster_size = F2FS_I(dn->inode)->i_cluster_size;
+<<<<<<< HEAD
 	bool released = !atomic_read(&F2FS_I(dn->inode)->i_compr_blocks);
+=======
+	bool released = !F2FS_I(dn->inode)->i_compr_blocks;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (IS_INODE(dn->node_page) && f2fs_has_extra_attr(dn->inode))
 		base = get_extra_isize(dn->inode);
@@ -592,7 +657,11 @@ void f2fs_truncate_data_blocks_range(struct dnode_of_data *dn, int count)
 	raw_node = F2FS_NODE(dn->node_page);
 	addr = blkaddr_in_node(raw_node) + base + ofs;
 
+<<<<<<< HEAD
 	/* Assumption: truncation starts with cluster */
+=======
+	/* Assumption: truncateion starts with cluster */
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	for (; count > 0; count--, addr++, dn->ofs_in_node++, cluster_index++) {
 		block_t blkaddr = le32_to_cpu(*addr);
 
@@ -774,6 +843,7 @@ int f2fs_truncate_blocks(struct inode *inode, u64 from, bool lock)
 		return err;
 
 #ifdef CONFIG_F2FS_FS_COMPRESSION
+<<<<<<< HEAD
 	/*
 	 * For compressed file, after release compress blocks, don't allow write
 	 * direct, but we should allow write direct after truncate to zero.
@@ -790,6 +860,13 @@ int f2fs_truncate_blocks(struct inode *inode, u64 from, bool lock)
 #endif
 
 	return 0;
+=======
+	if (from != free_from)
+		err = f2fs_truncate_partial_cluster(inode, from, lock);
+#endif
+
+	return err;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 int f2fs_truncate(struct inode *inode)
@@ -916,6 +993,7 @@ int f2fs_setattr(struct dentry *dentry, struct iattr *attr)
 	if (unlikely(f2fs_cp_error(F2FS_I_SB(inode))))
 		return -EIO;
 
+<<<<<<< HEAD
 	if (unlikely(IS_IMMUTABLE(inode)))
 		return -EPERM;
 
@@ -924,6 +1002,8 @@ int f2fs_setattr(struct dentry *dentry, struct iattr *attr)
 				  ATTR_GID | ATTR_TIMES_SET))))
 		return -EPERM;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if ((attr->ia_valid & ATTR_SIZE) &&
 		!f2fs_is_compress_backend_ready(inode))
 		return -EOPNOTSUPP;
@@ -971,6 +1051,19 @@ int f2fs_setattr(struct dentry *dentry, struct iattr *attr)
 
 	if (attr->ia_valid & ATTR_SIZE) {
 		loff_t old_size = i_size_read(inode);
+<<<<<<< HEAD
+=======
+
+		if (attr->ia_size > MAX_INLINE_DATA(inode)) {
+			/*
+			 * should convert inline inode before i_size_write to
+			 * keep smaller than inline_data size with inline flag.
+			 */
+			err = f2fs_convert_inline_inode(inode);
+			if (err)
+				return err;
+		}
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		if (attr->ia_size > MAX_INLINE_DATA(inode)) {
 			/*
@@ -993,8 +1086,13 @@ int f2fs_setattr(struct dentry *dentry, struct iattr *attr)
 		 * do not trim all blocks after i_size if target size is
 		 * larger than i_size.
 		 */
+<<<<<<< HEAD
 		f2fs_up_write(&F2FS_I(inode)->i_mmap_sem);
 		f2fs_up_write(&F2FS_I(inode)->i_gc_rwsem[WRITE]);
+=======
+		up_write(&F2FS_I(inode)->i_mmap_sem);
+		up_write(&F2FS_I(inode)->i_gc_rwsem[WRITE]);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		if (err)
 			return err;
 
@@ -1182,7 +1280,10 @@ next_dnode:
 			!f2fs_is_valid_blkaddr(sbi, *blkaddr,
 					DATA_GENERIC_ENHANCE)) {
 			f2fs_put_dnode(&dn);
+<<<<<<< HEAD
 			f2fs_handle_error(sbi, ERROR_INVALID_BLKADDR);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			return -EFSCORRUPTED;
 		}
 
@@ -1669,12 +1770,16 @@ static int expand_inode_data(struct inode *inode, loff_t offset,
 	struct f2fs_map_blocks map = { .m_next_pgofs = NULL,
 			.m_next_extent = NULL, .m_seg_type = NO_CHECK_TYPE,
 			.m_may_create = true };
+<<<<<<< HEAD
 	struct f2fs_gc_control gc_control = { .victim_segno = NULL_SEGNO,
 			.init_gc_type = FG_GC,
 			.should_migrate_blocks = false,
 			.err_gc_skipped = true,
 			.nr_free_secs = 0 };
 	pgoff_t pg_start, pg_end;
+=======
+	pgoff_t pg_end;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	loff_t new_size = i_size_read(inode);
 	loff_t off_end;
 	block_t expanded = 0;
@@ -1703,6 +1808,7 @@ static int expand_inode_data(struct inode *inode, loff_t offset,
 		return 0;
 
 	if (f2fs_is_pinned_file(inode)) {
+<<<<<<< HEAD
 		block_t sec_blks = CAP_BLKS_PER_SEC(sbi);
 		block_t sec_len = roundup(map.m_len, sec_blks);
 
@@ -1738,6 +1844,44 @@ next_alloc:
 	} else {
 		err = f2fs_map_blocks(inode, &map, 1, F2FS_GET_BLOCK_PRE_AIO);
 		expanded = map.m_len;
+=======
+		block_t len = (map.m_len >> sbi->log_blocks_per_seg) <<
+					sbi->log_blocks_per_seg;
+		block_t done = 0;
+
+		if (map.m_len % sbi->blocks_per_seg)
+			len += sbi->blocks_per_seg;
+
+		map.m_len = sbi->blocks_per_seg;
+next_alloc:
+		if (has_not_enough_free_secs(sbi, 0,
+			GET_SEC_FROM_SEG(sbi, overprovision_segments(sbi)))) {
+			down_write(&sbi->gc_lock);
+			err = f2fs_gc(sbi, true, false, NULL_SEGNO);
+			if (err && err != -ENODATA && err != -EAGAIN)
+				goto out_err;
+		}
+
+		down_write(&sbi->pin_sem);
+		map.m_seg_type = CURSEG_COLD_DATA_PINNED;
+
+		f2fs_lock_op(sbi);
+		f2fs_allocate_new_segments(sbi, CURSEG_COLD_DATA);
+		f2fs_unlock_op(sbi);
+
+		err = f2fs_map_blocks(inode, &map, 1, F2FS_GET_BLOCK_PRE_DIO);
+		up_write(&sbi->pin_sem);
+
+		done += map.m_len;
+		len -= map.m_len;
+		map.m_lblk += map.m_len;
+		if (!err && len)
+			goto next_alloc;
+
+		map.m_len = done;
+	} else {
+		err = f2fs_map_blocks(inode, &map, 1, F2FS_GET_BLOCK_PRE_AIO);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 out_err:
 	if (err) {
@@ -1786,11 +1930,15 @@ static long f2fs_fallocate(struct file *file, int mode,
 		(mode & (FALLOC_FL_COLLAPSE_RANGE | FALLOC_FL_INSERT_RANGE)))
 		return -EOPNOTSUPP;
 
+<<<<<<< HEAD
 	/*
 	 * Pinned file should not support partial trucation since the block
 	 * can be used by applications.
 	 */
 	if ((f2fs_compressed_file(inode) || f2fs_is_pinned_file(inode)) &&
+=======
+	if (f2fs_compressed_file(inode) &&
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		(mode & (FALLOC_FL_PUNCH_HOLE | FALLOC_FL_COLLAPSE_RANGE |
 			FALLOC_FL_ZERO_RANGE | FALLOC_FL_INSERT_RANGE)))
 		return -EOPNOTSUPP;
@@ -1868,8 +2016,12 @@ static int f2fs_setflags_common(struct inode *inode, u32 iflags, u32 mask)
 	struct f2fs_inode_info *fi = F2FS_I(inode);
 	u32 masked_flags = fi->i_flags & mask;
 
+<<<<<<< HEAD
 	/* mask can be shrunk by flags_valid selector */
 	iflags &= mask;
+=======
+	f2fs_bug_on(F2FS_I_SB(inode), (iflags & ~mask));
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/* Is it quota file? Do not allow user to mess with it */
 	if (IS_NOQUOTA(inode))
@@ -1891,6 +2043,7 @@ static int f2fs_setflags_common(struct inode *inode, u32 iflags, u32 mask)
 
 	if ((iflags ^ masked_flags) & F2FS_COMPR_FL) {
 		if (masked_flags & F2FS_COMPR_FL) {
+<<<<<<< HEAD
 			if (!f2fs_disable_compressed_file(inode))
 				return -EINVAL;
 		} else {
@@ -1907,6 +2060,25 @@ static int f2fs_setflags_common(struct inode *inode, u32 iflags, u32 mask)
 		}
 	}
 
+=======
+			if (f2fs_disable_compressed_file(inode))
+				return -EINVAL;
+		}
+		if (iflags & F2FS_NOCOMP_FL)
+			return -EINVAL;
+		if (iflags & F2FS_COMPR_FL) {
+			if (!f2fs_may_compress(inode))
+				return -EINVAL;
+
+			set_compress_context(inode);
+		}
+	}
+	if ((iflags ^ masked_flags) & F2FS_NOCOMP_FL) {
+		if (masked_flags & F2FS_COMPR_FL)
+			return -EINVAL;
+	}
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	fi->i_flags = iflags | (fi->i_flags & ~mask);
 	f2fs_bug_on(F2FS_I_SB(inode), (fi->i_flags & F2FS_COMPR_FL) &&
 					(fi->i_flags & F2FS_NOCOMP_FL));
@@ -2076,8 +2248,11 @@ static int f2fs_ioc_start_atomic_write(struct file *filp, bool truncate)
 	struct inode *inode = file_inode(filp);
 	struct f2fs_inode_info *fi = F2FS_I(inode);
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+<<<<<<< HEAD
 	struct inode *pinode;
 	loff_t isize;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int ret;
 
 	if (!inode_owner_or_capable(inode))
@@ -2095,8 +2270,16 @@ static int f2fs_ioc_start_atomic_write(struct file *filp, bool truncate)
 
 	inode_lock(inode);
 
+<<<<<<< HEAD
 	if (!f2fs_disable_compressed_file(inode)) {
 		ret = -EINVAL;
+=======
+	f2fs_disable_compressed_file(inode);
+
+	if (f2fs_is_atomic_file(inode)) {
+		if (is_inode_flag_set(inode, FI_ATOMIC_REVOKE_REQUEST))
+			ret = -EINVAL;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		goto out;
 	}
 
@@ -2114,7 +2297,11 @@ static int f2fs_ioc_start_atomic_write(struct file *filp, bool truncate)
 	 * f2fs_is_atomic_file.
 	 */
 	if (get_dirty_pages(inode))
+<<<<<<< HEAD
 		f2fs_warn(sbi, "Unexpected flush for atomic writes: ino=%lu, npages=%u",
+=======
+		f2fs_warn(F2FS_I_SB(inode), "Unexpected flush for atomic writes: ino=%lu, npages=%u",
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			  inode->i_ino, get_dirty_pages(inode));
 	ret = filemap_write_and_wait_range(inode->i_mapping, 0, LLONG_MAX);
 	if (ret) {
@@ -2122,6 +2309,7 @@ static int f2fs_ioc_start_atomic_write(struct file *filp, bool truncate)
 		goto out;
 	}
 
+<<<<<<< HEAD
 	/* Create a COW inode for atomic write */
 	pinode = f2fs_iget(inode->i_sb, fi->i_pino);
 	if (IS_ERR(pinode)) {
@@ -2159,6 +2347,21 @@ static int f2fs_ioc_start_atomic_write(struct file *filp, bool truncate)
 
 	f2fs_update_time(sbi, REQ_TIME);
 	fi->atomic_write_task = current;
+=======
+	spin_lock(&sbi->inode_lock[ATOMIC_FILE]);
+	if (list_empty(&fi->inmem_ilist))
+		list_add_tail(&fi->inmem_ilist, &sbi->inode_list[ATOMIC_FILE]);
+	sbi->atomic_files++;
+	spin_unlock(&sbi->inode_lock[ATOMIC_FILE]);
+
+	/* add inode in inmem_list first and set atomic_file */
+	set_inode_flag(inode, FI_ATOMIC_FILE);
+	clear_inode_flag(inode, FI_ATOMIC_REVOKE_REQUEST);
+	up_write(&F2FS_I(inode)->i_gc_rwsem[WRITE]);
+
+	f2fs_update_time(F2FS_I_SB(inode), REQ_TIME);
+	F2FS_I(inode)->inmem_task = current;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	stat_update_max_atomic_write(inode);
 	fi->atomic_write_cnt = 0;
 out:
@@ -2188,7 +2391,13 @@ static int f2fs_ioc_commit_atomic_write(struct file *filp)
 		if (!ret)
 			ret = f2fs_do_sync_file(filp, 0, LLONG_MAX, 0, true);
 
+<<<<<<< HEAD
 		f2fs_abort_atomic_write(inode, ret);
+=======
+		ret = f2fs_do_sync_file(filp, 0, LLONG_MAX, 0, true);
+		if (!ret)
+			f2fs_drop_inmem_pages(inode);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	} else {
 		ret = f2fs_do_sync_file(filp, 0, LLONG_MAX, 1, false);
 	}
@@ -2240,8 +2449,12 @@ static int f2fs_ioc_shutdown(struct file *filp, unsigned long arg)
 		if (ret) {
 			if (ret == -EROFS) {
 				ret = 0;
+<<<<<<< HEAD
 				f2fs_stop_checkpoint(sbi, false,
 						STOP_CP_REASON_SHUTDOWN);
+=======
+				f2fs_stop_checkpoint(sbi, false);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				set_sbi_flag(sbi, SBI_IS_SHUTDOWN);
 				trace_f2fs_shutdown(sbi, in, ret);
 			}
@@ -2486,12 +2699,20 @@ static int f2fs_ioc_gc(struct file *filp, unsigned long arg)
 		return ret;
 
 	if (!sync) {
+<<<<<<< HEAD
 		if (!f2fs_down_write_trylock(&sbi->gc_lock)) {
+=======
+		if (!down_write_trylock(&sbi->gc_lock)) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			ret = -EBUSY;
 			goto out;
 		}
 	} else {
+<<<<<<< HEAD
 		f2fs_down_write(&sbi->gc_lock);
+=======
+		down_write(&sbi->gc_lock);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	gc_control.init_gc_type = sync ? FG_GC : BG_GC;
@@ -2560,7 +2781,40 @@ static int f2fs_ioc_gc_range(struct file *filp, unsigned long arg)
 	if (copy_from_user(&range, (struct f2fs_gc_range __user *)arg,
 							sizeof(range)))
 		return -EFAULT;
+<<<<<<< HEAD
 	return __f2fs_ioc_gc_range(filp, &range);
+=======
+
+	if (f2fs_readonly(sbi->sb))
+		return -EROFS;
+
+	end = range.start + range.len;
+	if (end < range.start || range.start < MAIN_BLKADDR(sbi) ||
+					end >= MAX_BLKADDR(sbi))
+		return -EINVAL;
+
+	ret = mnt_want_write_file(filp);
+	if (ret)
+		return ret;
+
+do_more:
+	if (!range.sync) {
+		if (!down_write_trylock(&sbi->gc_lock)) {
+			ret = -EBUSY;
+			goto out;
+		}
+	} else {
+		down_write(&sbi->gc_lock);
+	}
+
+	ret = f2fs_gc(sbi, range.sync, true, GET_SEGNO(sbi, range.start));
+	range.start += BLKS_PER_SEC(sbi);
+	if (range.start <= end)
+		goto do_more;
+out:
+	mnt_drop_write_file(filp);
+	return ret;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static int f2fs_ioc_write_checkpoint(struct file *filp, unsigned long arg)
@@ -2596,9 +2850,15 @@ static int f2fs_defragment_range(struct f2fs_sb_info *sbi,
 {
 	struct inode *inode = file_inode(filp);
 	struct f2fs_map_blocks map = { .m_next_extent = NULL,
+<<<<<<< HEAD
 					.m_seg_type = NO_CHECK_TYPE,
 					.m_may_create = false };
 	struct extent_info ei = {0, };
+=======
+					.m_seg_type = NO_CHECK_TYPE ,
+					.m_may_create = false };
+	struct extent_info ei = {0, 0, 0};
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	pgoff_t pg_start, pg_end, next_pgofs;
 	unsigned int blk_per_seg = sbi->blocks_per_seg;
 	unsigned int total = 0, sec_num;
@@ -2670,7 +2930,11 @@ static int f2fs_defragment_range(struct f2fs_sb_info *sbi,
 		goto out;
 	}
 
+<<<<<<< HEAD
 	sec_num = DIV_ROUND_UP(total, CAP_BLKS_PER_SEC(sbi));
+=======
+	sec_num = DIV_ROUND_UP(total, BLKS_PER_SEC(sbi));
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/*
 	 * make sure there are enough free section for LFS allocation, this can
@@ -2995,7 +3259,11 @@ static int f2fs_ioc_flush_device(struct file *filp, unsigned long arg)
 	end_segno = min(start_segno + range.segments, dev_end_segno);
 
 	while (start_segno < end_segno) {
+<<<<<<< HEAD
 		if (!f2fs_down_write_trylock(&sbi->gc_lock)) {
+=======
+		if (!down_write_trylock(&sbi->gc_lock)) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			ret = -EBUSY;
 			goto out;
 		}
@@ -3050,7 +3318,11 @@ static int f2fs_ioc_setproject(struct file *filp, __u32 projid)
 	struct inode *inode = file_inode(filp);
 	struct f2fs_inode_info *fi = F2FS_I(inode);
 	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+<<<<<<< HEAD
 	struct f2fs_inode *ri = NULL;
+=======
+	struct page *ipage;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	kprojid_t kprojid;
 	int err;
 
@@ -3288,7 +3560,11 @@ static int f2fs_ioc_set_pin_file(struct file *filp, unsigned long arg)
 	if (ret)
 		goto out;
 
+<<<<<<< HEAD
 	if (!f2fs_disable_compressed_file(inode)) {
+=======
+	if (f2fs_disable_compressed_file(inode)) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		ret = -EOPNOTSUPP;
 		goto out;
 	}
@@ -3329,7 +3605,11 @@ int f2fs_precache_extents(struct inode *inode)
 	map.m_next_extent = &m_next_extent;
 	map.m_seg_type = NO_CHECK_TYPE;
 	map.m_may_create = false;
+<<<<<<< HEAD
 	end = max_file_blocks(inode);
+=======
+	end = F2FS_I_SB(inode)->max_file_blocks;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	while (map.m_lblk < end) {
 		map.m_len = end - map.m_lblk;
@@ -3352,9 +3632,456 @@ static int f2fs_ioc_precache_extents(struct file *filp, unsigned long arg)
 }
 
 static int f2fs_ioc_resize_fs(struct file *filp, unsigned long arg)
+<<<<<<< HEAD
 {
 	struct f2fs_sb_info *sbi = F2FS_I_SB(file_inode(filp));
 	__u64 block_count;
+=======
+{
+	struct f2fs_sb_info *sbi = F2FS_I_SB(file_inode(filp));
+	__u64 block_count;
+
+	if (!capable(CAP_SYS_ADMIN))
+		return -EPERM;
+
+	if (f2fs_readonly(sbi->sb))
+		return -EROFS;
+
+	if (copy_from_user(&block_count, (void __user *)arg,
+			   sizeof(block_count)))
+		return -EFAULT;
+
+	return f2fs_resize_fs(sbi, block_count);
+}
+
+static int f2fs_ioc_enable_verity(struct file *filp, unsigned long arg)
+{
+	struct inode *inode = file_inode(filp);
+
+	f2fs_update_time(F2FS_I_SB(inode), REQ_TIME);
+
+	if (!f2fs_sb_has_verity(F2FS_I_SB(inode))) {
+		f2fs_warn(F2FS_I_SB(inode),
+			  "Can't enable fs-verity on inode %lu: the verity feature is not enabled on this filesystem.\n",
+			  inode->i_ino);
+		return -EOPNOTSUPP;
+	}
+
+	return fsverity_ioctl_enable(filp, (const void __user *)arg);
+}
+
+static int f2fs_ioc_measure_verity(struct file *filp, unsigned long arg)
+{
+	if (!f2fs_sb_has_verity(F2FS_I_SB(file_inode(filp))))
+		return -EOPNOTSUPP;
+
+	return fsverity_ioctl_measure(filp, (void __user *)arg);
+}
+
+static int f2fs_get_volume_name(struct file *filp, unsigned long arg)
+{
+	struct inode *inode = file_inode(filp);
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+	char *vbuf;
+	int count;
+	int err = 0;
+
+	vbuf = f2fs_kzalloc(sbi, MAX_VOLUME_NAME, GFP_KERNEL);
+	if (!vbuf)
+		return -ENOMEM;
+
+	down_read(&sbi->sb_lock);
+	count = utf16s_to_utf8s(sbi->raw_super->volume_name,
+			ARRAY_SIZE(sbi->raw_super->volume_name),
+			UTF16_LITTLE_ENDIAN, vbuf, MAX_VOLUME_NAME);
+	up_read(&sbi->sb_lock);
+
+	if (copy_to_user((char __user *)arg, vbuf,
+				min(FSLABEL_MAX, count)))
+		err = -EFAULT;
+
+	kvfree(vbuf);
+	return err;
+}
+
+static int f2fs_set_volume_name(struct file *filp, unsigned long arg)
+{
+	struct inode *inode = file_inode(filp);
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+	char *vbuf;
+	int err = 0;
+
+	if (!capable(CAP_SYS_ADMIN))
+		return -EPERM;
+
+	vbuf = strndup_user((const char __user *)arg, FSLABEL_MAX);
+	if (IS_ERR(vbuf))
+		return PTR_ERR(vbuf);
+
+	err = mnt_want_write_file(filp);
+	if (err)
+		goto out;
+
+	down_write(&sbi->sb_lock);
+
+	memset(sbi->raw_super->volume_name, 0,
+			sizeof(sbi->raw_super->volume_name));
+	utf8s_to_utf16s(vbuf, strlen(vbuf), UTF16_LITTLE_ENDIAN,
+			sbi->raw_super->volume_name,
+			ARRAY_SIZE(sbi->raw_super->volume_name));
+
+	err = f2fs_commit_super(sbi, false);
+
+	up_write(&sbi->sb_lock);
+
+	mnt_drop_write_file(filp);
+out:
+	kfree(vbuf);
+	return err;
+}
+
+static int f2fs_get_compress_blocks(struct file *filp, unsigned long arg)
+{
+	struct inode *inode = file_inode(filp);
+	__u64 blocks;
+
+	if (!f2fs_sb_has_compression(F2FS_I_SB(inode)))
+		return -EOPNOTSUPP;
+
+	if (!f2fs_compressed_file(inode))
+		return -EINVAL;
+
+	blocks = F2FS_I(inode)->i_compr_blocks;
+	return put_user(blocks, (u64 __user *)arg);
+}
+
+static int release_compress_blocks(struct dnode_of_data *dn, pgoff_t count)
+{
+	struct f2fs_sb_info *sbi = F2FS_I_SB(dn->inode);
+	unsigned int released_blocks = 0;
+	int cluster_size = F2FS_I(dn->inode)->i_cluster_size;
+	block_t blkaddr;
+	int i;
+
+	for (i = 0; i < count; i++) {
+		blkaddr = data_blkaddr(dn->inode, dn->node_page,
+						dn->ofs_in_node + i);
+
+		if (!__is_valid_data_blkaddr(blkaddr))
+			continue;
+		if (unlikely(!f2fs_is_valid_blkaddr(sbi, blkaddr,
+					DATA_GENERIC_ENHANCE)))
+			return -EFSCORRUPTED;
+	}
+
+	while (count) {
+		int compr_blocks = 0;
+
+		for (i = 0; i < cluster_size; i++, dn->ofs_in_node++) {
+			blkaddr = f2fs_data_blkaddr(dn);
+
+			if (i == 0) {
+				if (blkaddr == COMPRESS_ADDR)
+					continue;
+				dn->ofs_in_node += cluster_size;
+				goto next;
+			}
+
+			if (__is_valid_data_blkaddr(blkaddr))
+				compr_blocks++;
+
+			if (blkaddr != NEW_ADDR)
+				continue;
+
+			dn->data_blkaddr = NULL_ADDR;
+			f2fs_set_data_blkaddr(dn);
+		}
+
+		f2fs_i_compr_blocks_update(dn->inode, compr_blocks, false);
+		dec_valid_block_count(sbi, dn->inode,
+					cluster_size - compr_blocks);
+
+		released_blocks += cluster_size - compr_blocks;
+next:
+		count -= cluster_size;
+	}
+
+	return released_blocks;
+}
+
+static int f2fs_release_compress_blocks(struct file *filp, unsigned long arg)
+{
+	struct inode *inode = file_inode(filp);
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+	pgoff_t page_idx = 0, last_idx;
+	unsigned int released_blocks = 0;
+	int ret;
+	int writecount;
+
+	if (!f2fs_sb_has_compression(F2FS_I_SB(inode)))
+		return -EOPNOTSUPP;
+
+	if (!f2fs_compressed_file(inode))
+		return -EINVAL;
+
+	if (f2fs_readonly(sbi->sb))
+		return -EROFS;
+
+	ret = mnt_want_write_file(filp);
+	if (ret)
+		return ret;
+
+	f2fs_balance_fs(F2FS_I_SB(inode), true);
+
+	inode_lock(inode);
+
+	writecount = atomic_read(&inode->i_writecount);
+	if ((filp->f_mode & FMODE_WRITE && writecount != 1) || writecount) {
+		ret = -EBUSY;
+		goto out;
+	}
+
+	if (IS_IMMUTABLE(inode)) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	ret = filemap_write_and_wait_range(inode->i_mapping, 0, LLONG_MAX);
+	if (ret)
+		goto out;
+
+	if (!F2FS_I(inode)->i_compr_blocks)
+		goto out;
+
+	F2FS_I(inode)->i_flags |= F2FS_IMMUTABLE_FL;
+	f2fs_set_inode_flags(inode);
+	inode->i_ctime = current_time(inode);
+	f2fs_mark_inode_dirty_sync(inode, true);
+
+	down_write(&F2FS_I(inode)->i_gc_rwsem[WRITE]);
+	down_write(&F2FS_I(inode)->i_mmap_sem);
+
+	last_idx = DIV_ROUND_UP(i_size_read(inode), PAGE_SIZE);
+
+	while (page_idx < last_idx) {
+		struct dnode_of_data dn;
+		pgoff_t end_offset, count;
+
+		set_new_dnode(&dn, inode, NULL, NULL, 0);
+		ret = f2fs_get_dnode_of_data(&dn, page_idx, LOOKUP_NODE);
+		if (ret) {
+			if (ret == -ENOENT) {
+				page_idx = f2fs_get_next_page_offset(&dn,
+								page_idx);
+				ret = 0;
+				continue;
+			}
+			break;
+		}
+
+		end_offset = ADDRS_PER_PAGE(dn.node_page, inode);
+		count = min(end_offset - dn.ofs_in_node, last_idx - page_idx);
+		count = round_up(count, F2FS_I(inode)->i_cluster_size);
+
+		ret = release_compress_blocks(&dn, count);
+
+		f2fs_put_dnode(&dn);
+
+		if (ret < 0)
+			break;
+
+		page_idx += count;
+		released_blocks += ret;
+	}
+
+	up_write(&F2FS_I(inode)->i_gc_rwsem[WRITE]);
+	up_write(&F2FS_I(inode)->i_mmap_sem);
+out:
+	inode_unlock(inode);
+
+	mnt_drop_write_file(filp);
+
+	if (ret >= 0) {
+		ret = put_user(released_blocks, (u64 __user *)arg);
+	} else if (released_blocks && F2FS_I(inode)->i_compr_blocks) {
+		set_sbi_flag(sbi, SBI_NEED_FSCK);
+		f2fs_warn(sbi, "%s: partial blocks were released i_ino=%lx "
+			"iblocks=%llu, released=%u, compr_blocks=%llu, "
+			"run fsck to fix.",
+			__func__, inode->i_ino, (u64)inode->i_blocks,
+			released_blocks,
+			F2FS_I(inode)->i_compr_blocks);
+	}
+
+	return ret;
+}
+
+static int reserve_compress_blocks(struct dnode_of_data *dn, pgoff_t count)
+{
+	struct f2fs_sb_info *sbi = F2FS_I_SB(dn->inode);
+	unsigned int reserved_blocks = 0;
+	int cluster_size = F2FS_I(dn->inode)->i_cluster_size;
+	block_t blkaddr;
+	int i;
+
+	for (i = 0; i < count; i++) {
+		blkaddr = data_blkaddr(dn->inode, dn->node_page,
+						dn->ofs_in_node + i);
+
+		if (!__is_valid_data_blkaddr(blkaddr))
+			continue;
+		if (unlikely(!f2fs_is_valid_blkaddr(sbi, blkaddr,
+					DATA_GENERIC_ENHANCE)))
+			return -EFSCORRUPTED;
+	}
+
+	while (count) {
+		int compr_blocks = 0;
+		blkcnt_t reserved;
+		int ret;
+
+		for (i = 0; i < cluster_size; i++, dn->ofs_in_node++) {
+			blkaddr = f2fs_data_blkaddr(dn);
+
+			if (i == 0) {
+				if (blkaddr == COMPRESS_ADDR)
+					continue;
+				dn->ofs_in_node += cluster_size;
+				goto next;
+			}
+
+			if (__is_valid_data_blkaddr(blkaddr)) {
+				compr_blocks++;
+				continue;
+			}
+
+			dn->data_blkaddr = NEW_ADDR;
+			f2fs_set_data_blkaddr(dn);
+		}
+
+		reserved = cluster_size - compr_blocks;
+		ret = inc_valid_block_count(sbi, dn->inode, &reserved);
+		if (ret)
+			return ret;
+
+		if (reserved != cluster_size - compr_blocks)
+			return -ENOSPC;
+
+		f2fs_i_compr_blocks_update(dn->inode, compr_blocks, true);
+
+		reserved_blocks += reserved;
+next:
+		count -= cluster_size;
+	}
+
+	return reserved_blocks;
+}
+
+static int f2fs_reserve_compress_blocks(struct file *filp, unsigned long arg)
+{
+	struct inode *inode = file_inode(filp);
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+	pgoff_t page_idx = 0, last_idx;
+	unsigned int reserved_blocks = 0;
+	int ret;
+
+	if (!f2fs_sb_has_compression(F2FS_I_SB(inode)))
+		return -EOPNOTSUPP;
+
+	if (!f2fs_compressed_file(inode))
+		return -EINVAL;
+
+	if (f2fs_readonly(sbi->sb))
+		return -EROFS;
+
+	ret = mnt_want_write_file(filp);
+	if (ret)
+		return ret;
+
+	if (F2FS_I(inode)->i_compr_blocks)
+		goto out;
+
+	f2fs_balance_fs(F2FS_I_SB(inode), true);
+
+	inode_lock(inode);
+
+	if (!IS_IMMUTABLE(inode)) {
+		ret = -EINVAL;
+		goto unlock_inode;
+	}
+
+	down_write(&F2FS_I(inode)->i_gc_rwsem[WRITE]);
+	down_write(&F2FS_I(inode)->i_mmap_sem);
+
+	last_idx = DIV_ROUND_UP(i_size_read(inode), PAGE_SIZE);
+
+	while (page_idx < last_idx) {
+		struct dnode_of_data dn;
+		pgoff_t end_offset, count;
+
+		set_new_dnode(&dn, inode, NULL, NULL, 0);
+		ret = f2fs_get_dnode_of_data(&dn, page_idx, LOOKUP_NODE);
+		if (ret) {
+			if (ret == -ENOENT) {
+				page_idx = f2fs_get_next_page_offset(&dn,
+								page_idx);
+				ret = 0;
+				continue;
+			}
+			break;
+		}
+
+		end_offset = ADDRS_PER_PAGE(dn.node_page, inode);
+		count = min(end_offset - dn.ofs_in_node, last_idx - page_idx);
+		count = round_up(count, F2FS_I(inode)->i_cluster_size);
+
+		ret = reserve_compress_blocks(&dn, count);
+
+		f2fs_put_dnode(&dn);
+
+		if (ret < 0)
+			break;
+
+		page_idx += count;
+		reserved_blocks += ret;
+	}
+
+	up_write(&F2FS_I(inode)->i_gc_rwsem[WRITE]);
+	up_write(&F2FS_I(inode)->i_mmap_sem);
+
+	if (ret >= 0) {
+		F2FS_I(inode)->i_flags &= ~F2FS_IMMUTABLE_FL;
+		f2fs_set_inode_flags(inode);
+		inode->i_ctime = current_time(inode);
+		f2fs_mark_inode_dirty_sync(inode, true);
+	}
+unlock_inode:
+	inode_unlock(inode);
+out:
+	mnt_drop_write_file(filp);
+
+	if (ret >= 0) {
+		ret = put_user(reserved_blocks, (u64 __user *)arg);
+	} else if (reserved_blocks && F2FS_I(inode)->i_compr_blocks) {
+		set_sbi_flag(sbi, SBI_NEED_FSCK);
+		f2fs_warn(sbi, "%s: partial blocks were released i_ino=%lx "
+			"iblocks=%llu, reserved=%u, compr_blocks=%llu, "
+			"run fsck to fix.",
+			__func__, inode->i_ino, (u64)inode->i_blocks,
+			reserved_blocks,
+			F2FS_I(inode)->i_compr_blocks);
+	}
+
+	return ret;
+}
+
+long f2fs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+	if (unlikely(f2fs_cp_error(F2FS_I_SB(file_inode(filp)))))
+		return -EIO;
+	if (!f2fs_is_checkpoint_ready(F2FS_I_SB(file_inode(filp))))
+		return -ENOSPC;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (!capable(CAP_SYS_ADMIN))
 		return -EPERM;
@@ -4318,18 +5045,26 @@ static long __f2fs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		return f2fs_ioc_enable_verity(filp, arg);
 	case FS_IOC_MEASURE_VERITY:
 		return f2fs_ioc_measure_verity(filp, arg);
+<<<<<<< HEAD
 	case FS_IOC_READ_VERITY_METADATA:
 		return f2fs_ioc_read_verity_metadata(filp, arg);
 	case FS_IOC_GETFSLABEL:
 		return f2fs_ioc_getfslabel(filp, arg);
 	case FS_IOC_SETFSLABEL:
 		return f2fs_ioc_setfslabel(filp, arg);
+=======
+	case F2FS_IOC_GET_VOLUME_NAME:
+		return f2fs_get_volume_name(filp, arg);
+	case F2FS_IOC_SET_VOLUME_NAME:
+		return f2fs_set_volume_name(filp, arg);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	case F2FS_IOC_GET_COMPRESS_BLOCKS:
 		return f2fs_get_compress_blocks(filp, arg);
 	case F2FS_IOC_RELEASE_COMPRESS_BLOCKS:
 		return f2fs_release_compress_blocks(filp, arg);
 	case F2FS_IOC_RESERVE_COMPRESS_BLOCKS:
 		return f2fs_reserve_compress_blocks(filp, arg);
+<<<<<<< HEAD
 	case F2FS_IOC_SEC_TRIM_FILE:
 		return f2fs_sec_trim_file(filp, arg);
 	case F2FS_IOC_GET_COMPRESS_OPTION:
@@ -4340,11 +5075,14 @@ static long __f2fs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		return f2fs_ioc_decompress_file(filp, arg);
 	case F2FS_IOC_COMPRESS_FILE:
 		return f2fs_ioc_compress_file(filp, arg);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	default:
 		return -ENOTTY;
 	}
 }
 
+<<<<<<< HEAD
 long f2fs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	if (unlikely(f2fs_cp_error(F2FS_I_SB(file_inode(filp)))))
@@ -4355,6 +5093,8 @@ long f2fs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	return __f2fs_ioctl(filp, cmd, arg);
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static ssize_t f2fs_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 {
 	struct file *file = iocb->ki_filp;
@@ -4364,6 +5104,7 @@ static ssize_t f2fs_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 	if (!f2fs_is_compress_backend_ready(inode))
 		return -EOPNOTSUPP;
 
+<<<<<<< HEAD
 	if (trace_f2fs_dataread_start_enabled()) {
 		char *p = f2fs_kmalloc(F2FS_I_SB(inode), PATH_MAX, GFP_KERNEL);
 		char *path;
@@ -4383,11 +5124,14 @@ static ssize_t f2fs_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 		kfree(p);
 	}
 skip_read_trace:
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	ret = generic_file_read_iter(iocb, iter);
 
 	if (ret > 0)
 		f2fs_update_iostat(F2FS_I_SB(inode), APP_READ_IO, ret);
 
+<<<<<<< HEAD
 	if (trace_f2fs_dataread_end_enabled())
 		trace_f2fs_dataread_end(inode, iocb->ki_pos, ret);
 	return ret;
@@ -4465,6 +5209,11 @@ static int f2fs_preallocate_blocks(struct kiocb *iocb, struct iov_iter *iter)
 	return map.m_len;
 }
 
+=======
+	return ret;
+}
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static ssize_t f2fs_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 {
 	struct file *file = iocb->ki_filp;
@@ -4494,6 +5243,7 @@ static ssize_t f2fs_file_write_iter(struct kiocb *iocb, struct iov_iter *from)
 		inode_lock(inode);
 	}
 
+<<<<<<< HEAD
 	if (unlikely(IS_IMMUTABLE(inode))) {
 		ret = -EPERM;
 		goto out_unlock;
@@ -4574,6 +5324,76 @@ out_unlock:
 	inode_unlock(inode);
 out:
 	trace_f2fs_file_write_iter(inode, orig_pos, orig_count, ret);
+=======
+	ret = generic_write_checks(iocb, from);
+	if (ret > 0) {
+		bool preallocated = false;
+		size_t target_size = 0;
+		int err;
+
+		if (iov_iter_fault_in_readable(from, iov_iter_count(from)))
+			set_inode_flag(inode, FI_NO_PREALLOC);
+
+		if ((iocb->ki_flags & IOCB_NOWAIT)) {
+			if (!f2fs_overwrite_io(inode, iocb->ki_pos,
+						iov_iter_count(from)) ||
+				f2fs_has_inline_data(inode) ||
+				f2fs_force_buffered_io(inode, iocb, from)) {
+				clear_inode_flag(inode, FI_NO_PREALLOC);
+				inode_unlock(inode);
+				ret = -EAGAIN;
+				goto out;
+			}
+			goto write;
+		}
+
+		if (is_inode_flag_set(inode, FI_NO_PREALLOC))
+			goto write;
+
+		if (iocb->ki_flags & IOCB_DIRECT) {
+			/*
+			 * Convert inline data for Direct I/O before entering
+			 * f2fs_direct_IO().
+			 */
+			err = f2fs_convert_inline_inode(inode);
+			if (err)
+				goto out_err;
+			/*
+			 * If force_buffere_io() is true, we have to allocate
+			 * blocks all the time, since f2fs_direct_IO will fall
+			 * back to buffered IO.
+			 */
+			if (!f2fs_force_buffered_io(inode, iocb, from) &&
+					allow_outplace_dio(inode, iocb, from))
+				goto write;
+		}
+		preallocated = true;
+		target_size = iocb->ki_pos + iov_iter_count(from);
+
+		err = f2fs_preallocate_blocks(iocb, from);
+		if (err) {
+out_err:
+			clear_inode_flag(inode, FI_NO_PREALLOC);
+			inode_unlock(inode);
+			ret = err;
+			goto out;
+		}
+write:
+		ret = __generic_file_write_iter(iocb, from);
+		clear_inode_flag(inode, FI_NO_PREALLOC);
+
+		/* if we couldn't write data, we should deallocate blocks. */
+		if (preallocated && i_size_read(inode) < target_size)
+			f2fs_truncate(inode);
+
+		if (ret > 0)
+			f2fs_update_iostat(F2FS_I_SB(inode), APP_WRITE_IO, ret);
+	}
+	inode_unlock(inode);
+out:
+	trace_f2fs_file_write_iter(inode, iocb->ki_pos,
+					iov_iter_count(from), ret);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (ret > 0)
 		ret = generic_write_sync(iocb, ret);
 	return ret;
@@ -4657,9 +5477,15 @@ long f2fs_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case F2FS_IOC_RELEASE_VOLATILE_WRITE:
 	case F2FS_IOC_ABORT_ATOMIC_WRITE:
 	case F2FS_IOC_SHUTDOWN:
+<<<<<<< HEAD
 	case FS_IOC_SET_ENCRYPTION_POLICY:
 	case FS_IOC_GET_ENCRYPTION_PWSALT:
 	case FS_IOC_GET_ENCRYPTION_POLICY:
+=======
+	case F2FS_IOC_SET_ENCRYPTION_POLICY:
+	case F2FS_IOC_GET_ENCRYPTION_PWSALT:
+	case F2FS_IOC_GET_ENCRYPTION_POLICY:
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	case FS_IOC_GET_ENCRYPTION_POLICY_EX:
 	case FS_IOC_ADD_ENCRYPTION_KEY:
 	case FS_IOC_REMOVE_ENCRYPTION_KEY:
@@ -4679,6 +5505,7 @@ long f2fs_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case F2FS_IOC_RESIZE_FS:
 	case FS_IOC_ENABLE_VERITY:
 	case FS_IOC_MEASURE_VERITY:
+<<<<<<< HEAD
 	case FS_IOC_READ_VERITY_METADATA:
 	case FS_IOC_GETFSLABEL:
 	case FS_IOC_SETFSLABEL:
@@ -4690,6 +5517,13 @@ long f2fs_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case F2FS_IOC_SET_COMPRESS_OPTION:
 	case F2FS_IOC_DECOMPRESS_FILE:
 	case F2FS_IOC_COMPRESS_FILE:
+=======
+	case F2FS_IOC_GET_VOLUME_NAME:
+	case F2FS_IOC_SET_VOLUME_NAME:
+	case F2FS_IOC_GET_COMPRESS_BLOCKS:
+	case F2FS_IOC_RELEASE_COMPRESS_BLOCKS:
+	case F2FS_IOC_RESERVE_COMPRESS_BLOCKS:
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		break;
 	default:
 		return -ENOIOCTLCMD;

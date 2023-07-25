@@ -922,6 +922,7 @@ struct task_struct *wq_worker_sleeping(struct task_struct *task)
  * CONTEXT:
  * spin_lock_irq(rq->lock)
  *
+<<<<<<< HEAD
  * This function is called during schedule() when a kworker is going
  * to sleep. It's used by psi to identify aggregation workers during
  * dequeuing, to allow periodic aggregation to shut-off when that
@@ -932,6 +933,8 @@ struct task_struct *wq_worker_sleeping(struct task_struct *task)
  * queuing and dequeuing paths, when @task, which must be a kworker,
  * is guaranteed to not be processing any works.
  *
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  * Return:
  * The last work function %current executed as a worker, NULL if it
  * hasn't executed any work yet.

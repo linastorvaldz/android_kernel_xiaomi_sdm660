@@ -927,7 +927,11 @@ usb_get_sec_event_ring_phys_addr(struct usb_device *dev,
 
 	return usb_hcd_get_sec_event_ring_phys_addr(dev, intr_num, dma);
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(usb_get_sec_event_ring_phys_addr);
+=======
+EXPORT_SYMBOL_GPL(usb_get_sec_event_ring_phys_addr);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 phys_addr_t usb_get_xfer_ring_phys_addr(struct usb_device *dev,
 	struct usb_host_endpoint *ep, dma_addr_t *dma)
@@ -937,8 +941,17 @@ phys_addr_t usb_get_xfer_ring_phys_addr(struct usb_device *dev,
 
 	return usb_hcd_get_xfer_ring_phys_addr(dev, ep, dma);
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(usb_get_xfer_ring_phys_addr);
 
+=======
+EXPORT_SYMBOL_GPL(usb_get_xfer_ring_phys_addr);
+
+/**
+ * usb_get_controller_id - returns the host controller id.
+ * @dev: the device whose host controller id is being queried.
+ */
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 int usb_get_controller_id(struct usb_device *dev)
 {
 	if (dev->state == USB_STATE_NOTATTACHED)
@@ -946,13 +959,21 @@ int usb_get_controller_id(struct usb_device *dev)
 
 	return usb_hcd_get_controller_id(dev);
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(usb_get_controller_id);
+=======
+EXPORT_SYMBOL_GPL(usb_get_controller_id);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 int usb_stop_endpoint(struct usb_device *dev, struct usb_host_endpoint *ep)
 {
 	return usb_hcd_stop_endpoint(dev, ep);
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(usb_stop_endpoint);
+=======
+EXPORT_SYMBOL_GPL(usb_stop_endpoint);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /*-------------------------------------------------------------------*/
 /*

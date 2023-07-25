@@ -321,7 +321,11 @@ void dma_common_free_remap(void *cpu_addr, size_t size, unsigned long vm_flags,
 	struct vm_struct *area = find_vm_area(cpu_addr);
 
 	if (!area || (area->flags & vm_flags) != vm_flags) {
+<<<<<<< HEAD
 		WARN(!no_warn, "trying to free invalid coherent area: %pK\n",
+=======
+		WARN(!no_warn, "trying to free invalid coherent area: %p\n",
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			cpu_addr);
 		return;
 	}

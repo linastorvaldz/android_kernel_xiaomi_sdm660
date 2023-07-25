@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0
 OBJECT_FILES_NON_STANDARD := y
+<<<<<<< HEAD
 CFLAGS_REMOVE_empty.o += $(CC_FLAGS_LTO)
+=======
+CFLAGS_empty.o += $(DISABLE_LTO)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 hostprogs-y	:= modpost mk_elfconfig
 always		:= $(hostprogs-y) empty.o

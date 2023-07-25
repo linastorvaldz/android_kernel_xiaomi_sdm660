@@ -200,10 +200,13 @@ struct scsi_device {
 	unsigned broken_fua:1;		/* Don't set FUA bit */
 	unsigned lun_in_cdb:1;		/* Store LUN bits in CDB[1] */
 	unsigned unmap_limit_for_ws:1;	/* Use the UNMAP limit for WRITE SAME */
+<<<<<<< HEAD
 	unsigned use_rpm_auto:1; /* Enable runtime PM auto suspend */
 
 #define SCSI_DEFAULT_AUTOSUSPEND_DELAY  -1
 	int autosuspend_delay;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	unsigned rpm_autosuspend:1;	/* Enable runtime autosuspend at device
 					 * creation time */
 	/* If non-zero, use timeout (in jiffies) for all commands */

@@ -86,6 +86,7 @@ ENTRY(cpu_reset)
 	ret	x0
 ENDPROC(cpu_reset)
 
+<<<<<<< HEAD
 ENTRY(cpu_soft_restart)
 	/* Save address of cpu_reset() and reset address */
 	mov	x19, x0
@@ -101,6 +102,8 @@ ENTRY(cpu_soft_restart)
 	ret	x19
 ENDPROC(cpu_soft_restart)
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  *	cpu_do_idle()
  *

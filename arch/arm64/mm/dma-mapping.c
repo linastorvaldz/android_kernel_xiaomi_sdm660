@@ -39,7 +39,10 @@
 #include <asm/dma-iommu.h>
 #include <linux/of_address.h>
 #include <linux/dma-mapping-fast.h>
+<<<<<<< HEAD
 #include <linux/msm_dma_iommu_mapping.h>
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 static int swiotlb __ro_after_init;
 

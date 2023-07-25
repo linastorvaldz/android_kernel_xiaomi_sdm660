@@ -1069,8 +1069,11 @@ struct snd_soc_card {
 	struct mutex mutex;
 	struct mutex dapm_mutex;
 	struct mutex dapm_power_mutex;
+<<<<<<< HEAD
 
 	spinlock_t dpcm_lock;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	bool instantiated;
 	bool topology_shortname_created;
@@ -1370,8 +1373,11 @@ int snd_soc_component_test_bits(struct snd_soc_component *component,
 	unsigned int reg, unsigned int mask, unsigned int value);
 struct snd_soc_component *soc_find_component(
 	const struct device_node *of_node, const char *name);
+<<<<<<< HEAD
 struct snd_soc_component *soc_find_component_locked(
 	const struct device_node *of_node, const char *name);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /* component wide operations */
 int snd_soc_component_set_sysclk(struct snd_soc_component *component,

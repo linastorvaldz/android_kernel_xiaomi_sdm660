@@ -866,7 +866,11 @@ static int virtblk_probe(struct virtio_device *vdev)
 	virtblk_update_capacity(vblk, false);
 	virtio_device_ready(vdev);
 
+<<<<<<< HEAD
 	device_add_disk(&vdev->dev, vblk->disk, NULL);
+=======
+	device_add_disk(&vdev->dev, vblk->disk);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	err = device_create_file(disk_to_dev(vblk->disk), &dev_attr_serial);
 	if (err)
 		goto out_del_disk;

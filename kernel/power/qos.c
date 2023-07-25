@@ -45,7 +45,10 @@
 #include <linux/seq_file.h>
 #include <linux/irq.h>
 #include <linux/irqdesc.h>
+<<<<<<< HEAD
 #include <linux/cpumask.h>
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #include <linux/uaccess.h>
 #include <linux/export.h>
@@ -267,12 +270,69 @@ static const struct file_operations pm_qos_debug_fops = {
 	.release        = single_release,
 };
 
+<<<<<<< HEAD
 static inline int pm_qos_set_value_for_cpus(struct pm_qos_request *new_req,
 					    struct pm_qos_constraints *c,
 					    unsigned long *cpus,
 					    unsigned long new_cpus,
 					    enum pm_qos_req_action new_action,
 					    bool dev_req)
+=======
+static inline void pm_qos_set_value_for_cpus(struct pm_qos_constraints *c,
+					     bool dev_req)
+{
+	struct pm_qos_request *req = NULL;
+	int cpu;
+	s32 qos_val[NR_CPUS] = { [0 ... (NR_CPUS - 1)] = c->default_value };
+
+	/*
+	 * pm_qos_set_value_for_cpus expects all c->list elements to be of type
+	 * pm_qos_request, however requests from device will contain elements
+	 * of type dev_pm_qos_request.
+	 * pm_qos_constraints.target_per_cpu can be accessed only for
+	 * constraints associated with one of the pm_qos_class and present in
+	 * pm_qos_array. Device requests are not associated with any of
+	 * pm_qos_class, therefore their target_per_cpu cannot be accessed. We
+	 * can safely skip updating target_per_cpu for device requests.
+	 */
+	if (dev_req)
+		return;
+
+	plist_for_each_entry(req, &c->list, node) {
+		for_each_cpu(cpu, &req->cpus_affine) {
+			switch (c->type) {
+			case PM_QOS_MIN:
+				if (qos_val[cpu] > req->node.prio)
+					qos_val[cpu] = req->node.prio;
+				break;
+			case PM_QOS_MAX:
+				if (req->node.prio > qos_val[cpu])
+					qos_val[cpu] = req->node.prio;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	for_each_possible_cpu(cpu)
+		c->target_per_cpu[cpu] = qos_val[cpu];
+}
+
+/**
+ * pm_qos_update_target - manages the constraints list and calls the notifiers
+ *  if needed
+ * @c: constraints data struct
+ * @node: request to add to the list, to update or to remove
+ * @action: action to take on the constraints list
+ * @value: value of the request to add or update
+ *
+ * This function returns 1 if the aggregated constraint value has changed, 0
+ *  otherwise.
+ */
+int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+			 enum pm_qos_req_action action, int value, bool dev_req)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	struct pm_qos_request *req;
 	unsigned long new_req_cpus;
@@ -389,7 +449,11 @@ static int pm_qos_update_target_cpus(struct pm_qos_constraints *c,
 
 	curr_value = pm_qos_get_value(c);
 	pm_qos_set_value(c, curr_value);
+<<<<<<< HEAD
 	ret = pm_qos_set_value_for_cpus(req, c, &cpus, new_cpus, action, dev_req);
+=======
+	pm_qos_set_value_for_cpus(c, dev_req);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	spin_unlock(&pm_qos_lock);
 
@@ -507,9 +571,12 @@ EXPORT_SYMBOL_GPL(pm_qos_request);
 
 int pm_qos_request_for_cpu(int pm_qos_class, int cpu)
 {
+<<<<<<< HEAD
 	if (cpu_isolated(cpu))
 		return INT_MAX;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return pm_qos_array[pm_qos_class]->constraints->target_per_cpu[cpu];
 }
 EXPORT_SYMBOL(pm_qos_request_for_cpu);
@@ -522,16 +589,27 @@ EXPORT_SYMBOL_GPL(pm_qos_request_active);
 
 int pm_qos_request_for_cpumask(int pm_qos_class, struct cpumask *mask)
 {
+<<<<<<< HEAD
+=======
+	unsigned long irqflags;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int cpu;
 	struct pm_qos_constraints *c = NULL;
 	int val;
 
+<<<<<<< HEAD
 	spin_lock(&pm_qos_lock);
+=======
+	spin_lock_irqsave(&pm_qos_lock, irqflags);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	c = pm_qos_array[pm_qos_class]->constraints;
 	val = c->default_value;
 
 	for_each_cpu(cpu, mask) {
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		switch (c->type) {
 		case PM_QOS_MIN:
 			if (c->target_per_cpu[cpu] < val)
@@ -545,13 +623,21 @@ int pm_qos_request_for_cpumask(int pm_qos_class, struct cpumask *mask)
 			break;
 		}
 	}
+<<<<<<< HEAD
 	spin_unlock(&pm_qos_lock);
+=======
+	spin_unlock_irqrestore(&pm_qos_lock, irqflags);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	return val;
 }
 EXPORT_SYMBOL(pm_qos_request_for_cpumask);
 
+<<<<<<< HEAD
 static __always_inline void __pm_qos_update_request(struct pm_qos_request *req,
+=======
+static void __pm_qos_update_request(struct pm_qos_request *req,
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			   s32 new_value)
 {
 	trace_pm_qos_update_request(req->pm_qos_class, new_value);
@@ -576,16 +662,51 @@ static void pm_qos_irq_release(struct kref *ref)
 				  c->default_value, CPUMASK_ALL, false);
 }
 
+<<<<<<< HEAD
 static void pm_qos_irq_notify(struct irq_affinity_notify *notify,
 		const cpumask_t *mask)
 {
+=======
+#ifdef CONFIG_SMP
+static void pm_qos_irq_release(struct kref *ref)
+{
+	unsigned long flags;
+	struct irq_affinity_notify *notify = container_of(ref,
+					struct irq_affinity_notify, kref);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	struct pm_qos_request *req = container_of(notify,
 					struct pm_qos_request, irq_notify);
 	struct pm_qos_constraints *c =
 				pm_qos_array[req->pm_qos_class]->constraints;
 
+<<<<<<< HEAD
 	pm_qos_update_target_cpus(c, &req->node, PM_QOS_UPDATE_REQ,
 				  req->node.prio, *cpumask_bits(mask), false);
+=======
+	spin_lock_irqsave(&pm_qos_lock, flags);
+	cpumask_setall(&req->cpus_affine);
+	spin_unlock_irqrestore(&pm_qos_lock, flags);
+
+	pm_qos_update_target(c, &req->node, PM_QOS_UPDATE_REQ,
+			c->default_value, false);
+}
+
+static void pm_qos_irq_notify(struct irq_affinity_notify *notify,
+		const cpumask_t *mask)
+{
+	unsigned long flags;
+	struct pm_qos_request *req = container_of(notify,
+					struct pm_qos_request, irq_notify);
+	struct pm_qos_constraints *c =
+				pm_qos_array[req->pm_qos_class]->constraints;
+
+	spin_lock_irqsave(&pm_qos_lock, flags);
+	cpumask_copy(&req->cpus_affine, mask);
+	spin_unlock_irqrestore(&pm_qos_lock, flags);
+
+	pm_qos_update_target(c, &req->node, PM_QOS_UPDATE_REQ, req->node.prio,
+			false);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 #endif
 
@@ -615,9 +736,15 @@ void pm_qos_add_request(struct pm_qos_request *req,
 
 	switch (req->type) {
 	case PM_QOS_REQ_AFFINE_CORES:
+<<<<<<< HEAD
 		if (!req->cpus_affine) {
 			req->cpus_affine = CPUMASK_ALL;
 			req->type = PM_QOS_REQ_ALL_CORES;
+=======
+		if (cpumask_empty(&req->cpus_affine)) {
+			req->type = PM_QOS_REQ_ALL_CORES;
+			cpumask_setall(&req->cpus_affine);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			WARN(1, "Affine cores not set for request with affinity flag\n");
 		}
 		break;
@@ -633,14 +760,22 @@ void pm_qos_add_request(struct pm_qos_request *req,
 			mask = desc->irq_data.common->affinity;
 
 			/* Get the current affinity */
+<<<<<<< HEAD
 			req->cpus_affine = *cpumask_bits(mask);
+=======
+			cpumask_copy(&req->cpus_affine, mask);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			req->irq_notify.irq = req->irq;
 			req->irq_notify.notify = pm_qos_irq_notify;
 			req->irq_notify.release = pm_qos_irq_release;
 
 		} else {
 			req->type = PM_QOS_REQ_ALL_CORES;
+<<<<<<< HEAD
 			req->cpus_affine = CPUMASK_ALL;
+=======
+			cpumask_setall(&req->cpus_affine);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			WARN(1, "IRQ-%d not set for request with affinity flag\n",
 					req->irq);
 		}
@@ -650,7 +785,11 @@ void pm_qos_add_request(struct pm_qos_request *req,
 		WARN(1, "Unknown request type %d\n", req->type);
 		/* fall through */
 	case PM_QOS_REQ_ALL_CORES:
+<<<<<<< HEAD
 		req->cpus_affine = CPUMASK_ALL;
+=======
+		cpumask_setall(&req->cpus_affine);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		break;
 	}
 
@@ -669,7 +808,11 @@ void pm_qos_add_request(struct pm_qos_request *req,
 		if (ret) {
 			WARN(1, "IRQ affinity notify set failed\n");
 			req->type = PM_QOS_REQ_ALL_CORES;
+<<<<<<< HEAD
 			req->cpus_affine = CPUMASK_ALL;
+=======
+			cpumask_setall(&req->cpus_affine);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			pm_qos_update_target(
 				pm_qos_array[pm_qos_class]->constraints,
 				&req->node, PM_QOS_UPDATE_REQ, value, false);
@@ -705,6 +848,39 @@ __always_inline void pm_qos_update_request(struct pm_qos_request *req,
 EXPORT_SYMBOL_GPL(pm_qos_update_request);
 
 /**
+<<<<<<< HEAD
+=======
+ * pm_qos_update_request_timeout - modifies an existing qos request temporarily.
+ * @req : handle to list element holding a pm_qos request to use
+ * @new_value: defines the temporal qos request
+ * @timeout_us: the effective duration of this qos request in usecs.
+ *
+ * After timeout_us, this qos request is cancelled automatically.
+ */
+void pm_qos_update_request_timeout(struct pm_qos_request *req, s32 new_value,
+				   unsigned long timeout_us)
+{
+	if (!req)
+		return;
+	if (WARN(!pm_qos_request_active(req),
+		 "%s called for unknown object.", __func__))
+		return;
+
+	cancel_delayed_work_sync(&req->work);
+
+	trace_pm_qos_update_request_timeout(req->pm_qos_class,
+					    new_value, timeout_us);
+	if (new_value != req->node.prio)
+		pm_qos_update_target(
+			pm_qos_array[req->pm_qos_class]->constraints,
+			&req->node, PM_QOS_UPDATE_REQ, new_value, false);
+
+	schedule_delayed_work(&req->work, usecs_to_jiffies(timeout_us));
+}
+EXPORT_SYMBOL_GPL(pm_qos_update_request_timeout);
+
+/**
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  * pm_qos_remove_request - modifies an existing qos request
  * @req: handle to request list element
  *

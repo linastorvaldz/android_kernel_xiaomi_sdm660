@@ -254,6 +254,7 @@ void incfs_free_dir_file(struct dir_file *dir)
 
 static ssize_t decompress(struct mem_range src, struct mem_range dst)
 {
+<<<<<<< HEAD
 	int result;
 
 #if defined(CONFIG_ARM64) && defined(CONFIG_KERNEL_MODE_NEON)
@@ -261,6 +262,9 @@ static ssize_t decompress(struct mem_range src, struct mem_range dst)
 #else
 	result = LZ4_decompress_safe(src.data, dst.data, src.len, dst.len);
 #endif
+=======
+	int result = LZ4_decompress_safe(src.data, dst.data, src.len, dst.len);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (result < 0)
 		return -EBADMSG;

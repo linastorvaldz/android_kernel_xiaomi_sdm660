@@ -247,4 +247,8 @@ err:
 	pr_err("%s:error finding ep %s\n", __func__, ep_name);
 	return NULL;
 }
+<<<<<<< HEAD
 EXPORT_SYMBOL(usb_ep_autoconfig_by_name);
+=======
+EXPORT_SYMBOL_GPL(usb_ep_autoconfig_by_name);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)

@@ -57,4 +57,8 @@ SYM_FUNC_START(__efi_rt_asm_wrapper)
 #endif
 
 	b	efi_handle_corrupted_x18	// tail call
+<<<<<<< HEAD
 SYM_FUNC_END(__efi_rt_asm_wrapper)
+=======
+ENDPROC(__efi_rt_asm_wrapper)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)

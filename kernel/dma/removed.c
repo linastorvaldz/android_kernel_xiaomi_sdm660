@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 // SPDX-License-Identifier: GPL-2.0-only
+=======
+// SPDX-License-Identifier: GPL-2.0
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  *  Copyright (c) 2013-2014,2018 The Linux Foundation. All rights reserved.
  *  Copyright (C) 2000-2004 Russell King

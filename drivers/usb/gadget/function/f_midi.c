@@ -1241,7 +1241,11 @@ static ssize_t alsa_show(struct device *dev,
 
 	if (fi_midi && fi_midi->f) {
 		midi = func_to_midi(fi_midi->f);
+<<<<<<< HEAD
 		if (midi->rmidi && midi->card && midi->rmidi->card)
+=======
+		if (midi->rmidi && midi->rmidi->card)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			return sprintf(buf, "%d %d\n",
 			midi->rmidi->card->number, midi->rmidi->device);
 	}

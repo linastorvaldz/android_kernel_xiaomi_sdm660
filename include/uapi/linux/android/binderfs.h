@@ -4,8 +4,13 @@
  *
  */
 
+<<<<<<< HEAD
 #ifndef _UAPI_LINUX_BINDERFS_H
 #define _UAPI_LINUX_BINDERFS_H
+=======
+#ifndef _UAPI_LINUX_BINDER_CTL_H
+#define _UAPI_LINUX_BINDER_CTL_H
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #include <linux/android/binder.h>
 #include <linux/types.h>
@@ -31,5 +36,9 @@ struct binderfs_device {
  */
 #define BINDER_CTL_ADD _IOWR('b', 1, struct binderfs_device)
 
+<<<<<<< HEAD
 #endif /* _UAPI_LINUX_BINDERFS_H */
+=======
+#endif /* _UAPI_LINUX_BINDER_CTL_H */
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 

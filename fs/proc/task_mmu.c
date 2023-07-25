@@ -139,7 +139,11 @@ static void seq_print_vma_name(struct seq_file *m, struct vm_area_struct *vma)
 	page_offset = (unsigned long)name - page_start_vaddr;
 	num_pages = DIV_ROUND_UP(page_offset + max_len, PAGE_SIZE);
 
+<<<<<<< HEAD
 	seq_write(m, "[anon:", 6);
+=======
+	seq_puts(m, "[anon:");
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	for (i = 0; i < num_pages; i++) {
 		int len;
@@ -151,7 +155,11 @@ static void seq_print_vma_name(struct seq_file *m, struct vm_area_struct *vma)
 		pages_pinned = get_user_pages_remote(current, mm,
 				page_start_vaddr, 1, 0, &page, NULL, NULL);
 		if (pages_pinned < 1) {
+<<<<<<< HEAD
 			seq_write(m, "<fault>]\n", 9);
+=======
+			seq_puts(m, "<fault>]");
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			return;
 		}
 
@@ -171,7 +179,11 @@ static void seq_print_vma_name(struct seq_file *m, struct vm_area_struct *vma)
 		page_start_vaddr += PAGE_SIZE;
 	}
 
+<<<<<<< HEAD
 	seq_write(m, "]\n", 2);
+=======
+	seq_putc(m, ']');
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static void vma_stop(struct proc_maps_private *priv)
@@ -568,6 +580,7 @@ show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 		}
 
 		if (is_stack(vma)) {
+<<<<<<< HEAD
 			seq_write(m, "[stack]\n", 8);
 			return;
 		}
@@ -575,6 +588,15 @@ show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 		if (vma_get_anon_name(vma)) {
 			seq_print_vma_name(m, vma);
 			return;
+=======
+			name = "[stack]";
+			goto done;
+		}
+
+		if (vma_get_anon_name(vma)) {
+			seq_pad(m, ' ');
+			seq_print_vma_name(m, vma);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		}
 	}
 
@@ -1017,6 +1039,10 @@ static int show_smap(struct seq_file *m, void *v)
 	if (vma_get_anon_name(vma)) {
 		seq_puts(m, "Name:           ");
 		seq_print_vma_name(m, vma);
+<<<<<<< HEAD
+=======
+		seq_putc(m, '\n');
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	SEQ_PUT_DEC("Size:           ", vma->vm_end - vma->vm_start);

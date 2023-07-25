@@ -144,10 +144,13 @@ struct ftrace_likely_data {
 #define __visible
 #endif
 
+<<<<<<< HEAD
 #ifndef __nocfi
 #define __nocfi
 #endif
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #ifndef __noscs
 # define __noscs
 #endif
@@ -269,6 +272,13 @@ struct ftrace_likely_data {
 # define __gnu_inline
 #endif
 
+<<<<<<< HEAD
+=======
+#ifndef __norecordmcount
+#define __norecordmcount
+#endif
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #ifndef __nocfi
 #define __nocfi
 #endif

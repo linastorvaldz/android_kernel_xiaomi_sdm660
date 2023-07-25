@@ -25,9 +25,12 @@
 #include <keys/user-type.h>
 #include <linux/hashtable.h>
 #include <linux/scatterlist.h>
+<<<<<<< HEAD
 #include <linux/bio-crypt-ctx.h>
 #include <linux/siphash.h>
 #include <crypto/sha.h>
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #include "fscrypt_private.h"
 
@@ -35,8 +38,11 @@
 static DEFINE_HASHTABLE(fscrypt_direct_keys, 6); /* 6 bits = 64 buckets */
 static DEFINE_SPINLOCK(fscrypt_direct_keys_lock);
 
+<<<<<<< HEAD
 static struct crypto_shash *essiv_hash_tfm;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * v1 key derivation function.  This generates the derived key by encrypting the
  * master key with AES-128-ECB using the nonce as the AES key.  This provides a
@@ -88,6 +94,7 @@ out:
 	return res;
 }
 
+<<<<<<< HEAD
 static int fscrypt_do_sha256(const u8 *src, int srclen, u8 *dst)
 {
 	struct crypto_shash *tfm = READ_ONCE(essiv_hash_tfm);
@@ -119,6 +126,8 @@ static int fscrypt_do_sha256(const u8 *src, int srclen, u8 *dst)
 	}
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * Search the current task's subscribed keyrings for a "logon" key with
  * description prefix:descriptor, and if found acquire a read lock on it and
@@ -302,6 +311,7 @@ static int setup_v1_file_key_direct(struct fscrypt_info *ci,
 static int setup_v1_file_key_derived(struct fscrypt_info *ci,
 				     const u8 *raw_master_key)
 {
+<<<<<<< HEAD
 	u8 *derived_key = NULL;
 	int err;
 	int i;
@@ -359,6 +369,11 @@ static int setup_v1_file_key_derived(struct fscrypt_info *ci,
 
 		return err;
 	}
+=======
+	u8 *derived_key;
+	int err;
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/*
 	 * This cannot be a stack buffer because it will be passed to the
 	 * scatterlist crypto API during derive_key_aes().
@@ -374,9 +389,13 @@ static int setup_v1_file_key_derived(struct fscrypt_info *ci,
 
 	err = fscrypt_set_per_file_enc_key(ci, derived_key);
 out:
+<<<<<<< HEAD
 	if (derived_key)
 		kzfree(derived_key);
 
+=======
+	kzfree(derived_key);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return err;
 }
 

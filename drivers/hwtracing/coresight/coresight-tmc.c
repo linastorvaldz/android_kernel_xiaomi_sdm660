@@ -609,6 +609,7 @@ static int tmc_etr_setup_caps(struct tmc_drvdata *drvdata,
 	if (rc)
 		dev_err(drvdata->dev, "Failed to setup DMA mask: %d\n", rc);
 	return rc;
+<<<<<<< HEAD
 }
 
 static int tmc_config_desc(struct tmc_drvdata *drvdata,
@@ -642,6 +643,8 @@ static int tmc_config_desc(struct tmc_drvdata *drvdata,
 	}
 
 	return ret;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static int tmc_probe(struct amba_device *adev, const struct amba_id *id)
@@ -700,6 +703,7 @@ static int tmc_probe(struct amba_device *adev, const struct amba_id *id)
 		drvdata->size = readl_relaxed(drvdata->base + TMC_RSZ) * 4;
 	}
 
+<<<<<<< HEAD
 	ret = of_get_coresight_csr_name(adev->dev.of_node, &drvdata->csr_name);
 	if (ret)
 		dev_err(dev, "No csr data\n");
@@ -730,6 +734,8 @@ static int tmc_probe(struct amba_device *adev, const struct amba_id *id)
 	if (of_property_read_bool(drvdata->dev->of_node, "qcom,force-reg-dump"))
 		drvdata->force_reg_dump = true;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	desc.pdata = pdata;
 	desc.dev = dev;
 	ret = tmc_config_desc(drvdata, &desc);
@@ -739,12 +745,28 @@ static int tmc_probe(struct amba_device *adev, const struct amba_id *id)
 	if (drvdata->config_type == TMC_CONFIG_TYPE_ETR) {
 		ret = tmc_etr_setup_caps(drvdata, devid, id->data);
 		if (ret)
+<<<<<<< HEAD
 			return ret;
 
 		drvdata->byte_cntr = byte_cntr_init(adev, drvdata);
 		ret = tmc_etr_bam_init(adev, drvdata);
 		if (ret)
 			return ret;
+=======
+			goto out;
+		idr_init(&drvdata->idr);
+		mutex_init(&drvdata->idr_mutex);
+		break;
+	case TMC_CONFIG_TYPE_ETF:
+		desc.type = CORESIGHT_DEV_TYPE_LINKSINK;
+		desc.subtype.link_subtype = CORESIGHT_DEV_SUBTYPE_LINK_FIFO;
+		desc.ops = &tmc_etf_cs_ops;
+		break;
+	default:
+		pr_err("%s: Unsupported TMC config\n", pdata->name);
+		ret = -EINVAL;
+		goto out;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	drvdata->csdev = coresight_register(&desc);
@@ -759,12 +781,18 @@ static int tmc_probe(struct amba_device *adev, const struct amba_id *id)
 	ret = misc_register(&drvdata->miscdev);
 	if (ret) {
 		coresight_unregister(drvdata->csdev);
+<<<<<<< HEAD
 		return ret;
 	}
 
 	if (!ret)
 		pm_runtime_put(&adev->dev);
 
+=======
+	else
+		pm_runtime_put(&adev->dev);
+out:
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return ret;
 }
 

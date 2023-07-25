@@ -58,9 +58,14 @@ obj-$(CONFIG_SERIAL_SGI_IOC3) += ioc3_serial.o
 obj-$(CONFIG_SERIAL_ATMEL) += atmel_serial.o
 obj-$(CONFIG_SERIAL_UARTLITE) += uartlite.o
 obj-$(CONFIG_SERIAL_MSM) += msm_serial.o
+<<<<<<< HEAD
 obj-$(CONFIG_SERIAL_MSM_GENI) += msm_geni_serial.o
 obj-$(CONFIG_SERIAL_MSM_HS) += msm_serial_hs.o
 obj-$(CONFIG_SERIAL_MSM_GENI_EARLY_CONSOLE) += msm_geni_serial_console.o
+=======
+obj-$(CONFIG_SERIAL_MSM_GENI_EARLY_CONSOLE) += msm_geni_serial_console.o
+obj-$(CONFIG_SERIAL_QCOM_GENI) += qcom_geni_serial.o
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 obj-$(CONFIG_SERIAL_NETX) += netx-serial.o
 obj-$(CONFIG_SERIAL_KS8695) += serial_ks8695.o
 obj-$(CONFIG_SERIAL_OMAP) += omap-serial.o

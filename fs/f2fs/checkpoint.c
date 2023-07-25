@@ -126,7 +126,11 @@ retry:
 		if (PTR_ERR(page) == -EIO &&
 				++count <= DEFAULT_RETRY_IO_COUNT)
 			goto retry;
+<<<<<<< HEAD
 		f2fs_stop_checkpoint(sbi, false, STOP_CP_REASON_META_PAGE);
+=======
+		f2fs_stop_checkpoint(sbi, false);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 	return page;
 }
@@ -144,7 +148,11 @@ static bool __is_bitmap_valid(struct f2fs_sb_info *sbi, block_t blkaddr,
 	unsigned int segno, offset;
 	bool exist;
 
+<<<<<<< HEAD
 	if (type == DATA_GENERIC)
+=======
+	if (type != DATA_GENERIC_ENHANCE && type != DATA_GENERIC_ENHANCE_READ)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return true;
 
 	segno = GET_SEGNO(sbi, blkaddr);
@@ -152,6 +160,7 @@ static bool __is_bitmap_valid(struct f2fs_sb_info *sbi, block_t blkaddr,
 	se = get_seg_entry(sbi, segno);
 
 	exist = f2fs_test_bit(offset, se->cur_valid_map);
+<<<<<<< HEAD
 	if (exist && type == DATA_GENERIC_ENHANCE_UPDATE) {
 		f2fs_err(sbi, "Inconsistent error blkaddr:%u, sit bitmap:%d",
 			 blkaddr, exist);
@@ -159,11 +168,17 @@ static bool __is_bitmap_valid(struct f2fs_sb_info *sbi, block_t blkaddr,
 		return exist;
 	}
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!exist && type == DATA_GENERIC_ENHANCE) {
 		f2fs_err(sbi, "Inconsistent error blkaddr:%u, sit bitmap:%d",
 			 blkaddr, exist);
 		set_sbi_flag(sbi, SBI_NEED_FSCK);
+<<<<<<< HEAD
 		dump_stack();
+=======
+		WARN_ON(1);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 	return exist;
 }
@@ -201,13 +216,20 @@ bool f2fs_is_valid_blkaddr(struct f2fs_sb_info *sbi,
 	case DATA_GENERIC:
 	case DATA_GENERIC_ENHANCE:
 	case DATA_GENERIC_ENHANCE_READ:
+<<<<<<< HEAD
 	case DATA_GENERIC_ENHANCE_UPDATE:
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		if (unlikely(blkaddr >= MAX_BLKADDR(sbi) ||
 				blkaddr < MAIN_BLKADDR(sbi))) {
 			f2fs_warn(sbi, "access invalid blkaddr:%u",
 				  blkaddr);
 			set_sbi_flag(sbi, SBI_NEED_FSCK);
+<<<<<<< HEAD
 			dump_stack();
+=======
+			WARN_ON(1);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			return false;
 		} else {
 			return __is_bitmap_valid(sbi, blkaddr, type);
@@ -473,7 +495,12 @@ static int f2fs_set_meta_page_dirty(struct page *page)
 		SetPageUptodate(page);
 	if (__set_page_dirty_nobuffers(page)) {
 		inc_page_count(F2FS_P_SB(page), F2FS_DIRTY_META);
+<<<<<<< HEAD
 		set_page_private_reference(page);
+=======
+		f2fs_set_page_private(page, 0);
+		f2fs_trace_pid(page);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return 1;
 	}
 	return 0;
@@ -900,9 +927,14 @@ static struct page *validate_checkpoint(struct f2fs_sb_info *sbi,
 	if (err)
 		return NULL;
 
+<<<<<<< HEAD
 	cp_blocks = le32_to_cpu(cp_block->cp_pack_total_block_count);
 
 	if (cp_blocks > sbi->blocks_per_seg || cp_blocks <= F2FS_CP_PACKS) {
+=======
+	if (le32_to_cpu(cp_block->cp_pack_total_block_count) >
+					sbi->blocks_per_seg) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		f2fs_warn(sbi, "invalid cp_pack_total_block_count:%u",
 			  le32_to_cpu(cp_block->cp_pack_total_block_count));
 		goto invalid_cp;
@@ -1057,7 +1089,12 @@ void f2fs_update_dirty_page(struct inode *inode, struct page *page)
 	inode_inc_dirty_pages(inode);
 	spin_unlock(&sbi->inode_lock[type]);
 
+<<<<<<< HEAD
 	set_page_private_reference(page);
+=======
+	f2fs_set_page_private(page, 0);
+	f2fs_trace_pid(page);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 void f2fs_remove_dirty_inode(struct inode *inode)
@@ -1113,6 +1150,7 @@ retry:
 	if (inode) {
 		unsigned long cur_ino = inode->i_ino;
 
+<<<<<<< HEAD
 		if (from_cp)
 			F2FS_I(inode)->cp_task = current;
 		F2FS_I(inode)->wb_task = current;
@@ -1122,6 +1160,13 @@ retry:
 		F2FS_I(inode)->wb_task = NULL;
 		if (from_cp)
 			F2FS_I(inode)->cp_task = NULL;
+=======
+		F2FS_I(inode)->cp_task = current;
+
+		filemap_fdatawrite(inode->i_mapping);
+
+		F2FS_I(inode)->cp_task = NULL;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		iput(inode);
 		/* We need to give cpu to another writers. */
@@ -1192,8 +1237,12 @@ static bool __need_flush_quota(struct f2fs_sb_info *sbi)
 	if (!is_journalled_quota(sbi))
 		return false;
 
+<<<<<<< HEAD
 	if (!f2fs_down_write_trylock(&sbi->quota_sem))
 		return true;
+=======
+	down_write(&sbi->quota_sem);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (is_sbi_flag_set(sbi, SBI_QUOTA_SKIP_FLUSH)) {
 		ret = false;
 	} else if (is_sbi_flag_set(sbi, SBI_QUOTA_NEED_REPAIR)) {
@@ -1204,7 +1253,11 @@ static bool __need_flush_quota(struct f2fs_sb_info *sbi)
 	} else if (get_pages(sbi, F2FS_DIRTY_QDATA)) {
 		ret = true;
 	}
+<<<<<<< HEAD
 	f2fs_up_write(&sbi->quota_sem);
+=======
+	up_write(&sbi->quota_sem);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return ret;
 }
 
@@ -1295,7 +1348,11 @@ retry_flush_nodes:
 	 * dirty node blocks and some checkpoint values by block allocation.
 	 */
 	__prepare_cp_block(sbi);
+<<<<<<< HEAD
 	f2fs_up_write(&sbi->node_change);
+=======
+	up_write(&sbi->node_change);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return err;
 }
 
@@ -1310,6 +1367,11 @@ void f2fs_wait_on_all_pages(struct f2fs_sb_info *sbi, int type)
 	DEFINE_WAIT(wait);
 
 	for (;;) {
+<<<<<<< HEAD
+=======
+		prepare_to_wait(&sbi->cp_wait, &wait, TASK_UNINTERRUPTIBLE);
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		if (!get_pages(sbi, type))
 			break;
 
@@ -1320,10 +1382,13 @@ void f2fs_wait_on_all_pages(struct f2fs_sb_info *sbi, int type)
 		if (type == F2FS_DIRTY_META)
 			f2fs_sync_meta_pages(sbi, META, LONG_MAX,
 							FS_CP_META_IO);
+<<<<<<< HEAD
 		else if (type == F2FS_WB_CP_DATA)
 			f2fs_submit_merged_write(sbi, DATA);
 
 		prepare_to_wait(&sbi->cp_wait, &wait, TASK_UNINTERRUPTIBLE);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		io_schedule_timeout(DEFAULT_IO_TIMEOUT);
 	}
 	finish_wait(&sbi->cp_wait, &wait);
@@ -1598,10 +1663,16 @@ static int do_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 
 	/*
 	 * invalidate intermediate page cache borrowed from meta inode which are
+<<<<<<< HEAD
 	 * used for migration of encrypted, verity or compressed inode's blocks.
 	 */
 	if (f2fs_sb_has_encrypt(sbi) || f2fs_sb_has_verity(sbi) ||
 		f2fs_sb_has_compression(sbi))
+=======
+	 * used for migration of encrypted or verity inode's blocks.
+	 */
+	if (f2fs_sb_has_encrypt(sbi) || f2fs_sb_has_verity(sbi))
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		invalidate_mapping_pages(META_MAPPING(sbi),
 				MAIN_BLKADDR(sbi), MAX_BLKADDR(sbi) - 1);
 
@@ -1647,7 +1718,11 @@ int f2fs_write_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 		f2fs_warn(sbi, "Start checkpoint disabled!");
 	}
 	if (cpc->reason != CP_RESIZE)
+<<<<<<< HEAD
 		f2fs_down_write(&sbi->cp_global_sem);
+=======
+		mutex_lock(&sbi->cp_mutex);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (!is_sbi_flag_set(sbi, SBI_IS_DIRTY) &&
 		((cpc->reason & CP_FASTBOOT) || (cpc->reason & CP_SYNC) ||
@@ -1695,6 +1770,7 @@ int f2fs_write_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 
 	/* write cached NAT/SIT entries to NAT/SIT area */
 	err = f2fs_flush_nat_entries(sbi, cpc);
+<<<<<<< HEAD
 	if (err) {
 		f2fs_err(sbi, "f2fs_flush_nat_entries failed err:%d, stop checkpoint", err);
 		f2fs_bug_on(sbi, !f2fs_cp_error(sbi));
@@ -1716,6 +1792,18 @@ int f2fs_write_checkpoint(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 	}
 
 	f2fs_restore_inmem_curseg(sbi);
+=======
+	if (err)
+		goto stop;
+
+	f2fs_flush_sit_entries(sbi, cpc);
+
+	err = do_checkpoint(sbi, cpc);
+	if (err)
+		f2fs_release_discard_addrs(sbi);
+	else
+		f2fs_clear_prefree_segments(sbi, cpc);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 stop:
 	unblock_operations(sbi);
 	stat_inc_cp_count(sbi->stat_info);
@@ -1728,7 +1816,11 @@ stop:
 	trace_f2fs_write_checkpoint(sbi->sb, cpc->reason, "finish checkpoint");
 out:
 	if (cpc->reason != CP_RESIZE)
+<<<<<<< HEAD
 		f2fs_up_write(&sbi->cp_global_sem);
+=======
+		mutex_unlock(&sbi->cp_mutex);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return err;
 }
 

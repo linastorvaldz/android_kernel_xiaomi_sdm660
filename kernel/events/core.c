@@ -5050,6 +5050,7 @@ perf_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 	struct perf_event_context *ctx;
 	int ret;
 
+<<<<<<< HEAD
 #if defined CONFIG_HOTPLUG_CPU || defined CONFIG_KEXEC_CORE
 	spin_lock(&dormant_event_list_lock);
 	if (event->state == PERF_EVENT_STATE_DORMANT) {
@@ -5059,6 +5060,8 @@ perf_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 	spin_unlock(&dormant_event_list_lock);
 #endif
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	ret = security_perf_event_read(event);
 	if (ret)
 		return ret;

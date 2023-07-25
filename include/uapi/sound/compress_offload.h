@@ -134,6 +134,7 @@ struct snd_compr_audio_info {
 
 #define SND_COMPR_AUDIO_INFO
 
+<<<<<<< HEAD
 #define SNDRV_COMPRESS_RENDER_MODE_AUDIO_MASTER 0
 #define SNDRV_COMPRESS_RENDER_MODE_STC_MASTER 1
 #define SNDRV_COMPRESS_RENDER_MODE_TTP 2
@@ -148,6 +149,8 @@ enum sndrv_compress_latency_mode {
 	SNDRV_COMPRESS_LOW_LATENCY_MODE = 1,
 };
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /**
  * enum sndrv_compress_encoder
  * @SNDRV_COMPRESS_ENCODER_PADDING: no of samples appended by the encoder at the

@@ -71,8 +71,11 @@
 #include <scsi/scsi_dbg.h>
 #include <scsi/scsi_eh.h>
 #include <linux/android_kabi.h>
+<<<<<<< HEAD
 
 #include <linux/fault-inject.h>
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #include "ufs.h"
 #include "ufshci.h"
@@ -375,11 +378,14 @@ struct ufs_hba_variant_ops {
 	u32	(*get_scale_down_gear)(struct ufs_hba *hba);
 	int	(*set_bus_vote)(struct ufs_hba *hba, bool on);
 	int	(*phy_initialization)(struct ufs_hba *);
+<<<<<<< HEAD
 	u32	(*get_user_cap_mode)(struct ufs_hba *hba);
 #ifdef CONFIG_DEBUG_FS
 	void	(*add_debugfs)(struct ufs_hba *hba, struct dentry *root);
 	void	(*remove_debugfs)(struct ufs_hba *hba);
 #endif
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int	(*program_key)(struct ufs_hba *hba,
 			       const union ufs_crypto_cfg_entry *cfg, int slot);
 
@@ -389,6 +395,7 @@ struct ufs_hba_variant_ops {
 	ANDROID_KABI_RESERVE(4);
 };
 
+<<<<<<< HEAD
 /**
  * struct ufs_hba_pm_qos_variant_ops - variant specific PM QoS callbacks
  */
@@ -409,6 +416,8 @@ struct ufs_hba_variant {
 	struct ufs_hba_pm_qos_variant_ops	*pm_qos_vops;
 };
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 struct keyslot_mgmt_ll_ops;
 struct ufs_hba_crypto_variant_ops {
 	void (*setup_rq_keyslot_manager)(struct ufs_hba *hba,
@@ -931,6 +940,7 @@ struct ufs_hba {
 	 */
 	#define UFSHCI_QUIRK_BROKEN_HCE				0x400
 
+<<<<<<< HEAD
 	/* HIBERN8 support is broken */
 	#define UFSHCD_QUIRK_BROKEN_HIBERN8			0x800
 
@@ -965,6 +975,8 @@ struct ufs_hba {
 	#define UFSHCD_QUIRK_DME_PEER_GET_FAST_MODE		0x20000
 
 	#define UFSHCD_QUIRK_BROKEN_AUTO_HIBERN8		0x40000
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/*
 	 * This quirk needs to be enabled if the host controller advertises
 	 * inline encryption support but it doesn't work correctly.
@@ -1077,12 +1089,22 @@ struct ufs_hba {
 	 * to do background operation when it's active but it might degrade
 	 * the performance of ongoing read/write operations.
 	 */
+<<<<<<< HEAD
 #define UFSHCD_CAP_KEEP_AUTO_BKOPS_ENABLED_EXCEPT_SUSPEND (1 << 6)
 	/*
 	 * If host controller hardware can be power collapsed when UFS link is
 	 * in hibern8 then enable this cap.
 	 */
 #define UFSHCD_CAP_POWER_COLLAPSE_DURING_HIBERN8 (1 << 7)
+=======
+#define UFSHCD_CAP_KEEP_AUTO_BKOPS_ENABLED_EXCEPT_SUSPEND (1 << 5)
+	/*
+	 * This capability allows host controller driver to automatically
+	 * enable runtime power management by itself instead of waiting
+	 * for userspace to control the power management.
+	 */
+#define UFSHCD_CAP_RPM_AUTOSUSPEND (1 << 6)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/*
 	 * This capability allows the host controller driver to use the
 	 * inline crypto engine, if it is present
@@ -1110,11 +1132,14 @@ struct ufs_hba {
 
 	struct ufs_desc_size desc_size;
 	atomic_t scsi_block_reqs_cnt;
+<<<<<<< HEAD
 	bool restore_needed;
 
 	bool phy_init_g4;
 	bool force_g4;
 	bool wb_enabled;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #ifdef CONFIG_SCSI_UFS_CRYPTO
 	/* crypto */
@@ -1157,6 +1182,7 @@ static inline bool ufshcd_can_autobkops_during_suspend(struct ufs_hba *hba)
 {
 	return hba->caps & UFSHCD_CAP_AUTO_BKOPS_SUSPEND;
 }
+<<<<<<< HEAD
 static inline bool ufshcd_is_hibern8_on_idle_allowed(struct ufs_hba *hba)
 {
 	return hba->caps & UFSHCD_CAP_HIBERN8_ENTER_ON_IDLE;
@@ -1166,6 +1192,11 @@ static inline bool ufshcd_is_power_collapse_during_hibern8_allowed(
 						struct ufs_hba *hba)
 {
 	return !!(hba->caps & UFSHCD_CAP_POWER_COLLAPSE_DURING_HIBERN8);
+=======
+static inline bool ufshcd_is_rpm_autosuspend_allowed(struct ufs_hba *hba)
+{
+	return hba->caps & UFSHCD_CAP_RPM_AUTOSUSPEND;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static inline bool ufshcd_is_intr_aggr_allowed(struct ufs_hba *hba)

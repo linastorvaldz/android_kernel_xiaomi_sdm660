@@ -659,8 +659,11 @@ static int set_format(struct snd_usb_substream *subs, struct audioformat *fmt)
 	return 0;
 }
 
+<<<<<<< HEAD
 static int snd_usb_pcm_change_state(struct snd_usb_substream *subs, int state);
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /**
  * snd_usb_enable_audio_stream - Enable/disable the specified usb substream.
  * @subs: pointer to the usb substream.
@@ -680,8 +683,12 @@ int snd_usb_enable_audio_stream(struct snd_usb_substream *subs,
 
 	if (!enable) {
 		if (subs->interface >= 0) {
+<<<<<<< HEAD
 			usb_set_interface_timeout(subs->dev, subs->interface, 0,
 				MAX_SETALT_TIMEOUT_MS);
+=======
+			usb_set_interface(subs->dev, subs->interface, 0);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			subs->altset_idx = 0;
 			subs->interface = -1;
 			subs->cur_audiofmt = NULL;
@@ -692,17 +699,24 @@ int snd_usb_enable_audio_stream(struct snd_usb_substream *subs,
 	}
 
 	snd_usb_autoresume(subs->stream->chip);
+<<<<<<< HEAD
 
 	ret = snd_usb_pcm_change_state(subs, UAC3_PD_STATE_D0);
 	if (ret < 0)
 		return ret;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (datainterval != -EINVAL)
 		fmt = find_format_and_si(subs, datainterval);
 	else
 		fmt = find_format(subs);
 	if (!fmt) {
+<<<<<<< HEAD
 		dev_err(&subs->dev->dev,
+=======
+		dev_dbg(&subs->dev->dev,
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		"cannot set format: format = %#x, rate = %d, channels = %d\n",
 			   subs->pcm_format, subs->cur_rate, subs->channels);
 		return -EINVAL;

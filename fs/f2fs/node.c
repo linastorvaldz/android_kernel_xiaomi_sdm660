@@ -36,7 +36,10 @@ int f2fs_check_nid_range(struct f2fs_sb_info *sbi, nid_t nid)
 		set_sbi_flag(sbi, SBI_NEED_FSCK);
 		f2fs_warn(sbi, "%s: out-of-range nid=%x, run fsck to fix.",
 			  __func__, nid);
+<<<<<<< HEAD
 		f2fs_handle_error(sbi, ERROR_CORRUPTED_INODE);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return -EFSCORRUPTED;
 	}
 	return 0;
@@ -847,6 +850,7 @@ int f2fs_get_dnode_of_data(struct dnode_of_data *dn, pgoff_t index, int mode)
 	dn->ofs_in_node = offset[level];
 	dn->node_page = npage[level];
 	dn->data_blkaddr = f2fs_data_blkaddr(dn);
+<<<<<<< HEAD
 
 	if (is_inode_flag_set(dn->inode, FI_COMPRESSED_FILE) &&
 					f2fs_sb_has_readonly(sbi)) {
@@ -867,6 +871,8 @@ int f2fs_get_dnode_of_data(struct dnode_of_data *dn, pgoff_t index, int mode)
 					c_len);
 	}
 out:
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return 0;
 
 release_pages:
@@ -1447,6 +1453,7 @@ repeat:
 		goto out_err;
 	}
 page_hit:
+<<<<<<< HEAD
 	if (likely(nid == nid_of_node(page)))
 		return page;
 
@@ -1456,6 +1463,14 @@ page_hit:
 			  next_blkaddr_of_node(page));
 	set_sbi_flag(sbi, SBI_NEED_FSCK);
 	err = -EINVAL;
+=======
+	if(unlikely(nid != nid_of_node(page))) {
+		f2fs_warn(sbi, "inconsistent node block, nid:%lu, node_footer[nid:%u,ino:%u,ofs:%u,cpver:%llu,blkaddr:%u]",
+			  nid, nid_of_node(page), ino_of_node(page),
+			  ofs_of_node(page), cpver_of_node(page),
+			  next_blkaddr_of_node(page));
+		err = -EINVAL;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 out_err:
 	ClearPageUptodate(page);
 out_put_err:
@@ -1595,10 +1610,20 @@ static int __write_node_page(struct page *page, bool atomic, bool *submitted,
 	trace_f2fs_writepage(page, NODE);
 
 	if (unlikely(f2fs_cp_error(sbi))) {
+<<<<<<< HEAD
 		ClearPageUptodate(page);
 		dec_page_count(sbi, F2FS_DIRTY_NODES);
 		unlock_page(page);
 		return 0;
+=======
+		if (is_sbi_flag_set(sbi, SBI_IS_CLOSE)) {
+			ClearPageUptodate(page);
+			dec_page_count(sbi, F2FS_DIRTY_NODES);
+			unlock_page(page);
+			return 0;
+		}
+		goto redirty_out;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	if (unlikely(is_sbi_flag_set(sbi, SBI_POR_DOING)))
@@ -1635,7 +1660,11 @@ static int __write_node_page(struct page *page, bool atomic, bool *submitted,
 	if (__is_valid_data_blkaddr(ni.blk_addr) &&
 		!f2fs_is_valid_blkaddr(sbi, ni.blk_addr,
 					DATA_GENERIC_ENHANCE)) {
+<<<<<<< HEAD
 		f2fs_up_read(&sbi->node_write);
+=======
+		up_read(&sbi->node_write);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		goto redirty_out;
 	}
 
@@ -1842,6 +1871,7 @@ continue_unlock:
 out:
 	if (nwritten)
 		f2fs_submit_merged_write_cond(sbi, NULL, NULL, ino, NODE);
+<<<<<<< HEAD
 	return ret ? -EIO : 0;
 }
 
@@ -1929,6 +1959,97 @@ continue_unlock:
 		pagevec_release(&pvec);
 		cond_resched();
 	}
+=======
+	return ret ? -EIO: 0;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
+}
+
+static int f2fs_match_ino(struct inode *inode, unsigned long ino, void *data)
+{
+	struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+	bool clean;
+
+	if (inode->i_ino != ino)
+		return 0;
+
+	if (!is_inode_flag_set(inode, FI_DIRTY_INODE))
+		return 0;
+
+	spin_lock(&sbi->inode_lock[DIRTY_META]);
+	clean = list_empty(&F2FS_I(inode)->gdirty_list);
+	spin_unlock(&sbi->inode_lock[DIRTY_META]);
+
+	if (clean)
+		return 0;
+
+	inode = igrab(inode);
+	if (!inode)
+		return 0;
+	return 1;
+}
+
+static bool flush_dirty_inode(struct page *page)
+{
+	struct f2fs_sb_info *sbi = F2FS_P_SB(page);
+	struct inode *inode;
+	nid_t ino = ino_of_node(page);
+
+	inode = find_inode_nowait(sbi->sb, ino, f2fs_match_ino, NULL);
+	if (!inode)
+		return false;
+
+	f2fs_update_inode(inode, page);
+	unlock_page(page);
+
+	iput(inode);
+	return true;
+}
+
+int f2fs_flush_inline_data(struct f2fs_sb_info *sbi)
+{
+	pgoff_t index = 0;
+	struct pagevec pvec;
+	int nr_pages;
+	int ret = 0;
+
+	pagevec_init(&pvec);
+
+	while ((nr_pages = pagevec_lookup_tag(&pvec,
+			NODE_MAPPING(sbi), &index, PAGECACHE_TAG_DIRTY))) {
+		int i;
+
+		for (i = 0; i < nr_pages; i++) {
+			struct page *page = pvec.pages[i];
+
+			if (!IS_DNODE(page))
+				continue;
+
+			lock_page(page);
+
+			if (unlikely(page->mapping != NODE_MAPPING(sbi))) {
+continue_unlock:
+				unlock_page(page);
+				continue;
+			}
+
+			if (!PageDirty(page)) {
+				/* someone wrote it for us */
+				goto continue_unlock;
+			}
+
+			/* flush inline_data, if it's async context. */
+			if (is_inline_node(page)) {
+				clear_inline_node(page);
+				unlock_page(page);
+				flush_inline_data(sbi, ino_of_node(page));
+				continue;
+			}
+			unlock_page(page);
+		}
+		pagevec_release(&pvec);
+		cond_resched();
+	}
+	return ret;
 }
 
 int f2fs_sync_node_pages(struct f2fs_sb_info *sbi,
@@ -1954,6 +2075,7 @@ next_step:
 		for (i = 0; i < nr_pages; i++) {
 			struct page *page = pvec.pages[i];
 			bool submitted = false;
+			bool may_dirty = true;
 
 			/* give a priority to WB_SYNC threads */
 			if (atomic_read(&sbi->wb_sync_req[NODE]) &&
@@ -1993,6 +2115,7 @@ continue_unlock:
 				goto continue_unlock;
 			}
 
+<<<<<<< HEAD
 			/* flush inline_data/inode, if it's async context. */
 			if (!do_balance)
 				goto write_node;
@@ -2000,15 +2123,29 @@ continue_unlock:
 			/* flush inline_data */
 			if (page_private_inline(page)) {
 				clear_page_private_inline(page);
+=======
+			/* flush inline_data, if it's async context. */
+			if (do_balance && is_inline_node(page)) {
+				clear_inline_node(page);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				unlock_page(page);
 				flush_inline_data(sbi, ino_of_node(page));
 				goto lock_node;
 			}
 
 			/* flush dirty inode */
+<<<<<<< HEAD
 			if (IS_INODE(page) && flush_dirty_inode(page))
 				goto lock_node;
 write_node:
+=======
+			if (IS_INODE(page) && may_dirty) {
+				may_dirty = false;
+				if (flush_dirty_inode(page))
+					goto lock_node;
+			}
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			f2fs_wait_on_page_writeback(page, NODE, true, true);
 
 			if (!clear_page_dirty_for_io(page))
@@ -2153,7 +2290,12 @@ static int f2fs_set_node_page_dirty(struct page *page)
 #endif
 	if (__set_page_dirty_nobuffers(page)) {
 		inc_page_count(F2FS_P_SB(page), F2FS_DIRTY_NODES);
+<<<<<<< HEAD
 		set_page_private_reference(page);
+=======
+		f2fs_set_page_private(page, 0);
+		f2fs_trace_pid(page);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return 1;
 	}
 	return 0;
@@ -2496,7 +2638,11 @@ static int __f2fs_build_free_nids(struct f2fs_sb_info *sbi,
 			}
 
 			if (ret) {
+<<<<<<< HEAD
 				f2fs_up_read(&nm_i->nat_tree_lock);
+=======
+				up_read(&nm_i->nat_tree_lock);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				f2fs_err(sbi, "NAT is corrupt, run fsck to fix it");
 				return ret;
 			}
@@ -2956,6 +3102,7 @@ static void update_nat_bits(struct f2fs_sb_info *sbi, nid_t start_nid,
 	__update_nat_bits(nm_i, nat_index, valid);
 }
 
+<<<<<<< HEAD
 void f2fs_enable_nat_bits(struct f2fs_sb_info *sbi)
 {
 	struct f2fs_nm_info *nm_i = NM_I(sbi);
@@ -2984,6 +3131,8 @@ void f2fs_enable_nat_bits(struct f2fs_sb_info *sbi)
 	f2fs_up_read(&nm_i->nat_tree_lock);
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int __flush_nat_entry_set(struct f2fs_sb_info *sbi,
 		struct nat_entry_set *set, struct cp_control *cpc)
 {
@@ -3084,7 +3233,11 @@ int f2fs_flush_nat_entries(struct f2fs_sb_info *sbi, struct cp_control *cpc)
 		f2fs_up_write(&nm_i->nat_tree_lock);
 	}
 
+<<<<<<< HEAD
 	if (!nm_i->nat_cnt[DIRTY_NAT])
+=======
+	if (!nm_i->dirty_nat_cnt)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return 0;
 
 	f2fs_down_write(&nm_i->nat_tree_lock);
@@ -3165,6 +3318,12 @@ static int __get_nat_bitmaps(struct f2fs_sb_info *sbi)
 		return 0;
 	}
 
+<<<<<<< HEAD
+=======
+	nm_i->full_nat_bits = nm_i->nat_bits + 8;
+	nm_i->empty_nat_bits = nm_i->full_nat_bits + nat_bits_bytes;
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	f2fs_notice(sbi, "Found nat_bits in checkpoint");
 	return 0;
 }
@@ -3391,7 +3550,7 @@ void f2fs_destroy_node_manager(struct f2fs_sb_info *sbi)
 	kvfree(nm_i->nat_bitmap_mir);
 #endif
 	sbi->nm_info = NULL;
-	kfree(nm_i);
+	kvfree(nm_i);
 }
 
 int __init f2fs_create_node_manager_caches(void)

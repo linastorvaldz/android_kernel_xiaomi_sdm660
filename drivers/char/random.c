@@ -774,7 +774,11 @@ EXPORT_SYMBOL(add_device_randomness);
  * may produce endless random bits, so this function will sleep for
  * some amount of time after, if the sleep_after parameter is true.
  */
+<<<<<<< HEAD
 void add_hwgenerator_randomness(const char *buf, size_t len, size_t entropy, bool sleep_after)
+=======
+void add_hwgenerator_randomness(const char *buf, size_t len, size_t entropy)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	mix_pool_bytes(buf, len);
 	credit_init_bits(entropy);
@@ -783,9 +787,15 @@ void add_hwgenerator_randomness(const char *buf, size_t len, size_t entropy, boo
 	 * Throttle writing to once every reseed interval, unless we're not yet
 	 * initialized or no entropy is credited.
 	 */
+<<<<<<< HEAD
 	if ((current->flags & PF_KTHREAD) && sleep_after &&
 	    !kthread_should_stop() && (crng_ready() || !entropy))
 		schedule_timeout_interruptible(crng_reseed_interval());
+=======
+	if ((current->flags & PF_KTHREAD) &&
+	    !kthread_should_stop() && crng_ready())
+		schedule_timeout_interruptible(CRNG_RESEED_INTERVAL);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 EXPORT_SYMBOL_GPL(add_hwgenerator_randomness);
 

@@ -128,6 +128,7 @@ int of_coresight_get_cpu(const struct device_node *node)
 }
 EXPORT_SYMBOL_GPL(of_coresight_get_cpu);
 
+<<<<<<< HEAD
 static struct coresight_reg_clk *
 of_coresight_get_reg_clk(struct device *dev, const struct device_node *node)
 {
@@ -182,6 +183,8 @@ of_coresight_get_reg_clk(struct device *dev, const struct device_node *node)
 	return reg_clk;
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * of_coresight_parse_endpoint : Parse the given output endpoint @ep
  * and fill the connection information in @pdata[@i].
@@ -204,7 +207,10 @@ static int of_coresight_parse_endpoint(struct device *dev,
 	struct device_node *rparent = NULL;
 	struct device_node *rep = NULL;
 	struct device *rdev = NULL;
+<<<<<<< HEAD
 	struct device_node *sn = NULL;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	do {
 		/* Parse the local port details */
@@ -231,6 +237,7 @@ static int of_coresight_parse_endpoint(struct device *dev,
 		}
 
 		pdata->outports[i] = endpoint.port;
+<<<<<<< HEAD
 		ret = of_property_read_string(rparent, "coresight-name",
 						&pdata->child_names[i]);
 		if (ret)
@@ -246,6 +253,12 @@ static int of_coresight_parse_endpoint(struct device *dev,
 				"coresight-name", &pdata->source_names[i]);
 			of_node_put(sn);
 		}
+=======
+		pdata->child_names[i] = devm_kstrdup(dev,
+						     dev_name(rdev),
+						     GFP_KERNEL);
+		pdata->child_ports[i] = rendpoint.port;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		/* Connection record updated */
 		ret = 1;
 	} while (0);
@@ -272,11 +285,16 @@ of_get_coresight_platform_data(struct device *dev,
 	if (!pdata)
 		return ERR_PTR(-ENOMEM);
 
+<<<<<<< HEAD
 	ret = of_property_read_string(node, "coresight-name", &pdata->name);
 	if (ret) {
 		/* Use device name as sysfs handle */
 		pdata->name = dev_name(dev);
 	}
+=======
+	/* Use device name as sysfs handle */
+	pdata->name = dev_name(dev);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	pdata->cpu = of_coresight_get_cpu(node);
 
 	/* Get the number of input and output port for this component */
@@ -310,10 +328,13 @@ of_get_coresight_platform_data(struct device *dev,
 		}
 	}
 
+<<<<<<< HEAD
 	pdata->reg_clk = of_coresight_get_reg_clk(dev, node);
 	if (IS_ERR(pdata->reg_clk))
 		return (void *)(pdata->reg_clk);
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return pdata;
 }
 EXPORT_SYMBOL_GPL(of_get_coresight_platform_data);

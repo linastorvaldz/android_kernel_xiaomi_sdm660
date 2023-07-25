@@ -852,6 +852,7 @@ int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(of_dev_pm_opp_get_cpu_power);
+<<<<<<< HEAD
 
 /*
  * Callback function provided to the Energy Model framework upon registration.
@@ -950,3 +951,5 @@ void dev_pm_opp_of_register_em(struct cpumask *cpus)
 	em_register_perf_domain(cpus, nr_opp, &em_cb);
 }
 EXPORT_SYMBOL_GPL(dev_pm_opp_of_register_em);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)

@@ -651,6 +651,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
 		mutex_lock(&devfreq->lock);
 	}
 
+<<<<<<< HEAD
 	freq = find_available_min_freq(devfreq);
 	if (freq < 0) {
 		mutex_unlock(&devfreq->lock);
@@ -658,6 +659,10 @@ struct devfreq *devfreq_add_device(struct device *dev,
 		goto err_dev;
 	}
 	devfreq->min_freq = devfreq->scaling_min_freq = freq;
+=======
+	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
+	devfreq->min_freq = devfreq->scaling_min_freq;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	freq = find_available_max_freq(devfreq);
 	if (freq < 0) {
@@ -914,7 +919,11 @@ int devfreq_resume_device(struct devfreq *devfreq)
 		return -EINVAL;
 
 	mutex_lock(&devfreq->event_lock);
+<<<<<<< HEAD
 	if (!devfreq->governor || !devfreq->dev_suspended) {
+=======
+	if (!devfreq->governor) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		mutex_unlock(&devfreq->event_lock);
 		return 0;
 	}

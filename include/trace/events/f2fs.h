@@ -48,8 +48,11 @@ TRACE_DEFINE_ENUM(CP_DISCARD);
 TRACE_DEFINE_ENUM(CP_TRIMMED);
 TRACE_DEFINE_ENUM(CP_PAUSE);
 TRACE_DEFINE_ENUM(CP_RESIZE);
+<<<<<<< HEAD
 TRACE_DEFINE_ENUM(EX_READ);
 TRACE_DEFINE_ENUM(EX_BLOCK_AGE);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #define show_block_type(type)						\
 	__print_symbolic(type,						\
@@ -165,11 +168,14 @@ TRACE_DEFINE_ENUM(EX_BLOCK_AGE);
 		{ COMPRESS_LZ4,		"LZ4" },			\
 		{ COMPRESS_ZSTD,	"ZSTD" })
 
+<<<<<<< HEAD
 #define show_extent_type(type)						\
 	__print_symbolic(type,						\
 		{ EX_READ,	"Read" },				\
 		{ EX_BLOCK_AGE,	"Block Age" })
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 struct f2fs_sb_info;
 struct f2fs_io_info;
 struct extent_info;
@@ -547,6 +553,41 @@ TRACE_EVENT(f2fs_truncate_partial_nodes,
 );
 
 TRACE_EVENT(f2fs_file_write_iter,
+<<<<<<< HEAD
+=======
+
+	TP_PROTO(struct inode *inode, unsigned long offset,
+		unsigned long length, int ret),
+
+	TP_ARGS(inode, offset, length, ret),
+
+	TP_STRUCT__entry(
+		__field(dev_t,	dev)
+		__field(ino_t,	ino)
+		__field(unsigned long, offset)
+		__field(unsigned long, length)
+		__field(int,	ret)
+	),
+
+	TP_fast_assign(
+		__entry->dev	= inode->i_sb->s_dev;
+		__entry->ino	= inode->i_ino;
+		__entry->offset	= offset;
+		__entry->length	= length;
+		__entry->ret	= ret;
+	),
+
+	TP_printk("dev = (%d,%d), ino = %lu, "
+		"offset = %lu, length = %lu, written(err) = %d",
+		show_dev_ino(__entry),
+		__entry->offset,
+		__entry->length,
+		__entry->ret)
+);
+
+TRACE_EVENT(f2fs_map_blocks,
+	TP_PROTO(struct inode *inode, struct f2fs_map_blocks *map, int ret),
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	TP_PROTO(struct inode *inode, loff_t offset, size_t length,
 		 ssize_t ret),
@@ -592,9 +633,12 @@ TRACE_EVENT(f2fs_map_blocks,
 		__field(unsigned int,	m_flags)
 		__field(int,	m_seg_type)
 		__field(bool,	m_may_create)
+<<<<<<< HEAD
 		__field(bool,	m_multidev_dio)
 		__field(int,	create)
 		__field(int,	flag)
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		__field(int,	ret)
 	),
 
@@ -607,16 +651,24 @@ TRACE_EVENT(f2fs_map_blocks,
 		__entry->m_flags	= map->m_flags;
 		__entry->m_seg_type	= map->m_seg_type;
 		__entry->m_may_create	= map->m_may_create;
+<<<<<<< HEAD
 		__entry->m_multidev_dio	= map->m_multidev_dio;
 		__entry->create		= create;
 		__entry->flag		= flag;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		__entry->ret		= ret;
 	),
 
 	TP_printk("dev = (%d,%d), ino = %lu, file offset = %llu, "
+<<<<<<< HEAD
 		"start blkaddr = 0x%llx, len = 0x%llx, flags = %u, "
 		"seg_type = %d, may_create = %d, multidevice = %d, "
 		"create = %d, flag = %d, err = %d",
+=======
+		"start blkaddr = 0x%llx, len = 0x%llx, flags = %u,"
+		"seg_type = %d, may_create = %d, err = %d",
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		show_dev_ino(__entry),
 		(unsigned long long)__entry->m_lblk,
 		(unsigned long long)__entry->m_pblk,
@@ -624,9 +676,12 @@ TRACE_EVENT(f2fs_map_blocks,
 		__entry->m_flags,
 		__entry->m_seg_type,
 		__entry->m_may_create,
+<<<<<<< HEAD
 		__entry->m_multidev_dio,
 		__entry->create,
 		__entry->flag,
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		__entry->ret)
 );
 
@@ -1326,6 +1381,32 @@ TRACE_EVENT(f2fs_filemap_fault,
 		__entry->ret)
 );
 
+TRACE_EVENT(f2fs_filemap_fault,
+
+	TP_PROTO(struct inode *inode, pgoff_t index, unsigned long ret),
+
+	TP_ARGS(inode, index, ret),
+
+	TP_STRUCT__entry(
+		__field(dev_t,	dev)
+		__field(ino_t,	ino)
+		__field(pgoff_t, index)
+		__field(unsigned long, ret)
+	),
+
+	TP_fast_assign(
+		__entry->dev	= inode->i_sb->s_dev;
+		__entry->ino	= inode->i_ino;
+		__entry->index	= index;
+		__entry->ret	= ret;
+	),
+
+	TP_printk("dev = (%d,%d), ino = %lu, index = %lu, ret = %lx",
+		show_dev_ino(__entry),
+		(unsigned long)__entry->index,
+		__entry->ret)
+);
+
 TRACE_EVENT(f2fs_writepages,
 
 	TP_PROTO(struct inode *inode, struct writeback_control *wbc, int type),
@@ -1916,7 +1997,10 @@ DEFINE_EVENT(f2fs_zip_end, f2fs_decompress_pages_end,
 	TP_ARGS(inode, cluster_idx, compressed_size, ret)
 );
 
+<<<<<<< HEAD
 #ifdef CONFIG_F2FS_IOSTAT
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 TRACE_EVENT(f2fs_iostat,
 
 	TP_PROTO(struct f2fs_sb_info *sbi, unsigned long long *iostat),
@@ -1993,6 +2077,7 @@ TRACE_EVENT(f2fs_iostat,
 		__entry->fs_cdrio, __entry->fs_nrio, __entry->fs_mrio)
 );
 
+<<<<<<< HEAD
 #ifndef __F2FS_IOSTAT_LATENCY_TYPE
 #define __F2FS_IOSTAT_LATENCY_TYPE
 struct f2fs_iostat_latency {
@@ -2246,6 +2331,8 @@ DEFINE_EVENT(f2fs__rw_end, f2fs_datawrite_end,
 	TP_ARGS(inode, offset, bytes)
 );
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #endif /* _TRACE_F2FS_H */
 
  /* This part must be outside protection */

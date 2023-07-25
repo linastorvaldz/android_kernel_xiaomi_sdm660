@@ -145,6 +145,10 @@ static struct device *wakeup_source_device_create(struct device *parent,
 	device_initialize(dev);
 	dev->devt = MKDEV(0, 0);
 	dev->class = wakeup_class;
+<<<<<<< HEAD
+=======
+	dev->parent = parent;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	dev->groups = wakeup_source_groups;
 	dev->release = device_create_release;
 	dev_set_drvdata(dev, ws);

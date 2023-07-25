@@ -231,7 +231,11 @@ static ssize_t ovl_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 
 	old_cred = ovl_override_creds(file_inode(file)->i_sb);
 	ret = vfs_iter_read(real.file, iter, &iocb->ki_pos,
+<<<<<<< HEAD
 			    iocb_to_rw_flags(iocb->ki_flags, OVL_IOCB_MASK));
+=======
+			    ovl_iocb_to_rwf(iocb));
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	ovl_revert_creds(old_cred);
 
 	ovl_file_accessed(file);

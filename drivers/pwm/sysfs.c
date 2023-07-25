@@ -221,6 +221,7 @@ static ssize_t capture_show(struct device *child,
 		return ret;
 
 	return sprintf(buf, "%llu %llu\n", result.period, result.duty_cycle);
+<<<<<<< HEAD
 }
 
 static ssize_t output_type_show(struct device *child,
@@ -269,6 +270,8 @@ unlock:
 	mutex_unlock(&export->lock);
 
 	return ret ? : size;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static DEVICE_ATTR_RW(period);

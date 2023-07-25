@@ -414,7 +414,12 @@ is_mcounted_section_name(char const *const txtname)
 		strcmp(".softirqentry.text", txtname) == 0 ||
 		strcmp(".kprobes.text", txtname) == 0 ||
 		strcmp(".cpuidle.text", txtname) == 0 ||
+<<<<<<< HEAD
 		strcmp(".text.unlikely", txtname) == 0;;
+=======
+		(strncmp(".text.",       txtname, 6) == 0 &&
+		 strcmp(".text..ftrace", txtname) != 0);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 /* 32 bit and 64 bit are very similar */

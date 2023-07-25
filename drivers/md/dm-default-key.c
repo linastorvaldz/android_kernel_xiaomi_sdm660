@@ -50,7 +50,10 @@ struct default_key_c {
 	struct blk_crypto_key key;
 	bool is_hw_wrapped;
 	u64 max_dun;
+<<<<<<< HEAD
 	bool set_dun;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 static const struct dm_default_key_cipher *
@@ -81,8 +84,12 @@ static void default_key_dtr(struct dm_target *ti)
 }
 
 static int default_key_ctr_optional(struct dm_target *ti,
+<<<<<<< HEAD
 				    unsigned int argc, char **argv,
 				    bool is_legacy)
+=======
+				    unsigned int argc, char **argv)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	struct default_key_c *dkc = ti->private;
 	struct dm_arg_set as;
@@ -122,8 +129,11 @@ static int default_key_ctr_optional(struct dm_target *ti,
 			iv_large_sectors = true;
 		} else if (!strcmp(opt_string, "wrappedkey_v0")) {
 			dkc->is_hw_wrapped = true;
+<<<<<<< HEAD
 		} else if (!strcmp(opt_string, "set_dun") && is_legacy) {
 			dkc->set_dun = true;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		} else {
 			ti->error = "Invalid feature arguments";
 			return -EINVAL;
@@ -139,6 +149,7 @@ static int default_key_ctr_optional(struct dm_target *ti,
 	return 0;
 }
 
+<<<<<<< HEAD
 static void default_key_adjust_sector_size_and_iv(char **argv,
 						  struct dm_target *ti,
 						  struct default_key_c **dkc,
@@ -172,6 +183,8 @@ static void default_key_adjust_sector_size_and_iv(char **argv,
 	}
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * Construct a default-key mapping:
  * <cipher> <key> <iv_offset> <dev_path> <start>
@@ -190,6 +203,7 @@ static int default_key_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	unsigned long long tmpll;
 	char dummy;
 	int err;
+<<<<<<< HEAD
 	int __argc;
 	char *_argv[10];
 	bool is_legacy = false;
@@ -217,6 +231,8 @@ static int default_key_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 		argc = __argc;
 		is_legacy = true;
 	}
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (argc < 5) {
 		ti->error = "Not enough arguments";
@@ -286,6 +302,7 @@ static int default_key_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	/* optional arguments */
 	dkc->sector_size = SECTOR_SIZE;
 	if (argc > 5) {
+<<<<<<< HEAD
 		err = default_key_ctr_optional(ti, argc - 5, &argv[5],
 					       is_legacy);
 		if (err)
@@ -295,6 +312,12 @@ static int default_key_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	default_key_adjust_sector_size_and_iv(argv, ti, &dkc, raw_key,
 					      raw_key_size, is_legacy);
 
+=======
+		err = default_key_ctr_optional(ti, argc - 5, &argv[5]);
+		if (err)
+			goto bad;
+	}
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	dkc->sector_bits = ilog2(dkc->sector_size);
 	if (ti->len & ((dkc->sector_size >> SECTOR_SHIFT) - 1)) {
 		ti->error = "Device size is not a multiple of sector_size";
@@ -336,6 +359,7 @@ out:
 	return err;
 }
 
+<<<<<<< HEAD
 static void default_key_map_dun(struct bio *bio, u64 *dun)
 {
 	dun[0] += 1;
@@ -343,6 +367,8 @@ static void default_key_map_dun(struct bio *bio, u64 *dun)
 	       sizeof(bio->bi_crypt_context->bc_dun));
 	bio->bi_crypt_context->is_ext4 = false;
 }
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int default_key_map(struct dm_target *ti, struct bio *bio)
 {
 	const struct default_key_c *dkc = ti->private;
@@ -367,15 +393,23 @@ static int default_key_map(struct dm_target *ti, struct bio *bio)
 	 * file's contents), or if it doesn't have any data (e.g. if it's a
 	 * DISCARD request), there's nothing more to do.
 	 */
+<<<<<<< HEAD
 	if ((bio_should_skip_dm_default_key(bio) && !dkc->set_dun) ||
 	    !bio_has_data(bio))
+=======
+	if (bio_should_skip_dm_default_key(bio) || !bio_has_data(bio))
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return DM_MAPIO_REMAPPED;
 
 	/*
 	 * Else, dm-default-key needs to set this bio's encryption context.
 	 * It must not already have one.
 	 */
+<<<<<<< HEAD
 	if (WARN_ON_ONCE(bio_has_crypt_ctx(bio) && !dkc->set_dun))
+=======
+	if (WARN_ON_ONCE(bio_has_crypt_ctx(bio)))
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return DM_MAPIO_KILL;
 
 	/* Calculate the DUN and enforce data-unit (crypto sector) alignment. */
@@ -391,6 +425,7 @@ static int default_key_map(struct dm_target *ti, struct bio *bio)
 	if (WARN_ON_ONCE(dun[0] > dkc->max_dun))
 		return DM_MAPIO_KILL;
 
+<<<<<<< HEAD
 	if (!bio_has_crypt_ctx(bio)) {
 		bio_crypt_set_ctx(bio, &dkc->key, dun, GFP_NOIO);
 		if (dkc->set_dun)
@@ -399,6 +434,9 @@ static int default_key_map(struct dm_target *ti, struct bio *bio)
 		if (dkc->set_dun && bio->bi_crypt_context->is_ext4)
 			default_key_map_dun(bio, dun);
 	}
+=======
+	bio_crypt_set_ctx(bio, &dkc->key, dun, GFP_NOIO);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	return DM_MAPIO_REMAPPED;
 }
@@ -426,8 +464,11 @@ static void default_key_status(struct dm_target *ti, status_type_t type,
 			num_feature_args += 2;
 		if (dkc->is_hw_wrapped)
 			num_feature_args += 1;
+<<<<<<< HEAD
 		if (dkc->set_dun)
 			num_feature_args += 1;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		if (num_feature_args != 0) {
 			DMEMIT(" %d", num_feature_args);
 			if (ti->num_discard_bios)
@@ -438,8 +479,11 @@ static void default_key_status(struct dm_target *ti, status_type_t type,
 			}
 			if (dkc->is_hw_wrapped)
 				DMEMIT(" wrappedkey_v0");
+<<<<<<< HEAD
 			if (dkc->set_dun)
 				DMEMIT(" set_dun");
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		}
 		break;
 	}

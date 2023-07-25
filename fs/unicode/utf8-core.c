@@ -138,7 +138,11 @@ int utf8_casefold_hash(const struct unicode_map *um, const void *salt,
 
 	while ((c = utf8byte(&cur))) {
 		if (c < 0)
+<<<<<<< HEAD
 			return -EINVAL;
+=======
+			return c;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		hash = partial_name_hash((unsigned char)c, hash);
 	}
 	str->hash = end_name_hash(hash);

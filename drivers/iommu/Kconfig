@@ -60,7 +60,11 @@ config IOMMU_IO_PGTABLE_ARMV7S_SELFTEST
 
 config IOMMU_IO_PGTABLE_FAST
 	bool "Fast ARMv7/v8 Long Descriptor Format"
+<<<<<<< HEAD
 	depends on (ARM64_DMA_USE_IOMMU || ARM_DMA_USE_IOMMU) && IOMMU_DMA
+=======
+	depends on ARM64_DMA_USE_IOMMU && IOMMU_DMA
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	help
           Enable support for a subset of the ARM long descriptor pagetable
 	  format.  This allocator achieves fast performance by
@@ -70,6 +74,7 @@ config IOMMU_IO_PGTABLE_FAST
           This implementation is mainly optimized for use cases where the
           buffers are small (<= 64K) since it only supports 4K page sizes.
 
+<<<<<<< HEAD
 config IOMMU_IO_PGTABLE_FAST_SELFTEST
 	bool "Fast IO pgtable selftests"
 	depends on IOMMU_IO_PGTABLE_FAST
@@ -95,6 +100,8 @@ config IOMMU_IO_PGTABLE_FAST_PROVE_TLB
 
 	  If unsure, say N here.
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 endmenu
 
 config IOMMU_DEBUGFS
@@ -383,7 +390,10 @@ config ARM_SMMU
 	select IOMMU_IO_PGTABLE_LPAE
 	select ARM_DMA_USE_IOMMU if ARM
 	select ARM64_DMA_USE_IOMMU if ARM64
+<<<<<<< HEAD
 	select QTI_IOMMU_SUPPORT
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	help
 	  Support for implementations of the ARM System MMU architecture
 	  versions 1 and 2.

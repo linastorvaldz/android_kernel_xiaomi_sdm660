@@ -202,7 +202,11 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
 }
 
 DEFINE_STATIC_KEY_FALSE(sched_energy_present);
+<<<<<<< HEAD
 #ifdef CONFIG_ENERGY_MODEL
+=======
+#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 unsigned int sysctl_sched_energy_aware = 1;
 DEFINE_MUTEX(sched_energy_mutex);
 bool sched_energy_update;
@@ -318,6 +322,10 @@ static void sched_energy_set(bool has_eas)
  *    1. an Energy Model (EM) is available;
  *    2. the SD_ASYM_CPUCAPACITY flag is set in the sched_domain hierarchy.
  *    3. the EM complexity is low enough to keep scheduling overheads low;
+<<<<<<< HEAD
+=======
+ *    4. schedutil is driving the frequency of all CPUs of the rd;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  *
  * The complexity of the Energy Model is defined as:
  *
@@ -337,12 +345,21 @@ static void sched_energy_set(bool has_eas)
  */
 #define EM_MAX_COMPLEXITY 2048
 
+<<<<<<< HEAD
+=======
+extern struct cpufreq_governor schedutil_gov;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static bool build_perf_domains(const struct cpumask *cpu_map)
 {
 	int i, nr_pd = 0, nr_cs = 0, nr_cpus = cpumask_weight(cpu_map);
 	struct perf_domain *pd = NULL, *tmp;
 	int cpu = cpumask_first(cpu_map);
 	struct root_domain *rd = cpu_rq(cpu)->rd;
+<<<<<<< HEAD
+=======
+	struct cpufreq_policy *policy;
+	struct cpufreq_governor *gov;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (!sysctl_sched_energy_aware)
 		goto free;
@@ -361,6 +378,22 @@ static bool build_perf_domains(const struct cpumask *cpu_map)
 		if (find_pd(pd, i))
 			continue;
 
+<<<<<<< HEAD
+=======
+		/* Do not attempt EAS if schedutil is not being used. */
+		policy = cpufreq_cpu_get(i);
+		if (!policy)
+			goto free;
+		gov = policy->governor;
+		cpufreq_cpu_put(policy);
+		if (gov != &schedutil_gov) {
+			if (rd->pd)
+				pr_warn("rd %*pbl: Disabling EAS, schedutil is mandatory\n",
+						cpumask_pr_args(cpu_map));
+			goto free;
+		}
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		/* Create the new pd and add it to the local list. */
 		tmp = pd_init(i);
 		if (!tmp)
@@ -404,7 +437,11 @@ free:
 }
 #else
 static void free_pd(struct perf_domain *pd) { }
+<<<<<<< HEAD
 #endif /* CONFIG_ENERGY_MODEL */
+=======
+#endif /* CONFIG_ENERGY_MODEL && CONFIG_CPU_FREQ_GOV_SCHEDUTIL*/
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 static void free_rootdomain(struct rcu_head *rcu)
 {
@@ -494,9 +531,12 @@ static int init_rootdomain(struct root_domain *rd)
 	if (cpupri_init(&rd->cpupri) != 0)
 		goto free_cpudl;
 
+<<<<<<< HEAD
 	rd->max_cap_orig_cpu = rd->min_cap_orig_cpu = -1;
 	rd->mid_cap_orig_cpu = -1;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	init_max_cpu_capacity(&rd->max_cpu_capacity);
 
 	return 0;
@@ -607,10 +647,17 @@ static void destroy_sched_domains(struct sched_domain *sd)
 DEFINE_PER_CPU(struct sched_domain __rcu *, sd_llc);
 DEFINE_PER_CPU(int, sd_llc_size);
 DEFINE_PER_CPU(int, sd_llc_id);
+<<<<<<< HEAD
 DEFINE_PER_CPU(struct sched_domain_shared __rcu *, sd_llc_shared);
 DEFINE_PER_CPU(struct sched_domain __rcu *, sd_numa);
 DEFINE_PER_CPU(struct sched_domain __rcu *, sd_asym_packing);
 DEFINE_PER_CPU(struct sched_domain __rcu *, sd_asym_cpucapacity);
+=======
+DEFINE_PER_CPU(struct sched_domain_shared *, sd_llc_shared);
+DEFINE_PER_CPU(struct sched_domain *, sd_numa);
+DEFINE_PER_CPU(struct sched_domain *, sd_asym_packing);
+DEFINE_PER_CPU(struct sched_domain *, sd_asym_cpucapacity);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 DEFINE_STATIC_KEY_FALSE(sched_asym_cpucapacity);
 
 static void update_top_cache_domain(int cpu)
@@ -639,6 +686,7 @@ static void update_top_cache_domain(int cpu)
 	rcu_assign_pointer(per_cpu(sd_asym_packing, cpu), sd);
 
 	sd = lowest_flag_domain(cpu, SD_ASYM_CPUCAPACITY);
+<<<<<<< HEAD
 	/*
 	 * EAS gets disabled when there are no asymmetric capacity
 	 * CPUs in the system. For example, all big CPUs are
@@ -655,6 +703,8 @@ static void update_top_cache_domain(int cpu)
 	if (!sd)
 		sd = cpu_rq(cpu)->sd;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	rcu_assign_pointer(per_cpu(sd_asym_cpucapacity, cpu), sd);
 }
 
@@ -2002,6 +2052,7 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
 	/* Attach the domains */
 	rcu_read_lock();
 	for_each_cpu(i, cpu_map) {
+<<<<<<< HEAD
 		int max_cpu = READ_ONCE(d.rd->max_cap_orig_cpu);
 		int min_cpu = READ_ONCE(d.rd->min_cap_orig_cpu);
 
@@ -2015,6 +2066,9 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
 				arch_scale_cpu_capacity(NULL, min_cpu)))
 			WRITE_ONCE(d.rd->min_cap_orig_cpu, i);
 
+=======
+		sd = *per_cpu_ptr(d.sd, i);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		cpu_attach_domain(sd, d.rd, i);
 	}
 
@@ -2046,7 +2100,11 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
 	rcu_read_unlock();
 
 	if (has_asym)
+<<<<<<< HEAD
 		static_branch_enable_cpuslocked(&sched_asym_cpucapacity);
+=======
+		static_branch_inc_cpuslocked(&sched_asym_cpucapacity);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	ret = 0;
 error:
@@ -2137,7 +2195,11 @@ int sched_init_domains(const struct cpumask *cpu_map)
  */
 static void detach_destroy_domains(const struct cpumask *cpu_map)
 {
+	unsigned int cpu = cpumask_any(cpu_map);
 	int i;
+
+	if (rcu_access_pointer(per_cpu(sd_asym_cpucapacity, cpu)))
+		static_branch_dec_cpuslocked(&sched_asym_cpucapacity);
 
 	rcu_read_lock();
 	for_each_cpu(i, cpu_map)
@@ -2250,10 +2312,17 @@ match2:
 		;
 	}
 
+<<<<<<< HEAD
 #ifdef CONFIG_ENERGY_MODEL
 	/* Build perf. domains: */
 	for (i = 0; i < ndoms_new; i++) {
 		for (j = 0; j < n; j++) {
+=======
+#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
+	/* Build perf. domains: */
+	for (i = 0; i < ndoms_new; i++) {
+		for (j = 0; j < n && !sched_energy_update; j++) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			if (cpumask_equal(doms_new[i], doms_cur[j]) &&
 			    cpu_rq(cpumask_first(doms_cur[j]))->rd->pd) {
 				has_eas = true;

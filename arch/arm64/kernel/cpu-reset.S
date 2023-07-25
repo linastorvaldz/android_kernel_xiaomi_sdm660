@@ -50,6 +50,10 @@ SYM_CODE_START(__cpu_soft_restart)
 	mov	x1, x3				// arg1
 	mov	x2, x4				// arg2
 	br	x8
+<<<<<<< HEAD
 SYM_CODE_END(__cpu_soft_restart)
+=======
+ENDPROC(__cpu_soft_restart)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 .popsection

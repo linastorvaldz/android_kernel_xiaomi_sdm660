@@ -10,6 +10,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/idr.h>
 #include <linux/miscdevice.h>
+<<<<<<< HEAD
 #include <linux/delay.h>
 #include <asm/cacheflush.h>
 #include <linux/of_address.h>
@@ -20,6 +21,8 @@
 #include <linux/coresight-cti.h>
 
 #include "coresight-byte-cntr.h"
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #include <linux/mutex.h>
 #include <linux/refcount.h>
 
@@ -106,6 +109,8 @@
 #define TMC_DEVID_AXIAW_MASK	0x7f
 #define TMC_ETR_BAM_PIPE_INDEX	0
 #define TMC_ETR_BAM_NR_PIPES	2
+
+#define TMC_AUTH_NSID_MASK	GENMASK(1, 0)
 
 #define TMC_AUTH_NSID_MASK	GENMASK(1, 0)
 
@@ -253,7 +258,10 @@ struct tmc_drvdata {
 	struct mutex		mem_lock;
 	u32			trigger_cntr;
 	u32			etr_caps;
+	struct idr		idr;
+	struct mutex		idr_mutex;
 	struct etr_buf		*sysfs_buf;
+<<<<<<< HEAD
 	struct coresight_csr	*csr;
 	const char		*csr_name;
 	bool			enable;
@@ -269,6 +277,9 @@ struct tmc_drvdata {
 	struct mutex		idr_mutex;
 	struct etr_buf		*perf_buf;
 	bool			force_reg_dump;
+=======
+	struct etr_buf		*perf_buf;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 struct etr_buf_operations {

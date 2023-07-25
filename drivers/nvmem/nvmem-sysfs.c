@@ -198,6 +198,7 @@ int nvmem_sysfs_setup_compat(struct nvmem_device *nvmem,
 	if (!config->base_dev)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	if (nvmem->read_only) {
 		if (config->root_only)
 			nvmem->eeprom = bin_attr_ro_root_nvmem;
@@ -209,6 +210,12 @@ int nvmem_sysfs_setup_compat(struct nvmem_device *nvmem,
 		else
 			nvmem->eeprom = bin_attr_rw_nvmem;
 	}
+=======
+	if (nvmem->read_only)
+		nvmem->eeprom = bin_attr_ro_root_nvmem;
+	else
+		nvmem->eeprom = bin_attr_rw_root_nvmem;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	nvmem->eeprom.attr.name = "eeprom";
 	nvmem->eeprom.size = nvmem->size;
 #ifdef CONFIG_DEBUG_LOCK_ALLOC

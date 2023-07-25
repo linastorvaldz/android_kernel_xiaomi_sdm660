@@ -81,8 +81,12 @@ static int __written_first_block(struct f2fs_sb_info *sbi,
 
 	if (!__is_valid_data_blkaddr(addr))
 		return 1;
+<<<<<<< HEAD
 	if (!f2fs_is_valid_blkaddr(sbi, addr, DATA_GENERIC_ENHANCE)) {
 		f2fs_handle_error(sbi, ERROR_INVALID_BLKADDR);
+=======
+	if (!f2fs_is_valid_blkaddr(sbi, addr, DATA_GENERIC_ENHANCE))
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return -EFSCORRUPTED;
 	}
 	return 0;
@@ -247,6 +251,21 @@ static bool sanity_check_inode(struct inode *inode, struct page *node_page)
 		f2fs_warn(sbi, "%s: inode (ino=%lx) has corrupted i_extra_isize: %d, max: %zu",
 			  __func__, inode->i_ino, fi->i_extra_isize,
 			  F2FS_TOTAL_EXTRA_ATTR_SIZE);
+<<<<<<< HEAD
+=======
+		return false;
+	}
+
+	if (f2fs_has_extra_attr(inode) &&
+		f2fs_sb_has_flexible_inline_xattr(sbi) &&
+		f2fs_has_inline_xattr(inode) &&
+		(!fi->i_inline_xattr_size ||
+		fi->i_inline_xattr_size > MAX_INLINE_XATTR_SIZE)) {
+		set_sbi_flag(sbi, SBI_NEED_FSCK);
+		f2fs_warn(sbi, "%s: inode (ino=%lx) has corrupted i_inline_xattr_size: %d, max: %zu",
+			  __func__, inode->i_ino, fi->i_inline_xattr_size,
+			  MAX_INLINE_XATTR_SIZE);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return false;
 	}
 
@@ -292,6 +311,7 @@ static bool sanity_check_inode(struct inode *inode, struct page *node_page)
 		return false;
 	}
 
+<<<<<<< HEAD
 	if ((fi->i_flags & F2FS_CASEFOLD_FL) && !f2fs_sb_has_casefold(sbi)) {
 		set_sbi_flag(sbi, SBI_NEED_FSCK);
 		f2fs_warn(sbi, "%s: inode (ino=%lx) has casefold flag, but casefold feature is off",
@@ -299,12 +319,17 @@ static bool sanity_check_inode(struct inode *inode, struct page *node_page)
 		return false;
 	}
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (f2fs_has_extra_attr(inode) && f2fs_sb_has_compression(sbi) &&
 			fi->i_flags & F2FS_COMPR_FL &&
 			F2FS_FITS_IN_INODE(ri, fi->i_extra_isize,
 						i_log_cluster_size)) {
 		if (ri->i_compress_algorithm >= COMPRESS_MAX) {
+<<<<<<< HEAD
 			set_sbi_flag(sbi, SBI_NEED_FSCK);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			f2fs_warn(sbi, "%s: inode (ino=%lx) has unsupported "
 				"compress algorithm: %u, run fsck to fix",
 				  __func__, inode->i_ino,
@@ -313,7 +338,10 @@ static bool sanity_check_inode(struct inode *inode, struct page *node_page)
 		}
 		if (le64_to_cpu(ri->i_compr_blocks) >
 				SECTOR_TO_BLOCK(inode->i_blocks)) {
+<<<<<<< HEAD
 			set_sbi_flag(sbi, SBI_NEED_FSCK);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			f2fs_warn(sbi, "%s: inode (ino=%lx) has inconsistent "
 				"i_compr_blocks:%llu, i_blocks:%lu, run fsck to fix",
 				  __func__, inode->i_ino,
@@ -323,7 +351,10 @@ static bool sanity_check_inode(struct inode *inode, struct page *node_page)
 		}
 		if (ri->i_log_cluster_size < MIN_COMPRESS_LOG_SIZE ||
 			ri->i_log_cluster_size > MAX_COMPRESS_LOG_SIZE) {
+<<<<<<< HEAD
 			set_sbi_flag(sbi, SBI_NEED_FSCK);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			f2fs_warn(sbi, "%s: inode (ino=%lx) has unsupported "
 				"log cluster size: %u, run fsck to fix",
 				  __func__, inode->i_ino,
@@ -466,29 +497,46 @@ static int do_read_inode(struct inode *inode)
 					(fi->i_flags & F2FS_COMPR_FL)) {
 		if (F2FS_FITS_IN_INODE(ri, fi->i_extra_isize,
 					i_log_cluster_size)) {
+<<<<<<< HEAD
 			atomic_set(&fi->i_compr_blocks,
 					le64_to_cpu(ri->i_compr_blocks));
 			fi->i_compress_algorithm = ri->i_compress_algorithm;
 			fi->i_log_cluster_size = ri->i_log_cluster_size;
 			fi->i_compress_flag = le16_to_cpu(ri->i_compress_flag);
+=======
+			fi->i_compr_blocks = le64_to_cpu(ri->i_compr_blocks);
+			fi->i_compress_algorithm = ri->i_compress_algorithm;
+			fi->i_log_cluster_size = ri->i_log_cluster_size;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			fi->i_cluster_size = 1 << fi->i_log_cluster_size;
 			set_inode_flag(inode, FI_COMPRESSED_FILE);
 		}
 	}
 
+<<<<<<< HEAD
 	init_idisk_time(inode);
 
 	/* Need all the flag bits */
 	f2fs_init_read_extent_tree(inode, node_page);
 	f2fs_init_age_extent_tree(inode);
 
+=======
+	F2FS_I(inode)->i_disk_time[0] = inode->i_atime;
+	F2FS_I(inode)->i_disk_time[1] = inode->i_ctime;
+	F2FS_I(inode)->i_disk_time[2] = inode->i_mtime;
+	F2FS_I(inode)->i_disk_time[3] = F2FS_I(inode)->i_crtime;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	f2fs_put_page(node_page, 1);
 
 	stat_inc_inline_xattr(inode);
 	stat_inc_inline_inode(inode);
 	stat_inc_inline_dir(inode);
 	stat_inc_compr_inode(inode);
+<<<<<<< HEAD
 	stat_add_compr_blocks(inode, atomic_read(&fi->i_compr_blocks));
+=======
+	stat_add_compr_blocks(inode, F2FS_I(inode)->i_compr_blocks);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	return 0;
 }
@@ -687,12 +735,18 @@ void f2fs_update_inode(struct inode *inode, struct page *node_page)
 			F2FS_FITS_IN_INODE(ri, F2FS_I(inode)->i_extra_isize,
 							i_log_cluster_size)) {
 			ri->i_compr_blocks =
+<<<<<<< HEAD
 				cpu_to_le64(atomic_read(
 					&F2FS_I(inode)->i_compr_blocks));
 			ri->i_compress_algorithm =
 				F2FS_I(inode)->i_compress_algorithm;
 			ri->i_compress_flag =
 				cpu_to_le16(F2FS_I(inode)->i_compress_flag);
+=======
+				cpu_to_le64(F2FS_I(inode)->i_compr_blocks);
+			ri->i_compress_algorithm =
+				F2FS_I(inode)->i_compress_algorithm;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			ri->i_log_cluster_size =
 				F2FS_I(inode)->i_log_cluster_size;
 		}
@@ -791,7 +845,11 @@ void f2fs_evict_inode(struct inode *inode)
 	if (inode->i_nlink || is_bad_inode(inode))
 		goto no_delete;
 
+<<<<<<< HEAD
 	err = f2fs_dquot_initialize(inode);
+=======
+	err = dquot_initialize(inode);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (err) {
 		err = 0;
 		set_sbi_flag(sbi, SBI_QUOTA_NEED_REPAIR);
@@ -847,8 +905,12 @@ retry:
 		if (dquot_initialize_needed(inode))
 			set_sbi_flag(sbi, SBI_QUOTA_NEED_REPAIR);
 	}
+<<<<<<< HEAD
 	if (!is_sbi_flag_set(sbi, SBI_IS_FREEZING))
 		sb_end_intwrite(inode->i_sb);
+=======
+	sb_end_intwrite(inode->i_sb);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 no_delete:
 	dquot_drop(inode);
 
@@ -856,8 +918,12 @@ no_delete:
 	stat_dec_inline_dir(inode);
 	stat_dec_inline_inode(inode);
 	stat_dec_compr_inode(inode);
+<<<<<<< HEAD
 	stat_sub_compr_blocks(inode,
 			atomic_read(&F2FS_I(inode)->i_compr_blocks));
+=======
+	stat_sub_compr_blocks(inode, F2FS_I(inode)->i_compr_blocks);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (likely(!f2fs_cp_error(sbi) &&
 				!is_sbi_flag_set(sbi, SBI_CP_DISABLED)))
@@ -924,7 +990,10 @@ void f2fs_handle_failed_inode(struct inode *inode)
 	err = f2fs_get_node_info(sbi, inode->i_ino, &ni, false);
 	if (err) {
 		set_sbi_flag(sbi, SBI_NEED_FSCK);
+<<<<<<< HEAD
 		set_inode_flag(inode, FI_FREE_NID);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		f2fs_warn(sbi, "May loss orphan inode, run fsck to fix.");
 		goto out;
 	}

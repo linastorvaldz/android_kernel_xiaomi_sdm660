@@ -71,6 +71,7 @@ alternative_else_nop_endif
  * This is complicated as there is no post-increment or pair versions of the
  * unprivileged instructions, and USER() only works for single instructions.
  */
+<<<<<<< HEAD
 #ifdef CONFIG_ARM64_UAO
 	.macro uao_ldp l, reg1, reg2, addr, post_inc
 		alternative_if_not ARM64_HAS_UAO
@@ -85,6 +86,11 @@ alternative_else_nop_endif
 
 		_asm_extable	8888b,\l;
 		_asm_extable	8889b,\l;
+=======
+	.macro	untagged_addr, dst, addr
+	sbfx	\dst, \addr, #0, #56
+	and	\dst, \dst, \addr
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	.endm
 
 	.macro uao_stp l, reg1, reg2, addr, post_inc

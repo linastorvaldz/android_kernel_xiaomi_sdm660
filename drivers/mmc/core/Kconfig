@@ -91,6 +91,7 @@ config MMC_TEST
 	  This driver is only of interest to those developing or
 	  testing a host driver. Most people should say N here.
 
+<<<<<<< HEAD
 config MMC_IPC_LOGGING
 	bool "MMC_IPC_LOGGING"
 	depends on MMC
@@ -100,6 +101,8 @@ config MMC_IPC_LOGGING
 
 	  If unsure, say N.
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 config MMC_CRYPTO
 	bool "MMC Crypto Engine Support"
 	depends on BLK_INLINE_ENCRYPTION

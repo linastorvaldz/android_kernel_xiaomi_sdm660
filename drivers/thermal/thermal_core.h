@@ -140,9 +140,12 @@ int of_thermal_get_ntrips(struct thermal_zone_device *);
 bool of_thermal_is_trip_valid(struct thermal_zone_device *, int);
 const struct thermal_trip *
 of_thermal_get_trip_points(struct thermal_zone_device *);
+<<<<<<< HEAD
 int of_thermal_aggregate_trip(struct thermal_zone_device *tz,
 			      enum thermal_trip_type type,
 			      int *low, int *high);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 void of_thermal_handle_trip(struct thermal_zone_device *tz);
 void of_thermal_handle_trip_temp(struct thermal_zone_device *tz,
 					int trip_temp);
@@ -163,12 +166,15 @@ of_thermal_get_trip_points(struct thermal_zone_device *tz)
 {
 	return NULL;
 }
+<<<<<<< HEAD
 static inline int of_thermal_aggregate_trip(struct thermal_zone_device *tz,
 					    enum thermal_trip_type type,
 					    int *low, int *high)
 {
 	return -ENODEV;
 }
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static inline
 void of_thermal_handle_trip(struct thermal_zone_device *tz)
 { }

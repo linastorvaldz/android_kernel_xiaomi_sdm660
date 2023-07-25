@@ -142,9 +142,12 @@
 #include <linux/psi.h>
 #include "sched.h"
 
+<<<<<<< HEAD
 #define CREATE_TRACE_POINTS
 #include <trace/events/psi.h>
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int psi_bug __read_mostly;
 
 DEFINE_STATIC_KEY_FALSE(psi_disabled);
@@ -191,7 +194,11 @@ static void group_init(struct psi_group *group)
 		seqcount_init(&per_cpu_ptr(group->pcpu, cpu)->seq);
 	group->avg_last_update = sched_clock();
 	group->avg_next_update = group->avg_last_update + psi_period;
+<<<<<<< HEAD
 	INIT_DEFERRABLE_WORK(&group->avgs_work, psi_avgs_work);
+=======
+	INIT_DELAYED_WORK(&group->avgs_work, psi_avgs_work);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	mutex_init(&group->avgs_lock);
 	/* Init trigger-related members */
 	atomic_set(&group->poll_scheduled, 0);
@@ -442,13 +449,18 @@ static void psi_avgs_work(struct work_struct *work)
 		group->avg_next_update = update_averages(group, now);
 
 	if (nonidle) {
+<<<<<<< HEAD
 		queue_delayed_work(system_power_efficient_wq, dwork, nsecs_to_jiffies(
+=======
+		schedule_delayed_work(dwork, nsecs_to_jiffies(
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				group->avg_next_update - now) + 1);
 	}
 
 	mutex_unlock(&group->avgs_lock);
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_PSI_FTRACE
 
 #define TOKB(x) ((x) * (PAGE_SIZE / 1024))
@@ -484,6 +496,8 @@ static void trace_event_helper(struct psi_group *group)
 }
 #endif /* CONFIG_PSI_FTRACE */
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /* Trigger tracking window manupulations */
 static void window_reset(struct psi_window *win, u64 now, u64 value,
 			 u64 prev_growth)
@@ -576,15 +590,21 @@ static u64 update_triggers(struct psi_group *group, u64 now)
 		if (now < t->last_event_time + t->win.size)
 			continue;
 
+<<<<<<< HEAD
 		trace_psi_event(t->state, t->threshold);
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		/* Generate an event */
 		if (cmpxchg(&t->event, 0, 1) == 0)
 			wake_up_interruptible(&t->event_wait);
 		t->last_event_time = now;
 	}
 
+<<<<<<< HEAD
 	trace_event_helper(group);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (new_stall)
 		memcpy(group->polling_total, total,
 				sizeof(group->polling_total));
@@ -1086,8 +1106,12 @@ struct psi_trigger *psi_trigger_create(struct psi_group *group,
 	t->state = state;
 	t->threshold = threshold_us * NSEC_PER_USEC;
 	t->win.size = window_us * NSEC_PER_USEC;
+<<<<<<< HEAD
 	window_reset(&t->win, sched_clock(),
 			group->total[PSI_POLL][t->state], 0);
+=======
+	window_reset(&t->win, 0, 0, 0);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	t->event = 0;
 	t->last_event_time = 0;
@@ -1219,7 +1243,11 @@ __poll_t psi_trigger_poll(void **trigger_ptr,
 static ssize_t psi_write(struct file *file, const char __user *user_buf,
 			 size_t nbytes, enum psi_res res)
 {
+<<<<<<< HEAD
 	char buf[32] = "0";
+=======
+	char buf[32];
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	size_t buf_size;
 	struct seq_file *seq;
 	struct psi_trigger *new;

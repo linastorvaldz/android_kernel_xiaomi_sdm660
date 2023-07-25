@@ -6,10 +6,13 @@
  * Copyright (c) 2015 Samsung Electronics
  * Authors: Jaegeuk Kim <jaegeuk@kernel.org>
  *          Chao Yu <chao2.yu@samsung.com>
+<<<<<<< HEAD
  *
  * block_age-based extent cache added by:
  * Copyright (c) 2022 xiaomi Co., Ltd.
  *             http://www.xiaomi.com/
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  */
 
 #include <linux/fs.h>
@@ -179,10 +182,17 @@ struct rb_entry *f2fs_lookup_rb_tree(struct rb_root_cached *root,
 	return re;
 }
 
+<<<<<<< HEAD
 struct rb_node **f2fs_lookup_rb_tree_ext(struct f2fs_sb_info *sbi,
 					struct rb_root_cached *root,
 					struct rb_node **parent,
 					unsigned long long key, bool *leftmost)
+=======
+struct rb_node **f2fs_lookup_rb_tree_for_insert(struct f2fs_sb_info *sbi,
+				struct rb_root_cached *root,
+				struct rb_node **parent,
+				unsigned int ofs, bool *leftmost)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	struct rb_node **p = &root->rb_root.rb_node;
 	struct rb_entry *re;
@@ -191,6 +201,7 @@ struct rb_node **f2fs_lookup_rb_tree_ext(struct f2fs_sb_info *sbi,
 		*parent = *p;
 		re = rb_entry(*parent, struct rb_entry, rb_node);
 
+<<<<<<< HEAD
 		if (key < re->key) {
 			p = &(*p)->rb_left;
 		} else {
@@ -219,6 +230,13 @@ struct rb_node **f2fs_lookup_rb_tree_for_insert(struct f2fs_sb_info *sbi,
 		} else if (ofs >= re->ofs + re->len) {
 			p = &(*p)->rb_right;
 			*leftmost = false;
+=======
+		if (ofs < re->ofs) {
+			p = &(*p)->rb_left;
+		} else if (ofs >= re->ofs + re->len) {
+			p = &(*p)->rb_right;
+			*leftmost = false;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		} else {
 			f2fs_bug_on(sbi, 1);
 		}
@@ -310,7 +328,11 @@ lookup_neighbors:
 }
 
 bool f2fs_check_rb_tree_consistence(struct f2fs_sb_info *sbi,
+<<<<<<< HEAD
 				struct rb_root_cached *root, bool check_key)
+=======
+						struct rb_root_cached *root)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 #ifdef CONFIG_F2FS_CHECK_FS
 	struct rb_node *cur = rb_first_cached(root), *next;
@@ -327,6 +349,7 @@ bool f2fs_check_rb_tree_consistence(struct f2fs_sb_info *sbi,
 		cur_re = rb_entry(cur, struct rb_entry, rb_node);
 		next_re = rb_entry(next, struct rb_entry, rb_node);
 
+<<<<<<< HEAD
 		if (check_key) {
 			if (cur_re->key > next_re->key) {
 				f2fs_info(sbi, "inconsistent rbtree, "
@@ -335,6 +358,13 @@ bool f2fs_check_rb_tree_consistence(struct f2fs_sb_info *sbi,
 				return false;
 			}
 			goto next;
+=======
+		if (cur_re->ofs + cur_re->len > next_re->ofs) {
+			f2fs_info(sbi, "inconsistent rbtree, cur(%u, %u) next(%u, %u)",
+				  cur_re->ofs, cur_re->len,
+				  next_re->ofs, next_re->len);
+			return false;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		}
 
 		if (cur_re->ofs + cur_re->len > next_re->ofs) {
@@ -379,8 +409,11 @@ static struct extent_node *__attach_extent_node(struct f2fs_sb_info *sbi,
 static void __detach_extent_node(struct f2fs_sb_info *sbi,
 				struct extent_tree *et, struct extent_node *en)
 {
+<<<<<<< HEAD
 	struct extent_tree_info *eti = &sbi->extent_tree[et->type];
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	rb_erase_cached(&en->rb_node, &et->root);
 	atomic_dec(&et->node_cnt);
 	atomic_dec(&eti->total_ext_node);
@@ -425,7 +458,10 @@ static struct extent_tree *__grab_extent_tree(struct inode *inode,
 		f2fs_radix_tree_insert(&eti->extent_tree_root, ino, et);
 		memset(et, 0, sizeof(struct extent_tree));
 		et->ino = ino;
+<<<<<<< HEAD
 		et->type = type;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		et->root = RB_ROOT_CACHED;
 		et->cached_en = NULL;
 		rwlock_init(&et->lock);
@@ -444,6 +480,24 @@ static struct extent_tree *__grab_extent_tree(struct inode *inode,
 	return et;
 }
 
+<<<<<<< HEAD
+=======
+static struct extent_node *__init_extent_tree(struct f2fs_sb_info *sbi,
+				struct extent_tree *et, struct extent_info *ei)
+{
+	struct rb_node **p = &et->root.rb_root.rb_node;
+	struct extent_node *en;
+
+	en = __attach_extent_node(sbi, et, ei, NULL, p, true);
+	if (!en)
+		return NULL;
+
+	et->largest = en->ei;
+	et->cached_en = en;
+	return en;
+}
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static unsigned int __free_extent_tree(struct f2fs_sb_info *sbi,
 					struct extent_tree *et)
 {

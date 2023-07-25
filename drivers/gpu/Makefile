@@ -5,5 +5,8 @@
 obj-$(CONFIG_TEGRA_HOST1X)	+= host1x/
 obj-y			+= drm/ vga/
 obj-$(CONFIG_IMX_IPUV3_CORE)	+= ipu-v3/
+<<<<<<< HEAD
 obj-$(CONFIG_QCOM_KGSL) += msm/
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 obj-$(CONFIG_TRACE_GPU_MEM)		+= trace/

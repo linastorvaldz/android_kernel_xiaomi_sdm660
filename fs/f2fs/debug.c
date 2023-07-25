@@ -21,7 +21,11 @@
 #include "gc.h"
 
 static LIST_HEAD(f2fs_stat_list);
+<<<<<<< HEAD
 static DEFINE_RAW_SPINLOCK(f2fs_stat_lock);
+=======
+static DEFINE_MUTEX(f2fs_stat_mutex);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #ifdef CONFIG_DEBUG_FS
 static struct dentry *f2fs_debugfs_root;
 #endif
@@ -72,6 +76,7 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 	si->main_area_zones = si->main_area_sections /
 				le32_to_cpu(raw_super->secs_per_zone);
 
+<<<<<<< HEAD
 	/* general extent cache stats */
 	for (i = 0; i < NR_EXTENT_CACHES; i++) {
 		struct extent_tree_info *eti = &sbi->extent_tree[i];
@@ -92,6 +97,17 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 	si->allocated_data_blocks = atomic64_read(&sbi->allocated_data_blocks);
 
 	/* validation check of the segment numbers */
+=======
+	/* validation check of the segment numbers */
+	si->hit_largest = atomic64_read(&sbi->read_hit_largest);
+	si->hit_cached = atomic64_read(&sbi->read_hit_cached);
+	si->hit_rbtree = atomic64_read(&sbi->read_hit_rbtree);
+	si->hit_total = si->hit_largest + si->hit_cached + si->hit_rbtree;
+	si->total_ext = atomic64_read(&sbi->total_hit_ext);
+	si->ext_tree = atomic_read(&sbi->total_ext_tree);
+	si->zombie_tree = atomic_read(&sbi->total_zombie_tree);
+	si->ext_node = atomic_read(&sbi->total_ext_node);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	si->ndirty_node = get_pages(sbi, F2FS_DIRTY_NODES);
 	si->ndirty_dent = get_pages(sbi, F2FS_DIRTY_DENTS);
 	si->ndirty_meta = get_pages(sbi, F2FS_DIRTY_META);
@@ -102,8 +118,16 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 	si->ndirty_files = sbi->ndirty_inode[FILE_INODE];
 	si->nquota_files = sbi->nquota_files;
 	si->ndirty_all = sbi->ndirty_inode[DIRTY_META];
+<<<<<<< HEAD
 	si->aw_cnt = atomic_read(&sbi->atomic_files);
 	si->max_aw_cnt = atomic_read(&sbi->max_aw_cnt);
+=======
+	si->inmem_pages = get_pages(sbi, F2FS_INMEM_PAGES);
+	si->aw_cnt = sbi->atomic_files;
+	si->vw_cnt = atomic_read(&sbi->vw_cnt);
+	si->max_aw_cnt = atomic_read(&sbi->max_aw_cnt);
+	si->max_vw_cnt = atomic_read(&sbi->max_vw_cnt);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	si->nr_dio_read = get_pages(sbi, F2FS_DIO_READ);
 	si->nr_dio_write = get_pages(sbi, F2FS_DIO_WRITE);
 	si->nr_wb_cp_data = get_pages(sbi, F2FS_WB_CP_DATA);
@@ -128,6 +152,7 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 			atomic_read(&SM_I(sbi)->dcc_info->discard_cmd_cnt);
 		si->undiscard_blks = SM_I(sbi)->dcc_info->undiscard_blks;
 	}
+<<<<<<< HEAD
 	si->nr_issued_ckpt = atomic_read(&sbi->cprc_info.issued_ckpt);
 	si->nr_total_ckpt = atomic_read(&sbi->cprc_info.total_ckpt);
 	si->nr_queued_ckpt = atomic_read(&sbi->cprc_info.queued_ckpt);
@@ -135,6 +160,8 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 	si->cur_ckpt_time = sbi->cprc_info.cur_time;
 	si->peak_ckpt_time = sbi->cprc_info.peak_time;
 	spin_unlock(&sbi->cprc_info.stat_lock);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	si->total_count = (int)sbi->user_block_count / sbi->blocks_per_seg;
 	si->rsvd_segs = reserved_segments(sbi);
 	si->overp_segs = overprovision_segments(sbi);
@@ -146,8 +173,12 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 	si->inline_inode = atomic_read(&sbi->inline_inode);
 	si->inline_dir = atomic_read(&sbi->inline_dir);
 	si->compr_inode = atomic_read(&sbi->compr_inode);
+<<<<<<< HEAD
 	si->swapfile_inode = atomic_read(&sbi->swapfile_inode);
 	si->compr_blocks = atomic64_read(&sbi->compr_blocks);
+=======
+	si->compr_blocks = atomic_read(&sbi->compr_blocks);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	si->append = sbi->im[APPEND_INO].ino_num;
 	si->update = sbi->im[UPDATE_INO].ino_num;
 	si->orphans = sbi->im[ORPHAN_INO].ino_num;
@@ -161,6 +192,7 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 		si->node_pages = NODE_MAPPING(sbi)->nrpages;
 	if (sbi->meta_inode)
 		si->meta_pages = META_MAPPING(sbi)->nrpages;
+<<<<<<< HEAD
 #ifdef CONFIG_F2FS_FS_COMPRESSION
 	if (sbi->compress_inode) {
 		si->compress_pages = COMPRESS_MAPPING(sbi)->nrpages;
@@ -169,6 +201,10 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 #endif
 	si->nats = NM_I(sbi)->nat_cnt[TOTAL_NAT];
 	si->dirty_nats = NM_I(sbi)->nat_cnt[DIRTY_NAT];
+=======
+	si->nats = NM_I(sbi)->nat_cnt;
+	si->dirty_nats = NM_I(sbi)->dirty_nat_cnt;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	si->sits = MAIN_SEGS(sbi);
 	si->dirty_sits = SIT_I(sbi)->dirty_sentries;
 	si->free_nids = NM_I(sbi)->nid_cnt[FREE_NID];
@@ -176,6 +212,11 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 	si->alloc_nids = NM_I(sbi)->nid_cnt[PREALLOC_NID];
 	si->io_skip_bggc = sbi->io_skip_bggc;
 	si->other_skip_bggc = sbi->other_skip_bggc;
+<<<<<<< HEAD
+=======
+	si->skipped_atomic_files[BG_GC] = sbi->skipped_atomic_files[BG_GC];
+	si->skipped_atomic_files[FG_GC] = sbi->skipped_atomic_files[FG_GC];
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	si->util_free = (int)(free_user_blocks(sbi) >> sbi->log_blocks_per_seg)
 		* 100 / (int)(sbi->user_block_count >> sbi->log_blocks_per_seg)
 		/ 2;
@@ -184,9 +225,14 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 		* 100 / (int)(sbi->user_block_count >> sbi->log_blocks_per_seg)
 		/ 2;
 	si->util_invalid = 50 - si->util_free - si->util_valid;
+<<<<<<< HEAD
 	for (i = CURSEG_HOT_DATA; i < NO_CHECK_TYPE; i++) {
 		struct curseg_info *curseg = CURSEG_I(sbi, i);
 
+=======
+	for (i = CURSEG_HOT_DATA; i <= CURSEG_COLD_NODE; i++) {
+		struct curseg_info *curseg = CURSEG_I(sbi, i);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		si->curseg[i] = curseg->segno;
 		si->cursec[i] = GET_SEC_FROM_SEG(sbi, curseg->segno);
 		si->curzone[i] = GET_ZONE_FROM_SEC(sbi, si->cursec[i]);
@@ -195,6 +241,7 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 	for (i = META_CP; i < META_MAX; i++)
 		si->meta_count[i] = atomic_read(&sbi->meta_count[i]);
 
+<<<<<<< HEAD
 	for (i = 0; i < NO_CHECK_TYPE; i++) {
 		si->dirty_seg[i] = 0;
 		si->full_seg[i] = 0;
@@ -215,6 +262,8 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 		si->valid_blks[type] += blks;
 	}
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	for (i = 0; i < 2; i++) {
 		si->segment_count[i] = sbi->segment_count[i];
 		si->block_count[i] = sbi->block_count[i];
@@ -366,6 +415,7 @@ static int stat_show(struct seq_file *s, void *v)
 
 		seq_printf(s, "\n=====[ partition info(%pg). #%d, %s, CP: %s]=====\n",
 			si->sbi->sb->s_bdev, i++,
+<<<<<<< HEAD
 			f2fs_readonly(si->sbi->sb) ? "RO" : "RW",
 			is_set_ckpt_flags(si->sbi, CP_DISABLED_FLAG) ?
 			"Disabled" : (f2fs_cp_error(si->sbi) ? "Error" : "Good"));
@@ -375,6 +425,11 @@ static int stat_show(struct seq_file *s, void *v)
 				seq_puts(s, s_flag[j]);
 			seq_puts(s, "]\n");
 		}
+=======
+			f2fs_readonly(si->sbi->sb) ? "RO": "RW",
+			is_set_ckpt_flags(si->sbi, CP_DISABLED_FLAG) ?
+			"Disabled": (f2fs_cp_error(si->sbi) ? "Error": "Good"));
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		seq_printf(s, "[SB: 1] [CP: 2] [SIT: %d] [NAT: %d] ",
 			   si->sit_area_segs, si->nat_area_segs);
 		seq_printf(s, "[SSA: %d] [MAIN: %d",
@@ -402,10 +457,15 @@ static int stat_show(struct seq_file *s, void *v)
 			   si->inline_inode);
 		seq_printf(s, "  - Inline_dentry Inode: %u\n",
 			   si->inline_dir);
+<<<<<<< HEAD
 		seq_printf(s, "  - Compressed Inode: %u, Blocks: %llu\n",
 			   si->compr_inode, si->compr_blocks);
 		seq_printf(s, "  - Swapfile Inode: %u\n",
 			   si->swapfile_inode);
+=======
+		seq_printf(s, "  - Compressed Inode: %u, Blocks: %u\n",
+			   si->compr_inode, si->compr_blocks);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		seq_printf(s, "  - Orphan/Append/Update Inode: %u, %u, %u\n",
 			   si->orphans, si->append, si->update);
 		seq_printf(s, "\nMain area: %d segs, %d secs %d zones\n",
@@ -478,12 +538,15 @@ static int stat_show(struct seq_file *s, void *v)
 				si->meta_count[META_NAT]);
 		seq_printf(s, "  - ssa blocks : %u\n",
 				si->meta_count[META_SSA]);
+<<<<<<< HEAD
 		seq_puts(s, "CP merge:\n");
 		seq_printf(s, "  - Queued : %4d\n", si->nr_queued_ckpt);
 		seq_printf(s, "  - Issued : %4d\n", si->nr_issued_ckpt);
 		seq_printf(s, "  - Total : %4d\n", si->nr_total_ckpt);
 		seq_printf(s, "  - Cur time : %4d(ms)\n", si->cur_ckpt_time);
 		seq_printf(s, "  - Peak time : %4d(ms)\n", si->peak_ckpt_time);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		seq_printf(s, "GC calls: %d (BG: %d)\n",
 			   si->call_count, si->bg_gc);
 		seq_printf(s, "  - data segments : %d (%d)\n",
@@ -506,9 +569,19 @@ static int stat_show(struct seq_file *s, void *v)
 				si->bg_data_blks);
 		seq_printf(s, "  - node blocks : %d (%d)\n", si->node_blks,
 				si->bg_node_blks);
+<<<<<<< HEAD
 		seq_printf(s, "BG skip : IO: %u, Other: %u\n",
 				si->io_skip_bggc, si->other_skip_bggc);
 		seq_puts(s, "\nExtent Cache (Read):\n");
+=======
+		seq_printf(s, "Skipped : atomic write %llu (%llu)\n",
+				si->skipped_atomic_files[BG_GC] +
+				si->skipped_atomic_files[FG_GC],
+				si->skipped_atomic_files[BG_GC]);
+		seq_printf(s, "BG skip : IO: %u, Other: %u\n",
+				si->io_skip_bggc, si->other_skip_bggc);
+		seq_puts(s, "\nExtent Cache:\n");
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		seq_printf(s, "  - Hit Count: L1-1:%llu L1-2:%llu L2:%llu\n",
 				si->hit_largest, si->hit_cached[EX_READ],
 				si->hit_rbtree[EX_READ]);
@@ -541,7 +614,12 @@ static int stat_show(struct seq_file *s, void *v)
 			   si->nr_dio_read, si->nr_dio_write);
 		seq_printf(s, "  - IO_R (Data: %4d, Node: %4d, Meta: %4d\n",
 			   si->nr_rd_data, si->nr_rd_node, si->nr_rd_meta);
+<<<<<<< HEAD
 		seq_printf(s, "  - IO_W (CP: %4d, Data: %4d, Flush: (%4d %4d %4d), ",
+=======
+		seq_printf(s, "  - IO_W (CP: %4d, Data: %4d, Flush: (%4d %4d %4d), "
+			"Discard: (%4d %4d)) cmd: %4d undiscard:%4u\n",
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			   si->nr_wb_cp_data, si->nr_wb_data,
 			   si->nr_flushing, si->nr_flushed,
 			   si->flush_list_empty);
@@ -622,7 +700,10 @@ int f2fs_build_stats(struct f2fs_sb_info *sbi)
 {
 	struct f2fs_super_block *raw_super = F2FS_RAW_SUPER(sbi);
 	struct f2fs_stat_info *si;
+<<<<<<< HEAD
 	unsigned long flags;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int i;
 
 	si = f2fs_kzalloc(sbi, sizeof(struct f2fs_stat_info), GFP_KERNEL);
@@ -654,13 +735,21 @@ int f2fs_build_stats(struct f2fs_sb_info *sbi)
 	atomic_set(&sbi->inline_inode, 0);
 	atomic_set(&sbi->inline_dir, 0);
 	atomic_set(&sbi->compr_inode, 0);
+<<<<<<< HEAD
 	atomic64_set(&sbi->compr_blocks, 0);
 	atomic_set(&sbi->swapfile_inode, 0);
 	atomic_set(&sbi->atomic_files, 0);
+=======
+	atomic_set(&sbi->compr_blocks, 0);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	atomic_set(&sbi->inplace_count, 0);
 	for (i = META_CP; i < META_MAX; i++)
 		atomic_set(&sbi->meta_count[i], 0);
 
+<<<<<<< HEAD
+=======
+	atomic_set(&sbi->vw_cnt, 0);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	atomic_set(&sbi->max_aw_cnt, 0);
 
 	raw_spin_lock_irqsave(&f2fs_stat_lock, flags);
@@ -679,7 +768,7 @@ void f2fs_destroy_stats(struct f2fs_sb_info *sbi)
 	list_del(&si->stat_list);
 	raw_spin_unlock_irqrestore(&f2fs_stat_lock, flags);
 
-	kfree(si);
+	kvfree(si);
 }
 
 void __init f2fs_create_root_stats(void)
@@ -687,7 +776,11 @@ void __init f2fs_create_root_stats(void)
 #ifdef CONFIG_DEBUG_FS
 	f2fs_debugfs_root = debugfs_create_dir("f2fs", NULL);
 
+<<<<<<< HEAD
 	debugfs_create_file("status", 0444, f2fs_debugfs_root, NULL,
+=======
+	debugfs_create_file("status", S_IRUGO, f2fs_debugfs_root, NULL,
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			    &stat_fops);
 #endif
 }

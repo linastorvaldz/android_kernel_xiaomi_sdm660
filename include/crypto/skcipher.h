@@ -149,6 +149,17 @@ struct skcipher_alg {
  * all users have the correct skcipher tfm for doing on-stack requests.
  */
 #define SYNC_SKCIPHER_REQUEST_ON_STACK(name, tfm) \
+<<<<<<< HEAD
+=======
+	char __##name##_desc[sizeof(struct skcipher_request) + \
+			     MAX_SYNC_SKCIPHER_REQSIZE + \
+			     (!(sizeof((struct crypto_sync_skcipher *)1 == \
+				       (typeof(tfm))1))) \
+			    ] CRYPTO_MINALIGN_ATTR; \
+	struct skcipher_request *name = (void *)__##name##_desc
+
+#define SKCIPHER_REQUEST_ON_STACK(name, tfm) \
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	char __##name##_desc[sizeof(struct skcipher_request) + \
 			     MAX_SYNC_SKCIPHER_REQSIZE + \
 			     (!(sizeof((struct crypto_sync_skcipher *)1 == \

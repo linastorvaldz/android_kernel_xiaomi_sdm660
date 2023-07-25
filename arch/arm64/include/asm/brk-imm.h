@@ -24,6 +24,9 @@
 #define KGDB_COMPILED_DBG_BRK_IMM	0x401
 #define BUG_BRK_IMM			0x800
 #define KASAN_BRK_IMM			0x900
+<<<<<<< HEAD
 #define KASAN_BRK_MASK			0x0ff
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #endif

@@ -51,6 +51,7 @@ usb_f_printer-y			:= f_printer.o
 obj-$(CONFIG_USB_F_PRINTER)	+= usb_f_printer.o
 usb_f_tcm-y			:= f_tcm.o
 obj-$(CONFIG_USB_F_TCM)		+= usb_f_tcm.o
+<<<<<<< HEAD
 usb_f_diag-y			:= f_diag.o
 obj-$(CONFIG_USB_F_DIAG)	+= usb_f_diag.o
 usb_f_cdev-y			:= f_cdev.o
@@ -73,3 +74,9 @@ usb_f_qcrndis-y			:= f_qc_rndis.o u_data_ipa.o
 obj-$(CONFIG_USB_F_QCRNDIS)	+= usb_f_qcrndis.o
 usb_f_rmnet_bam-y               := f_rmnet.o u_ctrl_qti.o u_bam_dmux.o
 obj-$(CONFIG_USB_F_RMNET_BAM)   += usb_f_rmnet_bam.o
+=======
+usb_f_accessory-y		:= f_accessory.o
+obj-$(CONFIG_USB_F_ACC)		+= usb_f_accessory.o
+usb_f_audio_source-y		:= f_audio_source.o
+obj-$(CONFIG_USB_F_AUDIO_SRC)	+= usb_f_audio_source.o
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)

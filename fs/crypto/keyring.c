@@ -670,8 +670,12 @@ int fscrypt_ioctl_add_key(struct file *filp, void __user *_uarg)
 	if (arg.__flags) {
 		if (arg.__flags & ~__FSCRYPT_ADD_KEY_FLAG_HW_WRAPPED)
 			return -EINVAL;
+<<<<<<< HEAD
 		if ((arg.key_spec.type != FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER) &&
 		    (arg.key_spec.type != FSCRYPT_KEY_SPEC_TYPE_DESCRIPTOR))
+=======
+		if (arg.key_spec.type != FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			return -EINVAL;
 		secret.is_hw_wrapped = true;
 	}
@@ -868,6 +872,7 @@ static int check_for_busy_inodes(struct super_block *sb,
 	return -EBUSY;
 }
 
+<<<<<<< HEAD
 static BLOCKING_NOTIFIER_HEAD(fscrypt_key_removal_notifiers);
 
 /*
@@ -888,14 +893,19 @@ int fscrypt_unregister_key_removal_notifier(struct notifier_block *nb)
 }
 EXPORT_SYMBOL_GPL(fscrypt_unregister_key_removal_notifier);
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int try_to_lock_encrypted_files(struct super_block *sb,
 				       struct fscrypt_master_key *mk)
 {
 	int err1;
 	int err2;
 
+<<<<<<< HEAD
 	blocking_notifier_call_chain(&fscrypt_key_removal_notifiers, 0, NULL);
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/*
 	 * An inode can't be evicted while it is dirty or has dirty pages.
 	 * Thus, we first have to clean the inodes in ->mk_decrypted_inodes.

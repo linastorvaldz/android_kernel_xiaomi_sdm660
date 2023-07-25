@@ -46,7 +46,11 @@ static void wg_expired_retransmit_handshake(struct timer_list *timer)
 	if (peer->timer_handshake_attempts > MAX_TIMER_HANDSHAKES) {
 		pr_debug("%s: Handshake for peer %llu (%pISpfsc) did not complete after %d attempts, giving up\n",
 			 peer->device->dev->name, peer->internal_id,
+<<<<<<< HEAD
 			 &peer->endpoint.addr, (int)MAX_TIMER_HANDSHAKES + 2);
+=======
+			 &peer->endpoint.addr, MAX_TIMER_HANDSHAKES + 2);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		del_timer(&peer->timer_send_keepalive);
 		/* We drop all packets without a keypair and don't try again,
@@ -64,7 +68,11 @@ static void wg_expired_retransmit_handshake(struct timer_list *timer)
 		++peer->timer_handshake_attempts;
 		pr_debug("%s: Handshake for peer %llu (%pISpfsc) did not complete after %d seconds, retrying (try %d)\n",
 			 peer->device->dev->name, peer->internal_id,
+<<<<<<< HEAD
 			 &peer->endpoint.addr, (int)REKEY_TIMEOUT,
+=======
+			 &peer->endpoint.addr, REKEY_TIMEOUT,
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			 peer->timer_handshake_attempts + 1);
 
 		/* We clear the endpoint address src address, in case this is
@@ -94,7 +102,11 @@ static void wg_expired_new_handshake(struct timer_list *timer)
 
 	pr_debug("%s: Retrying handshake with peer %llu (%pISpfsc) because we stopped hearing back after %d seconds\n",
 		 peer->device->dev->name, peer->internal_id,
+<<<<<<< HEAD
 		 &peer->endpoint.addr, (int)(KEEPALIVE_TIMEOUT + REKEY_TIMEOUT));
+=======
+		 &peer->endpoint.addr, KEEPALIVE_TIMEOUT + REKEY_TIMEOUT);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/* We clear the endpoint address src address, in case this is the cause
 	 * of trouble.
 	 */
@@ -126,7 +138,11 @@ static void wg_queued_expired_zero_key_material(struct work_struct *work)
 
 	pr_debug("%s: Zeroing out all keys for peer %llu (%pISpfsc), since we haven't received a new one in %d seconds\n",
 		 peer->device->dev->name, peer->internal_id,
+<<<<<<< HEAD
 		 &peer->endpoint.addr, (int)REJECT_AFTER_TIME * 3);
+=======
+		 &peer->endpoint.addr, REJECT_AFTER_TIME * 3);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	wg_noise_handshake_clear(&peer->handshake);
 	wg_noise_keypairs_clear(&peer->keypairs);
 	wg_peer_put(peer);

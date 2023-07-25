@@ -19,7 +19,10 @@
 #include <linux/if_arp.h>
 #include <linux/icmp.h>
 #include <linux/suspend.h>
+<<<<<<< HEAD
 #include <net/dst_metadata.h>
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #include <net/icmp.h>
 #include <net/rtnetlink.h>
 #include <net/ip_tunnels.h>
@@ -153,7 +156,11 @@ static netdev_tx_t wg_xmit(struct sk_buff *skb, struct net_device *dev)
 		goto err_peer;
 	}
 
+<<<<<<< HEAD
 	mtu = skb_valid_dst(skb) ? dst_mtu(skb_dst(skb)) : dev->mtu;
+=======
+	mtu = skb_dst(skb) ? dst_mtu(skb_dst(skb)) : dev->mtu;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	__skb_queue_head_init(&packets);
 	if (!skb_is_gso(skb)) {
@@ -161,7 +168,11 @@ static netdev_tx_t wg_xmit(struct sk_buff *skb, struct net_device *dev)
 	} else {
 		struct sk_buff *segs = skb_gso_segment(skb, 0);
 
+<<<<<<< HEAD
 		if (IS_ERR(segs)) {
+=======
+		if (unlikely(IS_ERR(segs))) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			ret = PTR_ERR(segs);
 			goto err_peer;
 		}
@@ -220,7 +231,11 @@ static const struct net_device_ops netdev_ops = {
 	.ndo_open		= wg_open,
 	.ndo_stop		= wg_stop,
 	.ndo_start_xmit		= wg_xmit,
+<<<<<<< HEAD
 	.ndo_get_stats64	= dev_get_tstats64
+=======
+	.ndo_get_stats64	= ip_tunnel_get_stats64
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 static void wg_destruct(struct net_device *dev)
@@ -266,7 +281,10 @@ static void wg_setup(struct net_device *dev)
 			     max(sizeof(struct ipv6hdr), sizeof(struct iphdr));
 
 	dev->netdev_ops = &netdev_ops;
+<<<<<<< HEAD
 	dev->header_ops = &ip_tunnel_header_ops;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	dev->hard_header_len = 0;
 	dev->addr_len = 0;
 	dev->needed_headroom = DATA_PACKET_HEAD_ROOM;

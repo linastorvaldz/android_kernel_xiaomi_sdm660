@@ -15,7 +15,10 @@
 #include <linux/rcupdate.h>
 #include <linux/list.h>
 
+<<<<<<< HEAD
 static struct kmem_cache *peer_cache;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static atomic64_t peer_counter = ATOMIC64_INIT(0);
 
 struct wg_peer *wg_peer_create(struct wg_device *wg,
@@ -30,10 +33,17 @@ struct wg_peer *wg_peer_create(struct wg_device *wg,
 	if (wg->num_peers >= MAX_PEERS_PER_DEVICE)
 		return ERR_PTR(ret);
 
+<<<<<<< HEAD
 	peer = kmem_cache_zalloc(peer_cache, GFP_KERNEL);
 	if (unlikely(!peer))
 		return ERR_PTR(ret);
 	if (unlikely(dst_cache_init(&peer->endpoint_cache, GFP_KERNEL)))
+=======
+	peer = kzalloc(sizeof(*peer), GFP_KERNEL);
+	if (unlikely(!peer))
+		return ERR_PTR(ret);
+	if (dst_cache_init(&peer->endpoint_cache, GFP_KERNEL))
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		goto err;
 
 	peer->device = wg;
@@ -65,7 +75,11 @@ struct wg_peer *wg_peer_create(struct wg_device *wg,
 	return peer;
 
 err:
+<<<<<<< HEAD
 	kmem_cache_free(peer_cache, peer);
+=======
+	kfree(peer);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return ERR_PTR(ret);
 }
 
@@ -194,8 +208,12 @@ static void rcu_release(struct rcu_head *rcu)
 	/* The final zeroing takes care of clearing any remaining handshake key
 	 * material and other potentially sensitive information.
 	 */
+<<<<<<< HEAD
 	memzero_explicit(peer, sizeof(*peer));
 	kmem_cache_free(peer_cache, peer);
+=======
+	kzfree(peer);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static void kref_release(struct kref *refcount)
@@ -227,6 +245,7 @@ void wg_peer_put(struct wg_peer *peer)
 		return;
 	kref_put(&peer->refcount, kref_release);
 }
+<<<<<<< HEAD
 
 int __init wg_peer_init(void)
 {
@@ -238,3 +257,5 @@ void wg_peer_uninit(void)
 {
 	kmem_cache_destroy(peer_cache);
 }
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)

@@ -113,6 +113,7 @@ struct drm_dp_mst_port {
 	 * audio-capable.
 	 */
 	bool has_audio;
+<<<<<<< HEAD
 	/**
 	 * @fec_capability: Tracks full path fec capability as reported by
 	 * enum path resources.
@@ -122,6 +123,11 @@ struct drm_dp_mst_port {
 	 * @dsc_info: stores dpcd and configuration information for the mst
 	 * port where dsc decoding will be enabled.
 	 */
+=======
+
+	bool fec_capable;
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	struct drm_dp_mst_dsc_info dsc_info;
 };
 
@@ -316,7 +322,11 @@ struct drm_dp_port_number_req {
 
 struct drm_dp_enum_path_resources_ack_reply {
 	u8 port_number;
+<<<<<<< HEAD
 	bool fec_capability;
+=======
+	bool fec_capable;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	u16 full_payload_bw_number;
 	u16 avail_payload_bw_number;
 };

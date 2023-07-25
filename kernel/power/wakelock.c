@@ -237,7 +237,11 @@ int pm_wake_lock(const char *buf)
 		do_div(timeout_ms, NSEC_PER_MSEC);
 		__pm_wakeup_event(wl->ws, timeout_ms);
 	} else {
+<<<<<<< HEAD
 		__pm_wakeup_event(wl->ws, 500);
+=======
+		__pm_stay_awake(wl->ws);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	wakelocks_lru_most_recent(wl);

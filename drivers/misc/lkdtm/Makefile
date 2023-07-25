@@ -10,7 +10,11 @@ lkdtm-$(CONFIG_LKDTM)		+= rodata_objcopy.o
 lkdtm-$(CONFIG_LKDTM)		+= usercopy.o
 
 KCOV_INSTRUMENT_rodata.o	:= n
+<<<<<<< HEAD
 CFLAGS_REMOVE_rodata.o		+= $(CC_FLAGS_LTO)
+=======
+CFLAGS_rodata.o			+= $(DISABLE_LTO)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 OBJCOPYFLAGS :=
 OBJCOPYFLAGS_rodata_objcopy.o	:= \

@@ -137,6 +137,7 @@ Description:
 		The writeback_limit file is read-write and specifies the maximum
 		amount of writeback ZRAM can do. The limit could be changed
 		in run time.
+<<<<<<< HEAD
 
 What:		/sys/block/zram<id>/recomp_algorithm
 Date:		November 2022
@@ -151,3 +152,5 @@ Contact:	Sergey Senozhatsky <senozhatsky@chromium.org>
 Description:
 		The recompress file is write-only and triggers re-compression
 		with secondary compression algorithms.
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)

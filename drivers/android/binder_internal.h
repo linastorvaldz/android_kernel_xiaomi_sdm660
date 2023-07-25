@@ -12,8 +12,11 @@
 #include <linux/stddef.h>
 #include <linux/types.h>
 #include <linux/uidgid.h>
+<<<<<<< HEAD
 #include <uapi/linux/android/binderfs.h>
 #include "binder_alloc.h"
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 struct binder_context {
 	struct binder_node *binder_context_mgr_node;
@@ -70,9 +73,13 @@ struct binderfs_info {
 	kgid_t root_gid;
 	struct binderfs_mount_opts mount_opts;
 	int device_count;
+<<<<<<< HEAD
 #ifdef CONFIG_ANDROID_BINDER_LOGS
 	struct dentry *proc_log_dir;
 #endif
+=======
+	struct dentry *proc_log_dir;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 extern const struct file_operations binder_fops;
@@ -109,6 +116,7 @@ static inline int __init init_binderfs(void)
 }
 #endif
 
+<<<<<<< HEAD
 enum binder_stat_types {
 	BINDER_STAT_PROC,
 	BINDER_STAT_THREAD,
@@ -121,6 +129,8 @@ enum binder_stat_types {
 };
 
 #ifdef CONFIG_ANDROID_BINDER_LOGS
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 int binder_stats_show(struct seq_file *m, void *unused);
 DEFINE_SHOW_ATTRIBUTE(binder_stats);
 
@@ -157,6 +167,7 @@ struct binder_transaction_log {
 	struct binder_transaction_log_entry entry[32];
 };
 
+<<<<<<< HEAD
 struct binder_stats {
 	atomic_t br[_IOC_NR(BR_ONEWAY_SPAM_SUSPECT) + 1];
 	atomic_t bc[_IOC_NR(BC_REPLY_SG) + 1];
@@ -646,4 +657,8 @@ struct binder_object {
 extern struct binder_transaction_log binder_transaction_log;
 extern struct binder_transaction_log binder_transaction_log_failed;
 #endif
+=======
+extern struct binder_transaction_log binder_transaction_log;
+extern struct binder_transaction_log binder_transaction_log_failed;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #endif /* _LINUX_BINDER_INTERNAL_H */

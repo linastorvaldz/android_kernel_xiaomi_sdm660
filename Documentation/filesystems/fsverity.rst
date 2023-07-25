@@ -217,6 +217,7 @@ FS_IOC_MEASURE_VERITY can fail with the following errors:
 - ``EOVERFLOW``: the digest is longer than the specified
   ``digest_size`` bytes.  Try providing a larger buffer.
 
+<<<<<<< HEAD
 FS_IOC_READ_VERITY_METADATA
 ---------------------------
 
@@ -293,6 +294,8 @@ FS_IOC_READ_VERITY_METADATA can fail with the following errors:
   support, or the filesystem superblock has not had the 'verity'
   feature enabled on it.  (See `Filesystem support`_.)
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 FS_IOC_GETFLAGS
 ---------------
 

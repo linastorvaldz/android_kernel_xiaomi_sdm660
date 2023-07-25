@@ -4,7 +4,10 @@
  */
 
 #include "queueing.h"
+<<<<<<< HEAD
 #include <linux/skb_array.h>
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 struct multicore_worker __percpu *
 wg_packet_percpu_multicore_worker_alloc(work_func_t function, void *ptr)
@@ -43,7 +46,11 @@ void wg_packet_queue_free(struct crypt_queue *queue, bool purge)
 {
 	free_percpu(queue->worker);
 	WARN_ON(!purge && !__ptr_ring_empty(&queue->ring));
+<<<<<<< HEAD
 	ptr_ring_cleanup(&queue->ring, purge ? __skb_array_destroy_skb : NULL);
+=======
+	ptr_ring_cleanup(&queue->ring, purge ? (void(*)(void*))kfree_skb : NULL);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 #define NEXT(skb) ((skb)->prev)

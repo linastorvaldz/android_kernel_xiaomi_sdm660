@@ -21,6 +21,10 @@
 #define pr_fmt(fmt)	"arm-lpae io-pgtable: " fmt
 
 #include <linux/atomic.h>
+<<<<<<< HEAD
+=======
+#include <linux/io-pgtable.h>
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #include <linux/iommu.h>
 #include <linux/io-pgtable.h>
 #include <linux/kernel.h>

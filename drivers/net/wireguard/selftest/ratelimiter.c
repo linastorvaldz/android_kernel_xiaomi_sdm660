@@ -167,7 +167,11 @@ bool __init wg_ratelimiter_selftest(void)
 	++test;
 #endif
 
+<<<<<<< HEAD
 	for (trials = TRIALS_BEFORE_GIVING_UP; IS_ENABLED(DEBUG_RATELIMITER_TIMINGS);) {
+=======
+	for (trials = TRIALS_BEFORE_GIVING_UP;;) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		int test_count = 0, ret;
 
 		ret = timings_test(skb4, hdr4, skb6, hdr6, &test_count);
@@ -176,6 +180,10 @@ bool __init wg_ratelimiter_selftest(void)
 				test += test_count;
 				goto err;
 			}
+<<<<<<< HEAD
+=======
+			msleep(500);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			continue;
 		} else if (ret < 0) {
 			test += test_count;
@@ -194,6 +202,10 @@ bool __init wg_ratelimiter_selftest(void)
 				test += test_count;
 				goto err;
 			}
+<<<<<<< HEAD
+=======
+			msleep(50);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			continue;
 		}
 		test += test_count;

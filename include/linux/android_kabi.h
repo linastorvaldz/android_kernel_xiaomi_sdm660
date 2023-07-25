@@ -59,11 +59,25 @@
 #else
 
 #define _ANDROID_KABI_REPLACE(_orig, _new)			\
+<<<<<<< HEAD
 	_new
 
 #endif /* __GENKSYMS__ */
 
 #define _ANDROID_KABI_RESERVE(n)
+=======
+	union {							\
+		_new;						\
+		struct {					\
+			_orig;					\
+		};						\
+		__ANDROID_KABI_CHECK_SIZE_ALIGN(_orig, _new);	\
+	}
+
+#endif /* __GENKSYMS__ */
+
+#define _ANDROID_KABI_RESERVE(n)		u64 android_kabi_reserved##n
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 
 /*

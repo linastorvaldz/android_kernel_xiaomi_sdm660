@@ -88,6 +88,16 @@ unsigned int sysctl_sched_sync_hint_enable = 1;
 unsigned int sysctl_sched_cstate_aware = 1;
 
 /*
+ * Enable/disable honoring sync flag in energy-aware wakeups.
+ */
+unsigned int sysctl_sched_sync_hint_enable = 1;
+
+/*
+ * Enable/disable using cstate knowledge in idle sibling selection
+ */
+unsigned int sysctl_sched_cstate_aware = 1;
+
+/*
  * The initial- and re-scaling of tunables is configurable
  *
  * Options are:
@@ -3969,6 +3979,7 @@ done:
 	trace_sched_util_est_task(p, &p->se.avg);
 }
 
+<<<<<<< HEAD
 /*
  * Check whether cpu is in the fastest set of cpu's that p should run on.
  * If p is boosted, prefer that p runs on a faster cpu; otherwise, allow p
@@ -4109,6 +4120,11 @@ static inline void adjust_cpus_for_packing(struct task_struct *p,
 
 	if (fbt_env->is_rtg)
 		*best_idle_cpu = -1;
+=======
+static inline int task_fits_capacity(struct task_struct *p, long capacity)
+{
+	return capacity * 1024 > uclamp_task_util(p) * capacity_margin;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static inline void update_misfit_status(struct task_struct *p, struct rq *rq)
@@ -4121,7 +4137,11 @@ static inline void update_misfit_status(struct task_struct *p, struct rq *rq)
 		return;
 	}
 
+<<<<<<< HEAD
 	if (task_fits_max(p, cpu_of(rq))) {
+=======
+	if (task_fits_capacity(p, capacity_of(cpu_of(rq)))) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		rq->misfit_task_load = 0;
 		return;
 	}
@@ -5544,6 +5564,7 @@ static inline void hrtick_update(struct rq *rq)
 #endif
 
 #ifdef CONFIG_SMP
+<<<<<<< HEAD
 bool __cpu_overutilized(int cpu, int delta)
 {
 	return (capacity_orig_of(cpu) * 1024) <
@@ -5570,10 +5591,19 @@ static void clear_sd_overutilized(struct sched_domain *sd)
 {
 	trace_sched_overutilized(sd, sd->shared->overutilized, false);
 	sd->shared->overutilized = false;
+=======
+static inline unsigned long cpu_util(int cpu);
+static unsigned long capacity_of(int cpu);
+
+static inline bool cpu_overutilized(int cpu)
+{
+	return (capacity_of(cpu) * 1024) < (cpu_util(cpu) * capacity_margin);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static inline void update_overutilized_status(struct rq *rq)
 {
+<<<<<<< HEAD
 	struct sched_domain *sd;
 
 	rcu_read_lock();
@@ -5582,11 +5612,18 @@ static inline void update_overutilized_status(struct rq *rq)
 	    cpu_overutilized(rq->cpu))
 		set_sd_overutilized(sd);
 	rcu_read_unlock();
+=======
+	if (!READ_ONCE(rq->rd->overutilized) && cpu_overutilized(rq->cpu)) {
+		WRITE_ONCE(rq->rd->overutilized, SG_OVERUTILIZED);
+		trace_sched_overutilized(1);
+	}
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 #else
 static inline void update_overutilized_status(struct rq *rq) { }
 #endif
 
+<<<<<<< HEAD
 /* Runqueue only has SCHED_IDLE tasks enqueued */
 static int sched_idle_rq(struct rq *rq)
 {
@@ -5599,6 +5636,8 @@ static int sched_idle_cpu(int cpu)
 	return sched_idle_rq(cpu_rq(cpu));
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * The enqueue_task method is called before nr_running is
  * increased. Here we update the fair scheduling stats and
@@ -5609,10 +5648,14 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
+<<<<<<< HEAD
 	bool prefer_idle = sched_feat(EAS_PREFER_IDLE) ?
 				(schedtune_prefer_idle(p) > 0) : 0;
 	int task_new = !(flags & ENQUEUE_WAKEUP);
 	int idle_h_nr_running = idle_policy(p->policy);
+=======
+	int task_new = !(flags & ENQUEUE_WAKEUP);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/*
 	 * The code below (indirectly) updates schedutil which looks at
@@ -5640,9 +5683,12 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	 */
 	schedtune_enqueue_task(p, cpu_of(rq));
 
+<<<<<<< HEAD
 #ifdef CONFIG_SCHED_WALT
 	p->misfit = !task_fits_max(p, rq->cpu);
 #endif
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/*
 	 * If in_iowait is set, the code below may not trigger any cpufreq
 	 * utilization updates, so do it here explicitly with the IOWAIT flag
@@ -5687,6 +5733,24 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 	if (!se) {
 		add_nr_running(rq, 1);
+		/*
+		 * Since new tasks are assigned an initial util_avg equal to
+		 * half of the spare capacity of their CPU, tiny tasks have the
+		 * ability to cross the overutilized threshold, which will
+		 * result in the load balancer ruining all the task placement
+		 * done by EAS. As a way to mitigate that effect, do not account
+		 * for the first enqueue operation of new tasks during the
+		 * overutilized flag detection.
+		 *
+		 * A better way of solving this problem would be to wait for
+		 * the PELT signals of tasks to converge before taking them
+		 * into account, but that is not straightforward to implement,
+		 * and the following generally works well enough in practice.
+		 */
+		if (!task_new)
+			update_overutilized_status(rq);
+
+	}
 
 #ifdef CONFIG_SONY_SCHED
 		if (unlikely(p->nr_cpus_allowed == 1))
@@ -5755,6 +5819,14 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 	if (task_sleep && rq->nr_running == 1)
 		flags |= DEQUEUE_IDLE;
+
+	/*
+	 * The code below (indirectly) updates schedutil which looks at
+	 * the cfs_rq utilization to select a frequency.
+	 * Let's update schedtune here to ensure the boost value of the
+	 * current task is not more accounted for in the selection of the OPP.
+	 */
+	schedtune_dequeue_task(p, cpu_of(rq));
 
 	/*
 	 * The code below (indirectly) updates schedutil which looks at
@@ -6138,6 +6210,14 @@ static unsigned long target_load(int cpu, int type)
 	return max(rq->cpu_load[type-1], total);
 }
 
+<<<<<<< HEAD
+=======
+static unsigned long capacity_of(int cpu)
+{
+	return cpu_rq(cpu)->cpu_capacity;
+}
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static unsigned long cpu_avg_load_per_task(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
@@ -6303,7 +6383,11 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p,
 struct reciprocal_value schedtune_spc_rdiv;
 
 static long
+<<<<<<< HEAD
 schedtune_margin(unsigned long signal, long boost, long capacity)
+=======
+schedtune_margin(unsigned long signal, long boost)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	long long margin = 0;
 
@@ -6312,6 +6396,7 @@ schedtune_margin(unsigned long signal, long boost, long capacity)
 	 *
 	 * The Boost (B) value is used to compute a Margin (M) which is
 	 * proportional to the complement of the original Signal (S):
+<<<<<<< HEAD
 	 *   M = B * (capacity - S)
 	 * The obtained M could be used by the caller to "boost" S.
 	 */
@@ -6320,6 +6405,14 @@ schedtune_margin(unsigned long signal, long boost, long capacity)
 			margin  = capacity - signal;
 			margin *= boost;
 		}
+=======
+	 *   M = B * (SCHED_CAPACITY_SCALE - S)
+	 * The obtained M could be used by the caller to "boost" S.
+	 */
+	if (boost >= 0) {
+		margin  = SCHED_CAPACITY_SCALE - signal;
+		margin *= boost;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	} else
 		margin = -signal * boost;
 
@@ -6339,7 +6432,11 @@ schedtune_cpu_margin_with(unsigned long util, int cpu, struct task_struct *p)
 	if (boost == 0)
 		margin = 0;
 	else
+<<<<<<< HEAD
 		margin = schedtune_margin(util, boost, capacity_orig_of(cpu));
+=======
+		margin = schedtune_margin(util, boost);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	trace_sched_boost_cpu(cpu, util, margin);
 
@@ -6356,11 +6453,16 @@ long schedtune_task_margin(struct task_struct *task)
 		return 0;
 
 	util = task_util_est(task);
+<<<<<<< HEAD
 	margin = schedtune_margin(util, boost, SCHED_CAPACITY_SCALE);
+=======
+	margin = schedtune_margin(util, boost);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	return margin;
 }
 
+<<<<<<< HEAD
 unsigned long
 stune_util(int cpu, unsigned long other_util,
 		 struct sched_walt_cpu_load *walt_load)
@@ -6374,6 +6476,8 @@ stune_util(int cpu, unsigned long other_util,
 	return util + margin;
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #else /* CONFIG_SCHED_TUNE */
 
 inline long
@@ -7077,6 +7181,7 @@ unsigned long capacity_curr_of(int cpu)
 	return cap_scale(max_cap, scale_freq);
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_SCHED_WALT
 static inline bool get_rtg_status(struct task_struct *p)
 {
@@ -7172,11 +7277,16 @@ enum fastpaths {
 static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 					struct task_struct *p,
 					struct find_best_target_env *fbt_env)
+=======
+static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
+							struct task_struct *p)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	unsigned long min_util = uclamp_task(p);
 	unsigned long target_capacity = ULONG_MAX;
 	unsigned long min_wake_util = ULONG_MAX;
 	unsigned long target_max_spare_cap = 0;
+<<<<<<< HEAD
 	unsigned long best_active_util = ULONG_MAX;
 	unsigned long best_active_cuml_util = ULONG_MAX;
 	unsigned long best_idle_cuml_util = ULONG_MAX;
@@ -7186,11 +7296,17 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 	unsigned long best_idle_util = ULONG_MAX;
 	int shallowest_idle_cstate = INT_MAX;
 	struct sched_domain *start_sd;
+=======
+	unsigned long target_util = ULONG_MAX;
+	/* Initialise with deepest possible cstate (INT_MAX) */
+	int shallowest_idle_cstate = INT_MAX;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	struct sched_group *sg;
 	int best_active_cpu = -1;
 	int best_idle_cpu = -1;
 	int target_cpu = -1;
 	int backup_cpu = -1;
+<<<<<<< HEAD
 	int i, start_cpu;
 	long spare_wake_cap, most_spare_wake_cap = 0;
 	int most_spare_cap_cpu = -1;
@@ -7200,6 +7316,11 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 	unsigned int target_nr_rtg_high_prio = UINT_MAX;
 	bool rtg_high_prio_task = task_rtg_high_prio(p);
 	struct task_struct *curr_tsk;
+=======
+	bool prefer_idle;
+	bool boosted;
+	int i;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/*
 	 * In most cases, target_capacity tracks capacity_orig of the most
@@ -7211,6 +7332,7 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 	 * case we initialise target_capacity to 0.
 	 */
 	prefer_idle = uclamp_latency_sensitive(p);
+<<<<<<< HEAD
 	boosted = fbt_env->boosted || uclamp_boosted(p);
 	if (prefer_idle && boosted)
 		target_capacity = 0;
@@ -7241,10 +7363,19 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 
 	/* Scan CPUs in all SDs */
 	sg = start_sd->groups;
+=======
+	boosted = uclamp_boosted(p);
+	if (prefer_idle && boosted)
+		target_capacity = 0;
+
+	/* Scan CPUs in all SDs */
+	sg = sd->groups;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	do {
 		for_each_cpu_and(i, &p->cpus_allowed, sched_group_span(sg)) {
 			unsigned long capacity_curr = capacity_curr_of(i);
 			unsigned long capacity_orig = capacity_orig_of(i);
+<<<<<<< HEAD
 			unsigned long wake_util, new_util, new_util_cuml;
 			long spare_cap;
 			int idle_idx = INT_MAX;
@@ -7275,6 +7406,15 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 			if (p->human_task > MAX_LEVER)
 				break;
 #endif
+=======
+			unsigned long wake_util, new_util;
+			long spare_cap;
+			int idle_idx = INT_MAX;
+
+			if (!cpu_online(i))
+				continue;
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			/*
 			 * p's blocked utilization is still accounted for on prev_cpu
 			 * so prev_cpu will receive a negative bias due to the double
@@ -7282,6 +7422,7 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 			 */
 			wake_util = cpu_util_without(i, p);
 			new_util = wake_util + task_util_est(p);
+<<<<<<< HEAD
 			spare_wake_cap = capacity_orig - wake_util;
 
 			if (spare_wake_cap > most_spare_wake_cap) {
@@ -7302,11 +7443,14 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 						min_util - task_util(p);
 			else
 				new_util_cuml = cpu_util_cum(i, 0) + min_util;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 			/*
 			 * Ensure minimum capacity to grant the required boost.
 			 * The target CPU can be already at a capacity level higher
 			 * than the one required to boost the task.
+<<<<<<< HEAD
 			 * However, if the task prefers idle cpu and that
 			 * cpu is idle, skip this check, but still need to make
 			 * sure the task fits in that cpu after considering
@@ -7316,6 +7460,11 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 			if ((!(prefer_idle && idle_cpu(i))
 				&& new_util > capacity_orig) ||
 				!task_fits_capacity(p, capacity_orig, i))
+=======
+			 */
+			new_util = max(min_util, new_util);
+			if (new_util > capacity_orig)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				continue;
 
 			/*
@@ -7380,6 +7529,7 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 					 * shallowest.
 					 */
 					if (capacity_orig == target_capacity &&
+<<<<<<< HEAD
 					    sysctl_sched_cstate_aware) {
 						if (shallowest_idle_cstate <
 						    idle_idx)
@@ -7397,6 +7547,14 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 					target_capacity = capacity_orig;
 					shallowest_idle_cstate = idle_idx;
 					best_idle_util = new_util;
+=======
+					    sysctl_sched_cstate_aware &&
+					    idle_idx >= shallowest_idle_cstate)
+						continue;
+
+					target_capacity = capacity_orig;
+					shallowest_idle_cstate = idle_idx;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 					best_idle_cpu = i;
 					continue;
 				}
@@ -7425,6 +7583,7 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 				 */
 				if (wake_util > min_wake_util)
 					continue;
+<<<<<<< HEAD
 
 				/*
 				 * If utilization is the same between CPUs,
@@ -7437,15 +7596,38 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 				min_wake_util = wake_util;
 				best_active_util = new_util;
 				best_active_cuml_util = new_util_cuml;
+=======
+				min_wake_util = wake_util;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				best_active_cpu = i;
 				continue;
 			}
 
 			/*
+<<<<<<< HEAD
 			 * Skip processing placement further if we are visiting
 			 * cpus with lower capacity than start cpu
 			 */
 			if (capacity_orig < capacity_orig_of(start_cpu))
+=======
+			 * Enforce EAS mode
+			 *
+			 * For non latency sensitive tasks, skip CPUs that
+			 * will be overutilized by moving the task there.
+			 *
+			 * The goal here is to remain in EAS mode as long as
+			 * possible at least for !prefer_idle tasks.
+			 */
+			if ((new_util * capacity_margin) >
+			    (capacity_orig * SCHED_CAPACITY_SCALE))
+				continue;
+
+			/*
+			 * Favor CPUs with smaller capacity for non latency
+			 * sensitive tasks.
+			 */
+			if (capacity_orig > target_capacity)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				continue;
 
 			/*
@@ -7474,6 +7656,7 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 			 */
 			if (idle_cpu(i)) {
 				/*
+<<<<<<< HEAD
 				 * Prefer shallowest over deeper idle state cpu,
 				 * of same capacity cpus.
 				 */
@@ -7487,22 +7670,38 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 					(best_idle_cpu == prev_cpu ||
 					(i != prev_cpu &&
 					new_util_cuml > best_idle_cuml_util)))
+=======
+				 * Skip CPUs in deeper idle state, but only
+				 * if they are also less energy efficient.
+				 * IOW, prefer a deep IDLE LITTLE CPU vs a
+				 * shallow idle big CPU.
+				 */
+				if (capacity_orig == target_capacity &&
+				    sysctl_sched_cstate_aware &&
+				    idle_idx >= shallowest_idle_cstate)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 					continue;
 
 				target_capacity = capacity_orig;
 				shallowest_idle_cstate = idle_idx;
+<<<<<<< HEAD
 				best_idle_cuml_util = new_util_cuml;
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				best_idle_cpu = i;
 				continue;
 			}
 
 			/*
+<<<<<<< HEAD
 			 * Consider only idle CPUs for active migration.
 			 */
 			if (p->state == TASK_RUNNING)
 				continue;
 
 			/*
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			 * Case C) Non latency sensitive tasks on ACTIVE CPUs.
 			 *
 			 * Pack tasks in the most energy efficient capacities.
@@ -7522,6 +7721,7 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 			 * capacity.
 			 */
 
+<<<<<<< HEAD
 			/*
 			 * Try to spread the rtg high prio tasks so that they
 			 * don't preempt each other. This is a optimisitc
@@ -7605,6 +7805,20 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 	adjust_cpus_for_packing(p, &target_cpu, &best_idle_cpu,
 				shallowest_idle_cstate,
 				fbt_env, boosted);
+=======
+			/* Favor CPUs with maximum spare capacity */
+			if (capacity_orig == target_capacity &&
+			    spare_cap < target_max_spare_cap)
+				continue;
+
+			target_max_spare_cap = spare_cap;
+			target_capacity = capacity_orig;
+			target_util = new_util;
+			target_cpu = i;
+		}
+
+	} while (sg = sg->next, sg != sd->groups);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/*
 	 * For non latency sensitive tasks, cases B and C in the previous loop,
@@ -7626,11 +7840,18 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 	 *   a) ACTIVE CPU: target_cpu
 	 *   b) IDLE CPU: best_idle_cpu
 	 */
+<<<<<<< HEAD
 	if (target_cpu != -1 && !idle_cpu(target_cpu) &&
 			best_idle_cpu != -1) {
 		curr_tsk = READ_ONCE(cpu_rq(target_cpu)->curr);
 		if (curr_tsk && schedtune_task_boost_rcu_locked(curr_tsk))
 			target_cpu = best_idle_cpu;
+=======
+
+	if (prefer_idle && (best_idle_cpu != -1)) {
+		target_cpu = best_idle_cpu;
+		goto target;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	if (target_cpu == -1)
@@ -7642,6 +7863,7 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 		? best_active_cpu
 		: best_idle_cpu;
 
+<<<<<<< HEAD
 	if (target_cpu == -1 && most_spare_cap_cpu != -1 &&
 		/* ensure we use active cpu for active migration */
 		!(p->state == TASK_RUNNING && !idle_cpu(most_spare_cap_cpu)))
@@ -7651,6 +7873,8 @@ static void find_best_target(struct sched_domain *sd, cpumask_t *cpus,
 					cpu_isolated(prev_cpu))
 		target_cpu = isolated_candidate;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (backup_cpu >= 0)
 		cpumask_set_cpu(backup_cpu, cpus);
 	if (target_cpu >= 0) {
@@ -7658,11 +7882,16 @@ target:
 		cpumask_set_cpu(target_cpu, cpus);
 	}
 
+<<<<<<< HEAD
 out:
 	trace_sched_find_best_target(p, prefer_idle, min_util, start_cpu,
 				     best_idle_cpu, best_active_cpu,
 				     most_spare_cap_cpu,
 				     target_cpu, backup_cpu);
+=======
+	trace_sched_find_best_target(p, prefer_idle, min_util, best_idle_cpu,
+			             best_active_cpu, target_cpu, backup_cpu);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 /*
@@ -7689,7 +7918,11 @@ static int wake_cap(struct task_struct *p, int cpu, int prev_cpu)
 	/* Bring task utilization in sync with prev_cpu */
 	sync_entity_load_avg(&p->se);
 
+<<<<<<< HEAD
 	return !task_fits_max(p, cpu);
+=======
+	return !task_fits_capacity(p, min_cap);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 /*
@@ -7730,6 +7963,7 @@ static unsigned long cpu_util_next(int cpu, struct task_struct *p, int dst_cpu)
 	return min(util, capacity_orig_of(cpu));
 }
 
+<<<<<<< HEAD
 #ifdef CONFIG_SCHED_WALT
 static inline unsigned long
 cpu_util_next_walt(int cpu, struct task_struct *p, int dst_cpu)
@@ -7774,6 +8008,8 @@ cpu_util_next_walt(int cpu, struct task_struct *p, int dst_cpu)
 }
 #endif
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * compute_energy(): Estimates the energy that would be consumed if @p was
  * migrated to @dst_cpu. compute_energy() predicts what will be the utilization
@@ -7784,8 +8020,14 @@ cpu_util_next_walt(int cpu, struct task_struct *p, int dst_cpu)
 static long
 compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
 {
+<<<<<<< HEAD
 	unsigned int max_util, cpu_util, cpu_cap;
 	unsigned long sum_util, energy = 0;
+=======
+	unsigned int max_util, util_cfs, cpu_util, cpu_cap;
+	unsigned long sum_util, energy = 0;
+	struct task_struct *tsk;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int cpu;
 
 	for (; pd; pd = pd->next) {
@@ -7809,6 +8051,7 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
 		 * by compute_energy().
 		 */
 		for_each_cpu_and(cpu, pd_mask, cpu_online_mask) {
+<<<<<<< HEAD
 #ifdef CONFIG_SCHED_WALT
 			cpu_util = cpu_util_next_walt(cpu, p, dst_cpu);
 			sum_util += cpu_util;
@@ -7816,6 +8059,8 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
 			unsigned int util_cfs;
 			struct task_struct *tsk;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			util_cfs = cpu_util_next(cpu, p, dst_cpu);
 
 			/*
@@ -7837,7 +8082,10 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
 			tsk = cpu == dst_cpu ? p : NULL;
 			cpu_util = schedutil_cpu_util(cpu, util_cfs, cpu_cap,
 						      FREQUENCY_UTIL, tsk);
+<<<<<<< HEAD
 #endif
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			max_util = max(max_util, cpu_util);
 		}
 
@@ -7880,9 +8128,13 @@ static void select_cpu_candidates(struct sched_domain *sd, cpumask_t *cpus,
 			 * aligned with schedutil_cpu_util().
 			 */
 			util = uclamp_rq_util_with(cpu_rq(cpu), util, p);
+<<<<<<< HEAD
 
 			if (cpu_cap * 1024 <
 					util * sched_capacity_margin_up[cpu])
+=======
+			if (cpu_cap * 1024 < util * capacity_margin)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				continue;
 
 			/*
@@ -7931,6 +8183,7 @@ static void select_cpu_candidates(struct sched_domain *sd, cpumask_t *cpus,
 		cpumask_set_cpu(highest_spare_cap_cpu, cpus);
 }
 
+<<<<<<< HEAD
 static inline int wake_to_idle(struct task_struct *p)
 {
 	return (current->flags & PF_WAKE_UP_IDLE) ||
@@ -7956,6 +8209,8 @@ static inline bool select_cpu_same_energy(int cpu, int best_cpu, int prev_cpu)
 	return idle_cpu(best_cpu);
 }
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static DEFINE_PER_CPU(cpumask_t, energy_cpus);
 
 /*
@@ -7998,16 +8253,25 @@ static DEFINE_PER_CPU(cpumask_t, energy_cpus);
  * let's keep things simple by re-using the existing slow path.
  */
 
+<<<<<<< HEAD
 static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu,
 				     int sync, int sibling_count_hint)
 {
 	unsigned long prev_energy = ULONG_MAX, best_energy = ULONG_MAX;
 	struct root_domain *rd = cpu_rq(smp_processor_id())->rd;
 	int weight, cpu = smp_processor_id(), best_energy_cpu = prev_cpu;
+=======
+static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu, int sync)
+{
+	unsigned long prev_energy = ULONG_MAX, best_energy = ULONG_MAX;
+	struct root_domain *rd = cpu_rq(smp_processor_id())->rd;
+	int weight, cpu, best_energy_cpu = prev_cpu;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	unsigned long cur_energy;
 	struct perf_domain *pd;
 	struct sched_domain *sd;
 	cpumask_t *candidates;
+<<<<<<< HEAD
 	bool is_rtg, curr_is_rtg;
 	struct find_best_target_env fbt_env;
 	bool need_idle = wake_to_idle(p);
@@ -8057,6 +8321,18 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu,
 	rcu_read_lock();
 	pd = rcu_dereference(rd->pd);
 	if (!pd)
+=======
+
+	if (sysctl_sched_sync_hint_enable && sync) {
+		cpu = smp_processor_id();
+		if (cpumask_test_cpu(cpu, &p->cpus_allowed))
+			return cpu;
+	}
+
+	rcu_read_lock();
+	pd = rcu_dereference(rd->pd);
+	if (!pd || READ_ONCE(rd->overutilized))
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		goto fail;
 
 	/*
@@ -8070,6 +8346,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu,
 		goto fail;
 
 	sync_entity_load_avg(&p->se);
+<<<<<<< HEAD
 
 	if (sched_feat(FIND_BEST_TARGET)) {
 		fbt_env.is_rtg = is_rtg;
@@ -8109,6 +8386,24 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu,
 		}
 		goto unlock;
 	}
+=======
+	if (!task_util_est(p))
+		goto unlock;
+
+	/* Pre-select a set of candidate CPUs. */
+	candidates = this_cpu_ptr(&energy_cpus);
+	cpumask_clear(candidates);
+
+	if (sched_feat(FIND_BEST_TARGET))
+		find_best_target(sd, candidates, p);
+	else
+		select_cpu_candidates(sd, candidates, pd, p, prev_cpu);
+
+	/* Bail out if no candidate was found. */
+	weight = cpumask_weight(candidates);
+	if (!weight)
+		goto unlock;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/* If there is only one sensible candidate, select it now. */
 	cpu = cpumask_first(candidates);
@@ -8118,6 +8413,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu,
 		goto unlock;
 	}
 
+<<<<<<< HEAD
 #ifdef CONFIG_SCHED_WALT
 	if (p->state == TASK_WAKING)
 		delta = task_util(p);
@@ -8129,6 +8425,8 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu,
 		goto unlock;
 	}
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (cpumask_test_cpu(prev_cpu, &p->cpus_allowed))
 		prev_energy = best_energy = compute_energy(p, prev_cpu, pd);
 	else
@@ -8139,6 +8437,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu,
 		if (cpu == prev_cpu)
 			continue;
 		cur_energy = compute_energy(p, cpu, pd);
+<<<<<<< HEAD
 		trace_sched_compute_energy(p, cpu, cur_energy, prev_energy,
 					   best_energy, best_energy_cpu);
 		if (cur_energy < best_energy) {
@@ -8150,12 +8449,18 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu,
 				best_energy = cur_energy;
 				best_energy_cpu = cpu;
 			}
+=======
+		if (cur_energy < best_energy) {
+			best_energy = cur_energy;
+			best_energy_cpu = cpu;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		}
 	}
 unlock:
 	rcu_read_unlock();
 
 	/*
+<<<<<<< HEAD
 	 * Pick the prev CPU, if best energy CPU can't saves at least 6% of
 	 * the energy used by prev_cpu.
 	 */
@@ -8177,6 +8482,22 @@ done:
 fail:
 	rcu_read_unlock();
 eas_not_ready:
+=======
+	 * Pick the best CPU if prev_cpu cannot be used, or if it saves at
+	 * least 6% of the energy used by prev_cpu.
+	 */
+	if (prev_energy == ULONG_MAX)
+		return best_energy_cpu;
+
+	if ((prev_energy - best_energy) > (prev_energy >> 4))
+		return best_energy_cpu;
+
+	return prev_cpu;
+
+fail:
+	rcu_read_unlock();
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return -1;
 }
 
@@ -8202,6 +8523,7 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
 	int want_affine = 0;
 	int sync = (wake_flags & WF_SYNC) && !(current->flags & PF_EXITING);
 
+<<<<<<< HEAD
 	if (static_branch_unlikely(&sched_energy_present)) {
 		rcu_read_lock();
 		new_cpu = find_energy_efficient_cpu(p, prev_cpu, sync,
@@ -8231,6 +8553,26 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
 			      cpumask_test_cpu(cpu, &p->cpus_allowed);
 	}
 
+=======
+	if (sd_flag & SD_BALANCE_WAKE) {
+		record_wakee(p);
+
+		if (static_branch_unlikely(&sched_energy_present)) {
+			if (uclamp_latency_sensitive(p) && !sched_feat(EAS_PREFER_IDLE) && !sync)
+				goto sd_loop;
+
+			new_cpu = find_energy_efficient_cpu(p, prev_cpu, sync);
+			if (new_cpu >= 0)
+				return new_cpu;
+			new_cpu = prev_cpu;
+		}
+
+		want_affine = !wake_wide(p, sibling_count_hint) &&
+			      !wake_cap(p, cpu, prev_cpu) &&
+			      cpumask_test_cpu(cpu, &p->cpus_allowed);
+	}
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 sd_loop:
 	rcu_read_lock();
 	for_each_domain(cpu, tmp) {
@@ -9491,7 +9833,11 @@ static void update_blocked_averages(int cpu)
 	for_each_leaf_cfs_rq_safe(rq, cfs_rq, pos) {
 		struct sched_entity *se;
 
+<<<<<<< HEAD
 		if (update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq, true))
+=======
+		if (update_cfs_rq_load_avg(cfs_rq_clock_pelt(cfs_rq), cfs_rq))
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			update_tg_load_avg(cfs_rq, 0);
 
 		/* Propagate pending load changes to the parent, if any: */
@@ -9583,7 +9929,11 @@ static inline void update_blocked_averages(int cpu)
 
 	rq_lock_irqsave(rq, &rf);
 	update_rq_clock(rq);
+<<<<<<< HEAD
 	update_cfs_rq_load_avg(cfs_rq_clock_task(cfs_rq), cfs_rq, true);
+=======
+	update_cfs_rq_load_avg(cfs_rq_clock_pelt(cfs_rq), cfs_rq);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	curr_class = rq->curr->sched_class;
 	update_rt_rq_load_avg(rq_clock_pelt(rq), rq, curr_class == &rt_sched_class);
@@ -9727,6 +10077,7 @@ static void update_cpu_capacity(struct sched_domain *sd, int cpu)
 {
 	unsigned long capacity = arch_scale_cpu_capacity(sd, cpu);
 	struct sched_group *sdg = sd->groups;
+<<<<<<< HEAD
 	bool update = false;
 
 	capacity *= arch_scale_max_freq_capacity(sd, cpu);
@@ -9738,6 +10089,38 @@ static void update_cpu_capacity(struct sched_domain *sd, int cpu)
 		update = true;
 	}
 
+=======
+	struct max_cpu_capacity *mcc;
+	unsigned long max_capacity;
+	int max_cap_cpu;
+	unsigned long flags;
+
+	cpu_rq(cpu)->cpu_capacity_orig = capacity;
+
+	capacity *= arch_scale_max_freq_capacity(sd, cpu);
+	capacity >>= SCHED_CAPACITY_SHIFT;
+
+	mcc = &cpu_rq(cpu)->rd->max_cpu_capacity;
+
+	raw_spin_lock_irqsave(&mcc->lock, flags);
+	max_capacity = mcc->val;
+	max_cap_cpu = mcc->cpu;
+
+	if ((max_capacity > capacity && max_cap_cpu == cpu) ||
+	    (max_capacity < capacity)) {
+		mcc->val = capacity;
+		mcc->cpu = cpu;
+#ifdef CONFIG_SCHED_DEBUG
+		raw_spin_unlock_irqrestore(&mcc->lock, flags);
+		printk_deferred(KERN_INFO "CPU%d: update max cpu_capacity %lu\n",
+				cpu, capacity);
+		goto skip_unlock;
+#endif
+	}
+	raw_spin_unlock_irqrestore(&mcc->lock, flags);
+
+skip_unlock: __attribute__ ((unused));
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	capacity = scale_rt_capacity(cpu, capacity);
 
 	if (!capacity)
@@ -9819,6 +10202,7 @@ void update_group_capacity(struct sched_domain *sd, int cpu)
 			struct sched_group_capacity *sgc = group->sgc;
 			cpumask_t *cpus = sched_group_span(group);
 
+<<<<<<< HEAD
 			if (!cpu_isolated(cpumask_first(cpus))) {
 				capacity += sgc->capacity;
 				min_capacity = min(sgc->min_capacity,
@@ -9826,6 +10210,11 @@ void update_group_capacity(struct sched_domain *sd, int cpu)
 				max_capacity = max(sgc->max_capacity,
 							max_capacity);
 			}
+=======
+			capacity += sgc->capacity;
+			min_capacity = min(sgc->min_capacity, min_capacity);
+			max_capacity = max(sgc->max_capacity, max_capacity);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			group = group->next;
 		} while (group != child->groups);
 	}
@@ -9951,6 +10340,7 @@ group_smaller_min_cpu_capacity(struct sched_group *sg, struct sched_group *ref)
 static inline bool
 group_smaller_max_cpu_capacity(struct sched_group *sg, struct sched_group *ref)
 {
+<<<<<<< HEAD
 	return sg->sgc->max_capacity *
 				sched_capacity_margin_up[group_first_cpu(sg)] <
 						ref->sgc->max_capacity * 1024;
@@ -9970,6 +10360,12 @@ group_similar_cpu_capacity(struct sched_group *sg, struct sched_group *ref)
 		asym_cap_siblings(group_first_cpu(sg), group_first_cpu(ref)));
 }
 
+=======
+	return sg->sgc->max_capacity * capacity_margin <
+						ref->sgc->max_capacity * 1024;
+}
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static inline enum
 group_type group_classify(struct sched_group *group,
 			  struct sg_lb_stats *sgs)
@@ -10050,12 +10446,17 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 		if (nr_running > 1)
 			*sg_status |= SG_OVERLOAD;
 
+<<<<<<< HEAD
 		if (cpu_overutilized(i)) {
 			*sg_status |= SG_OVERUTILIZED;
 
 			if (rq->misfit_task_load)
 				*sg_status |= SG_HAS_MISFIT_TASK;
 		}
+=======
+		if (cpu_overutilized(i))
+			*sg_status |= SG_OVERUTILIZED;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #ifdef CONFIG_NUMA_BALANCING
 		sgs->nr_numa_running += rq->nr_numa_running;
@@ -10167,6 +10568,7 @@ static bool update_sd_pick_busiest(struct lb_env *env,
 		return false;
 
 	/*
+<<<<<<< HEAD
 	 * Candidate sg doesn't face any severe imbalance issues so
 	 * don't disturb unless the groups are of similar capacity
 	 * where balancing is more harmless.
@@ -10176,6 +10578,8 @@ static bool update_sd_pick_busiest(struct lb_env *env,
 		return false;
 
 	/*
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	 * If we have more than one misfit sg go with the biggest misfit.
 	 */
 	if (sgs->group_type == group_misfit_task &&
@@ -10350,6 +10754,7 @@ next_group:
 
 		/* update overload indicator if we are at root domain */
 		WRITE_ONCE(rd->overload, sg_status & SG_OVERLOAD);
+<<<<<<< HEAD
 	}
 
 	if (sg_status & SG_OVERUTILIZED)
@@ -10392,6 +10797,17 @@ next_group:
 			 sched_capacity_margin_up[group_first_cpu(sds->local)])
 		set_sd_overutilized(env->sd->parent);
 
+=======
+
+		/* Update over-utilization (tipping point, U >= 0) indicator */
+		WRITE_ONCE(rd->overutilized, sg_status & SG_OVERUTILIZED);
+		trace_sched_overutilized(!!(sg_status & SG_OVERUTILIZED));
+	} else if (sg_status & SG_OVERUTILIZED) {
+		WRITE_ONCE(env->dst_rq->rd->overutilized, SG_OVERUTILIZED);
+		trace_sched_overutilized(1);
+	}
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 /**
@@ -10556,11 +10972,17 @@ static inline void calculate_imbalance(struct lb_env *env, struct sd_lb_stats *s
 	 * factors in sg capacity and sgs with smaller group_type are
 	 * skipped when updating the busiest sg:
 	 */
+<<<<<<< HEAD
 	if (busiest->avg_load <= sds->avg_load ||
 	    local->avg_load >= sds->avg_load)
 		no_imbalance = true;
 
 	if (busiest->group_type != group_misfit_task && no_imbalance) {
+=======
+	if (busiest->group_type != group_misfit_task &&
+	    (busiest->avg_load <= sds->avg_load ||
+	     local->avg_load >= sds->avg_load)) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		env->imbalance = 0;
 		if (busiest->group_type == group_overloaded &&
 				local->group_type <= group_misfit_task) {
@@ -10613,6 +11035,22 @@ static inline void calculate_imbalance(struct lb_env *env, struct sd_lb_stats *s
 		 * imbalance based on busiest group type or fix small imbalance.
 		 */
 		env->imbalance = 0;
+	}
+
+	/* Boost imbalance to allow misfit task to be balanced.
+	 * Always do this if we are doing a NEWLY_IDLE balance
+	 * on the assumption that any tasks we have must not be
+	 * long-running (and hence we cannot rely upon load).
+	 * However if we are not idle, we should assume the tasks
+	 * we have are longer running and not override load-based
+	 * calculations above unless we are sure that the local
+	 * group is underutilized.
+	 */
+	if (busiest->group_type == group_misfit_task &&
+		(env->idle == CPU_NEWLY_IDLE ||
+		local->sum_nr_running < local->group_weight)) {
+		env->imbalance = max_t(long, env->imbalance,
+				       busiest->group_misfit_task_load);
 	}
 
 	/* Boost imbalance to allow misfit task to be balanced.
@@ -10685,6 +11123,7 @@ static struct sched_group *find_busiest_group(struct lb_env *env)
 	if (static_branch_unlikely(&sched_energy_present)) {
 		struct root_domain *rd = env->dst_rq->rd;
 
+<<<<<<< HEAD
 		if (rcu_dereference(rd->pd) && !sd_overutilized(env->sd)) {
 			int cpu_local, cpu_busiest;
 			unsigned long capacity_local, capacity_busiest;
@@ -10710,6 +11149,10 @@ static struct sched_group *find_busiest_group(struct lb_env *env)
 					goto out_balanced;
 			}
 		}
+=======
+		if (rcu_dereference(rd->pd) && !READ_ONCE(rd->overutilized))
+			goto out_balanced;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	local = &sds.local_stat;
@@ -10745,6 +11188,10 @@ static struct sched_group *find_busiest_group(struct lb_env *env)
 	 */
 	if (env->idle != CPU_NOT_IDLE && group_has_capacity(env, local) &&
 	    (busiest->group_no_capacity || env->prefer_spread))
+		goto force_balance;
+
+	/* Misfit tasks should be dealt with regardless of the avg load */
+	if (busiest->group_type == group_misfit_task)
 		goto force_balance;
 
 	/* Misfit tasks should be dealt with regardless of the avg load */
@@ -10863,6 +11310,7 @@ static struct rq *find_busiest_queue(struct lb_env *env,
 			continue;
 		}
 
+<<<<<<< HEAD
 		/*
 		 * Ignore cpu, which is undergoing active_balance and doesn't
 		 * have more than 2 tasks.
@@ -10870,6 +11318,8 @@ static struct rq *find_busiest_queue(struct lb_env *env,
 		if (rq->active_balance && rq->nr_running <= 2)
 			continue;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		capacity = capacity_of(i);
 
 		/*
@@ -10880,9 +11330,13 @@ static struct rq *find_busiest_queue(struct lb_env *env,
 		 */
 		if (env->sd->flags & SD_ASYM_CPUCAPACITY &&
 		    capacity_of(env->dst_cpu) < capacity &&
+<<<<<<< HEAD
 		    (rq->nr_running == 1 ||
 			 (rq->nr_running == 2 && task_util(rq->curr) <
 			  sched_small_task_threshold)))
+=======
+		    rq->nr_running == 1)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			continue;
 
 		wl = weighted_cpuload(rq);
@@ -10953,6 +11407,7 @@ static int need_active_balance(struct lb_env *env)
 			return 1;
 	}
 
+<<<<<<< HEAD
 	if (env->idle != CPU_NOT_IDLE &&
 			env->src_grp_type == group_misfit_task)
 		return 1;
@@ -10961,6 +11416,12 @@ static int need_active_balance(struct lb_env *env)
 		(capacity_of(env->src_cpu) < capacity_of(env->dst_cpu)) &&
 		((capacity_orig_of(env->src_cpu) <
 				capacity_orig_of(env->dst_cpu))) &&
+=======
+	if (env->src_grp_type == group_misfit_task)
+		return 1;
+
+	if ((capacity_of(env->src_cpu) < capacity_of(env->dst_cpu)) &&
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				env->src_rq->cfs.h_nr_running == 1 &&
 				cpu_overutilized(env->src_cpu) &&
 				!cpu_overutilized(env->dst_cpu)) {
@@ -11249,10 +11710,16 @@ no_move:
 		 * frequent, pollute the failure counter causing
 		 * excessive cache_hot migrations and active balances.
 		 */
+<<<<<<< HEAD
 		if (idle != CPU_NEWLY_IDLE) {
 			if (env.src_grp_nr_running > 1)
 				sd->nr_balance_failed++;
 		}
+=======
+		if (idle != CPU_NEWLY_IDLE)
+			if (env.src_grp_nr_running > 1)
+				sd->nr_balance_failed++;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		if (need_active_balance(&env)) {
 			unsigned long flags;
@@ -11896,6 +12363,7 @@ static void nohz_balancer_kick(struct rq *rq)
 	if (time_before(now, nohz.next_balance))
 		goto out;
 
+<<<<<<< HEAD
 	/*
 	 * With EAS, no-hz idle balance is allowed only when the CPU
 	 * is overutilized and has 2 tasks. The misfit task migration
@@ -11927,6 +12395,9 @@ static void nohz_balancer_kick(struct rq *rq)
 #endif
 
 	if (rq->nr_running >= 2) {
+=======
+	if (rq->nr_running >= 2 || rq->misfit_task_load) {
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		flags = NOHZ_KICK_MASK;
 		goto out;
 	}
@@ -12339,7 +12810,11 @@ static int idle_balance(struct rq *this_rq, struct rq_flags *rf)
 	 */
 	rq_unpin_lock(this_rq, rf);
 
+<<<<<<< HEAD
 	if (avg_idle < sysctl_sched_migration_cost ||
+=======
+	if (this_rq->avg_idle < sysctl_sched_migration_cost ||
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	    !READ_ONCE(this_rq->rd->overload)) {
 
 		rcu_read_lock();
@@ -12525,6 +13000,7 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 		task_tick_numa(rq, curr);
 
 	update_misfit_status(curr, rq);
+<<<<<<< HEAD
 
 #ifdef CONFIG_SCHED_WALT
 	misfit = rq->misfit_task_load;
@@ -12535,6 +13011,8 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 	}
 #endif
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	update_overutilized_status(task_rq(curr));
 }
 
@@ -13042,10 +13520,13 @@ const struct sched_class fair_sched_class = {
 	.task_change_group	= task_change_group_fair,
 #endif
 
+<<<<<<< HEAD
 #ifdef CONFIG_SCHED_WALT
 	.fixup_walt_sched_stats	= walt_fixup_sched_stats_fair,
 #endif
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #ifdef CONFIG_UCLAMP_TASK
 	.uclamp_enabled		= 1,
 #endif

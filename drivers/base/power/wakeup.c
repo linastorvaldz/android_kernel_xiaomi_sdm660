@@ -905,7 +905,12 @@ bool pm_wakeup_pending(void)
 	if (ret) {
 		pm_get_active_wakeup_sources(suspend_abort,
 					     MAX_SUSPEND_ABORT_LEN);
+<<<<<<< HEAD
 		pr_debug("PM: %s\n", suspend_abort);
+=======
+		log_suspend_abort_reason(suspend_abort);
+		pr_info("PM: %s\n", suspend_abort);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	return ret || atomic_read(&pm_abort_suspend) > 0;
@@ -942,7 +947,12 @@ void pm_system_irq_wakeup(unsigned int irq_number)
 		else if (desc->action && desc->action->name)
 			name = desc->action->name;
 
+<<<<<<< HEAD
 		pr_debug("%s: %d triggered %s\n", __func__, irq_number, name);
+=======
+		log_irq_wakeup_reason(irq_number);
+		pr_warn("%s: %d triggered %s\n", __func__, irq_number, name);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		pm_wakeup_irq = irq_number;
 		pm_system_wakeup();

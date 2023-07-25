@@ -801,7 +801,10 @@ struct max_cpu_capacity {
 /* Scheduling group status flags */
 #define SG_OVERLOAD		0x1 /* More than one runnable task on a CPU. */
 #define SG_OVERUTILIZED		0x2 /* One or more CPUs are over-utilized. */
+<<<<<<< HEAD
 #define SG_HAS_MISFIT_TASK	0x4 /* Group has misfit task. */
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /*
  * We add the notion of a root-domain which will be used to define per-domain
@@ -824,6 +827,12 @@ struct root_domain {
 	 * - Running task is misfit
 	 */
 	int			overload;
+<<<<<<< HEAD
+=======
+
+	/* Indicate one or more cpus over-utilized (tipping point) */
+	int			overutilized;
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/*
 	 * The bit corresponding to a CPU gets set here if such CPU has more
@@ -863,6 +872,10 @@ struct root_domain {
 	 */
 	struct perf_domain	*pd;
 
+<<<<<<< HEAD
+=======
+	/* Vendor fields. */
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/* First cpu with maximum and minimum original capacity */
 	int max_cap_orig_cpu, min_cap_orig_cpu;
 	/* First cpu with mid capacity */
@@ -1514,10 +1527,17 @@ static inline struct sched_domain *lowest_flag_domain(int cpu, int flag)
 DECLARE_PER_CPU(struct sched_domain __rcu *, sd_llc);
 DECLARE_PER_CPU(int, sd_llc_size);
 DECLARE_PER_CPU(int, sd_llc_id);
+<<<<<<< HEAD
 DECLARE_PER_CPU(struct sched_domain_shared __rcu *, sd_llc_shared);
 DECLARE_PER_CPU(struct sched_domain __rcu *, sd_numa);
 DECLARE_PER_CPU(struct sched_domain __rcu *, sd_asym_packing);
 DECLARE_PER_CPU(struct sched_domain __rcu *, sd_asym_cpucapacity);
+=======
+DECLARE_PER_CPU(struct sched_domain_shared *, sd_llc_shared);
+DECLARE_PER_CPU(struct sched_domain *, sd_numa);
+DECLARE_PER_CPU(struct sched_domain *, sd_asym_packing);
+DECLARE_PER_CPU(struct sched_domain *, sd_asym_cpucapacity);
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 extern struct static_key_false sched_asym_cpucapacity;
 
 struct sched_group_capacity {
@@ -1924,10 +1944,13 @@ static inline void idle_set_state_idx(struct rq *rq, int idle_state_idx)
 static inline int idle_get_state_idx(struct rq *rq)
 {
 	WARN_ON(!rcu_read_lock_held());
+<<<<<<< HEAD
 
 	if (rq->nr_running || cpu_of(rq) == raw_smp_processor_id())
 		return -1;
 
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return rq->idle_state_idx;
 }
 #else
@@ -2022,9 +2045,15 @@ static inline void add_nr_running(struct rq *rq, unsigned count)
 	rq->nr_running = prev_nr + count;
 
 #ifdef CONFIG_SMP
+<<<<<<< HEAD
 	if (prev_nr < 2 && rq->nr_running >= 2) {
 		if (!READ_ONCE(rq->rd->overload))
 			WRITE_ONCE(rq->rd->overload, 1);
+=======
+		if (!READ_ONCE(rq->rd->overload))
+			WRITE_ONCE(rq->rd->overload, 1);
+#endif
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 #endif
 
@@ -2101,6 +2130,7 @@ unsigned long arch_scale_max_freq_capacity(struct sched_domain *sd, int cpu)
 {
 	return SCHED_CAPACITY_SCALE;
 }
+<<<<<<< HEAD
 #endif
 
 #ifdef CONFIG_SMP
@@ -2225,6 +2255,9 @@ add_capacity_margin(unsigned long cpu_capacity, int cpu)
 }
 
 #endif
+=======
+#endif
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #ifdef CONFIG_SMP
 #ifdef CONFIG_PREEMPT
@@ -2661,6 +2694,16 @@ bool uclamp_boosted(struct task_struct *p);
 # define arch_scale_freq_invariant()	false
 #endif
 
+<<<<<<< HEAD
+=======
+#ifdef CONFIG_SMP
+static inline unsigned long capacity_orig_of(int cpu)
+{
+	return cpu_rq(cpu)->cpu_capacity_orig;
+}
+#endif
+
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /**
  * enum schedutil_type - CPU utilization type
  * @FREQUENCY_UTIL:	Utilization used to select frequency
@@ -2690,7 +2733,11 @@ static inline unsigned long cpu_util_cfs(struct rq *rq)
 }
 #endif
 
+<<<<<<< HEAD
 #if defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL) || defined(CONFIG_CPU_FREQ_GOV_SCHEDHORIZON)
+=======
+#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
 				 unsigned long max, enum schedutil_type type,
@@ -2748,7 +2795,11 @@ unsigned long scale_irq_capacity(unsigned long util, unsigned long irq, unsigned
 }
 #endif
 
+<<<<<<< HEAD
 #ifdef CONFIG_ENERGY_MODEL
+=======
+#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #define perf_domain_span(pd) (to_cpumask(((pd)->em_pd->cpus)))
 #else
 #define perf_domain_span(pd) NULL
@@ -2757,6 +2808,7 @@ unsigned long scale_irq_capacity(unsigned long util, unsigned long irq, unsigned
 #ifdef CONFIG_SMP
 extern struct static_key_false sched_energy_present;
 #endif
+<<<<<<< HEAD
 
 enum sched_boost_policy {
 	SCHED_BOOST_NONE,
@@ -3249,3 +3301,5 @@ struct sched_avg_stats {
 	int nr_scaled;
 };
 extern void sched_get_nr_running_avg(struct sched_avg_stats *stats);
+=======
+>>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
