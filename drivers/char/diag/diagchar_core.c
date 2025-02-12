@@ -3568,7 +3568,7 @@ static int diag_user_process_userspace_data(const char __user *buf, int len)
 		session_info = diag_md_session_get_pid(current->tgid);
 		if (!session_info) {
 			pr_err("diag:In %s request came from invalid md session pid:%d\n",
-				__func__, current->tgid);
+				current->tgid);
 			mutex_unlock(&driver->md_session_lock);
 			return -EINVAL;
 		}
