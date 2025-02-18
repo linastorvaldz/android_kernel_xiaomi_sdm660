@@ -354,15 +354,6 @@ static const char * const reg_type_str[] = {
 	[PTR_TO_PACKET_META]	= "pkt_meta",
 	[PTR_TO_PACKET_END]	= "pkt_end",
 	[PTR_TO_FLOW_KEYS]	= "flow_keys",
-	[PTR_TO_SOCKET]		= "sock",
-	[PTR_TO_SOCKET_OR_NULL] = "sock_or_null",
-	[PTR_TO_SOCK_COMMON]	= "sock_common",
-	[PTR_TO_SOCK_COMMON_OR_NULL] = "sock_common_or_null",
-	[PTR_TO_TCP_SOCK]	= "tcp_sock",
-	[PTR_TO_TCP_SOCK_OR_NULL] = "tcp_sock_or_null",
-	[PTR_TO_TP_BUFFER]	= "tp_buffer",
-	[PTR_TO_MEM]		= "mem",
-	[PTR_TO_MEM_OR_NULL]	= "mem_or_null",
 };
 
 static void print_liveness(struct bpf_verifier_env *env,
@@ -1596,44 +1587,6 @@ static int check_flow_keys_access(struct bpf_verifier_env *env, int off,
 	return 0;
 }
 
-static int check_sock_access(struct bpf_verifier_env *env, int insn_idx,
-			     u32 regno, int off, int size,
-			     enum bpf_access_type t)
-{
-	struct bpf_reg_state *regs = cur_regs(env);
-	struct bpf_reg_state *reg = &regs[regno];
-	struct bpf_insn_access_aux info = {};
-	bool valid;
-
-	if (reg->smin_value < 0) {
-		return -EACCES;
-	}
-
-	switch (reg->type) {
-	case PTR_TO_SOCK_COMMON:
-		valid = bpf_sock_common_is_valid_access(off, size, t, &info);
-		break;
-	case PTR_TO_SOCKET:
-		valid = bpf_sock_is_valid_access(off, size, t, &info);
-		break;
-	case PTR_TO_TCP_SOCK:
-		valid = bpf_tcp_sock_is_valid_access(off, size, t, &info);
-		break;
-	default:
-		valid = false;
-	}
-
-	if (valid) {
-		env->insn_aux_data[insn_idx].ctx_field_size =
-			info.ctx_field_size;
-		return 0;
-	}
-
-	verbose(env, "R%d invalid %s access off=%d size=%d\n",
-		regno, reg_type_str[reg->type], off, size);
-	return -EACCES;
-}
-
 static bool __is_pointer_value(bool allow_ptr_leaks,
 			       const struct bpf_reg_state *reg)
 {
@@ -2052,26 +2005,16 @@ static int check_mem_access(struct bpf_verifier_env *env, int insn_idx, u32 regn
 		err = check_packet_access(env, regno, off, size, false);
 		if (!err && t == BPF_READ && value_regno >= 0)
 			mark_reg_unknown(env, regs, value_regno);
+
 	} else if (reg->type == PTR_TO_FLOW_KEYS) {
 		if (t == BPF_WRITE && value_regno >= 0 &&
 		    is_pointer_value(env, value_regno)) {
 			return -EACCES;
 		}
 		err = check_flow_keys_access(env, off, size);
-	} else if (type_is_sk_pointer(reg->type)) {
-		if (t == BPF_WRITE) {
-			verbose(env, "R%d cannot write into %s\n",
-				regno, reg_type_str[reg->type]);
-			return -EACCES;
-		}
-		err = check_sock_access(env, insn_idx, regno, off, size, t);
-		if (!err && value_regno >= 0)
-			mark_reg_unknown(env, regs, value_regno);
-	} else if (reg->type == PTR_TO_TP_BUFFER) {
-		err = check_tp_buffer_access(env, reg, regno, off, size);
-		if (!err && t == BPF_READ && value_regno >= 0)
-			mark_reg_unknown(env, regs, value_regno);
 	} else {
+		verbose(env, "R%d invalid mem access '%s'\n", regno,
+			reg_type_str[reg->type]);
 		return -EACCES;
 	}
 
@@ -5879,12 +5822,6 @@ static bool regsafe(struct bpf_verifier_env *env, struct bpf_reg_state *rold,
 	case CONST_PTR_TO_MAP:
 	case PTR_TO_PACKET_END:
 	case PTR_TO_FLOW_KEYS:
-	case PTR_TO_SOCKET:
-	case PTR_TO_SOCKET_OR_NULL:
-	case PTR_TO_SOCK_COMMON:
-	case PTR_TO_SOCK_COMMON_OR_NULL:
-	case PTR_TO_TCP_SOCK:
-	case PTR_TO_TCP_SOCK_OR_NULL:
 		/* Only valid matches are exact, which memcmp() above
 		 * would have accepted
 		 */
