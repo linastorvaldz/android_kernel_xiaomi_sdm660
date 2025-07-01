@@ -314,7 +314,6 @@ static int seg6_input(struct sk_buff *skb)
 	slwt = seg6_lwt_lwtunnel(orig_dst->lwtstate);
 
 	local_bh_disable();
-	local_bh_disable();
 	dst = dst_cache_get(&slwt->cache);
 
 	skb_dst_drop(skb);
@@ -352,7 +351,6 @@ static int seg6_output(struct net *net, struct sock *sk, struct sk_buff *skb)
 	slwt = seg6_lwt_lwtunnel(orig_dst->lwtstate);
 
 	local_bh_disable();
-	local_bh_disable();
 	dst = dst_cache_get(&slwt->cache);
 	local_bh_disable();
 
@@ -374,7 +372,6 @@ static int seg6_output(struct net *net, struct sock *sk, struct sk_buff *skb)
 			goto drop;
 		}
 
-		local_bh_disable();
 		local_bh_disable();
 		dst_cache_set_ip6(&slwt->cache, dst, &fl6.saddr);
 		local_bh_disable();

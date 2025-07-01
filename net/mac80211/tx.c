@@ -655,8 +655,7 @@ ieee80211_tx_h_select_key(struct ieee80211_tx_data *tx)
 		}
 
 		if (unlikely(tx->key && tx->key->flags & KEY_FLAG_TAINTED &&
-			     !ieee80211_is_deauth(hdr->frame_control)) &&
-			     tx->skb->protocol != tx->sdata->control_port_protocol)
+			     !ieee80211_is_deauth(hdr->frame_control)))
 			return TX_DROP;
 
 		if (!skip_hw && tx->key &&
@@ -2869,7 +2868,7 @@ void ieee80211_check_fast_xmit(struct sta_info *sta)
 	    sdata->vif.type == NL80211_IFTYPE_STATION)
 		goto out;
 
-	if (!test_sta_flag(sta, WLAN_STA_AUTHORIZED) || !sta->uploaded)
+	if (!test_sta_flag(sta, WLAN_STA_AUTHORIZED))
 		goto out;
 
 	if (test_sta_flag(sta, WLAN_STA_PS_STA) ||

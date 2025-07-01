@@ -769,8 +769,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
 	if (result)
 		goto release_ida;
 
-	snprintf(dev->attr_name, sizeof(dev->attr_name), "cdev%d_trip_point",
-		 dev->id);
+	sprintf(dev->attr_name, "cdev%d_trip_point", dev->id);
 	sysfs_attr_init(&dev->attr.attr);
 	dev->attr.attr.name = dev->attr_name;
 	dev->attr.attr.mode = 0644;

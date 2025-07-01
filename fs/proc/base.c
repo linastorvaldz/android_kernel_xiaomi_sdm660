@@ -3844,8 +3844,7 @@ static int proc_tid_comm_permission(struct inode *inode, int mask)
 }
 
 static const struct inode_operations proc_tid_comm_inode_operations = {
-		.setattr	= proc_setattr,
-		.permission	= proc_tid_comm_permission,
+		.permission = proc_tid_comm_permission,
 };
 
 /*

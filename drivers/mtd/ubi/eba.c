@@ -612,7 +612,7 @@ int ubi_eba_read_leb(struct ubi_device *ubi, struct ubi_volume *vol, int lnum,
 	int err, pnum, scrub = 0, vol_id = vol->vol_id;
 	struct ubi_vid_io_buf *vidb;
 	struct ubi_vid_hdr *vid_hdr;
-	uint32_t crc;
+	uint32_t uninitialized_var(crc);
 
 	err = leb_read_lock(ubi, vol_id, lnum);
 	if (err)
@@ -1573,7 +1573,6 @@ int self_check_eba(struct ubi_device *ubi, struct ubi_attach_info *ai_fastmap,
 					  GFP_KERNEL);
 		if (!fm_eba[i]) {
 			ret = -ENOMEM;
-			kfree(scan_eba[i]);
 			goto out_free;
 		}
 
@@ -1609,7 +1608,7 @@ int self_check_eba(struct ubi_device *ubi, struct ubi_attach_info *ai_fastmap,
 	}
 
 out_free:
-	while (--i >= 0) {
+	for (i = 0; i < num_volumes; i++) {
 		if (!ubi->volumes[i])
 			continue;
 

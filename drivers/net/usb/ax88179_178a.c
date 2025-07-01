@@ -317,17 +317,6 @@ int ax88179_ioctl(struct net_device *netdev, struct ifreq *rq, int cmd)
 #else
 int ax88179_ioctl(struct net_device *netdev, struct ifreq *rq, int cmd)
 {
-	struct usbnet *dev = netdev_priv(net);
-	struct ax88179_data *priv = (struct ax88179_data *)dev->data;
-
-	edata->eee_enabled = priv->eee_enabled;
-	edata->eee_active = priv->eee_active;
-
-	return ax88179_ethtool_get_eee(dev, edata);
-}
-#else
-int ax88179_ioctl(struct net_device *netdev, struct ifreq *rq, int cmd)
-{
 	struct ax_device *axdev = netdev_priv(netdev);
 	struct _ax_ioctl_command info;
 	struct _ax_ioctl_command *uptr =
@@ -910,8 +899,6 @@ static int ax88179_link_reset(struct ax_device *axdev)
 	}
 
 	ax_write_cmd_nopm(axdev, AX_ACCESS_MAC, AX_RX_BULKIN_QCTRL, 5, 5, reg8);
-
-	dev->rx_urb_size = (1024 * (tmp[3] + 2));
 
 	if (reg16 & GMII_PHY_PHYSR_FULL)
 		mode |= AX_MEDIUM_FULL_DUPLEX;

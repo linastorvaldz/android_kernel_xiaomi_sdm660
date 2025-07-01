@@ -229,7 +229,6 @@ bool bio_integrity_prep(struct bio *bio)
 	unsigned int intervals;
 	blk_status_t status;
 	gfp_t gfp = GFP_NOIO;
-	gfp_t gfp = GFP_NOIO;
 
 	if (!bi)
 		return true;
@@ -252,14 +251,6 @@ bool bio_integrity_prep(struct bio *bio)
 		if (!bi->profile->generate_fn ||
 		    !(bi->flags & BLK_INTEGRITY_GENERATE))
 			return true;
-
-		/*
-		 * Zero the memory allocated to not leak uninitialized kernel
-		 * memory to disk.  For PI this only affects the app tag, but
-		 * for non-integrity metadata it affects the entire metadata
-		 * buffer.
-		 */
-		gfp |= __GFP_ZERO;
             /*
 		 * Zero the memory allocated to not leak uninitialized kernel
 		 * memory to disk.  For PI this only affects the app tag, but
@@ -272,7 +263,7 @@ bool bio_integrity_prep(struct bio *bio)
 
 	/* Allocate kernel buffer for protection data */
 	len = intervals * bi->tuple_size;
-	buf = kmalloc(len, gfp | q->bounce_gfp);
+    buf = kmalloc(len, gfp | q->bounce_gfp);
 	status = BLK_STS_RESOURCE;
 	if (unlikely(buf == NULL)) {
 		printk(KERN_ERR "could not allocate integrity buffer\n");
