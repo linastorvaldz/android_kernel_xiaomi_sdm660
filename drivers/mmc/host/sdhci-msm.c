@@ -5662,6 +5662,15 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 				msm_host->pwr_irq);
 		goto vreg_deinit;
 	}
+		ret = msm_host->pwr_irq;
+		goto clk_disable;
+	}
+
+	sdhci_msm_init_pwr_irq_wait(msm_host);
+	/* Enable pwr irq interrupts */
+	msm_host_writel(msm_host, INT_MASK, host,
+		msm_offset->core_pwrctl_mask);
+
 	ret = devm_request_threaded_irq(&pdev->dev, msm_host->pwr_irq, NULL,
 					sdhci_msm_pwr_irq, IRQF_ONESHOT,
 					dev_name(&pdev->dev), host);

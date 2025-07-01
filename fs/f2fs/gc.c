@@ -1340,11 +1340,14 @@ static int move_data_block(struct inode *inode, block_t bidx,
 		}
 	}
 
-	set_summary(&sum, dn.nid, dn.ofs_in_node, ni.version);
-
 	/* allocate block address */
-	f2fs_allocate_data_block(fio.sbi, NULL, fio.old_blkaddr, &newaddr,
-				&sum, type, NULL);
+	err = f2fs_allocate_data_block(fio.sbi, NULL, fio.old_blkaddr, &newaddr,
+				&sum, CURSEG_COLD_DATA, NULL, false);
+	if (err) {
+		f2fs_put_page(mpage, 1);
+		/* filesystem should shutdown, no need to recovery block */
+		goto up_out;
+	}
 
 	fio.encrypted_page = f2fs_pagecache_get_page(META_MAPPING(fio.sbi),
 				newaddr, FGP_LOCK | FGP_CREAT, GFP_NOFS);
@@ -1545,7 +1548,8 @@ next_step:
 
 			inode = f2fs_iget(sb, dni.ino);
 			if (IS_ERR(inode) || is_bad_inode(inode) ||
-					special_file(inode->i_mode))
+					special_file(inode->i_mode)) {
+				set_sbi_flag(sbi, SBI_NEED_FSCK);
 				continue;
 
 			err = f2fs_gc_pinned_control(inode, gc_type, segno);

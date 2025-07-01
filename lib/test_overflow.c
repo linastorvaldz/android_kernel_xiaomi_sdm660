@@ -700,6 +700,7 @@ static int __init test_module_init(void)
 	err |= test_overflow_calculation();
 	err |= test_overflow_shift();
 	err |= test_overflow_size_helpers();
+	err |= test_overflow_size_helpers();
 	err |= test_overflow_allocation();
 
 	if (err) {
