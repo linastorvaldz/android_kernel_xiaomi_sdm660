@@ -263,28 +263,8 @@ static const char * const reg_type_str[] = {
 	[PTR_TO_PACKET_END]	= "pkt_end",
 };
 
-<<<<<<< HEAD
 static void print_liveness(struct bpf_verifier_env *env,
 			   enum bpf_reg_liveness live)
-=======
-#define __BPF_FUNC_STR_FN(x) [BPF_FUNC_ ## x] = __stringify(bpf_ ## x)
-static const char * const func_id_str[] = {
-	__BPF_FUNC_MAPPER(__BPF_FUNC_STR_FN)
-};
-#undef __BPF_FUNC_STR_FN
-
-static const char *func_id_name(int id)
-{
-	BUILD_BUG_ON(ARRAY_SIZE(func_id_str) != __BPF_FUNC_MAX_ID);
-
-	if (id >= 0 && id < __BPF_FUNC_MAX_ID && func_id_str[id])
-		return func_id_str[id];
-	else
-		return "unknown";
-}
-
-static void print_verifier_state(struct bpf_verifier_state *state)
->>>>>>> a4dc9a8140f1 (bpf: Print function name in addition to function id)
 {
 	if (live & (REG_LIVE_READ | REG_LIVE_WRITTEN))
 	    verbose(env, "_");
@@ -385,109 +365,12 @@ static void print_verifier_state(struct bpf_verifier_env *env,
 static int copy_stack_state(struct bpf_func_state *dst,
 			    const struct bpf_func_state *src)
 {
-	u8 class = BPF_CLASS(insn->code);
-
-	if (class == BPF_ALU || class == BPF_ALU64) {
-		if (BPF_SRC(insn->code) == BPF_X)
-			verbose("(%02x) %sr%d %s %sr%d\n",
-				insn->code, class == BPF_ALU ? "(u32) " : "",
-				insn->dst_reg,
-				bpf_alu_string[BPF_OP(insn->code) >> 4],
-				class == BPF_ALU ? "(u32) " : "",
-				insn->src_reg);
-		else
-			verbose("(%02x) %sr%d %s %s%d\n",
-				insn->code, class == BPF_ALU ? "(u32) " : "",
-				insn->dst_reg,
-				bpf_alu_string[BPF_OP(insn->code) >> 4],
-				class == BPF_ALU ? "(u32) " : "",
-				insn->imm);
-	} else if (class == BPF_STX) {
-		if (BPF_MODE(insn->code) == BPF_MEM)
-			verbose("(%02x) *(%s *)(r%d %+d) = r%d\n",
-				insn->code,
-				bpf_ldst_string[BPF_SIZE(insn->code) >> 3],
-				insn->dst_reg,
-				insn->off, insn->src_reg);
-		else if (BPF_MODE(insn->code) == BPF_XADD)
-			verbose("(%02x) lock *(%s *)(r%d %+d) += r%d\n",
-				insn->code,
-				bpf_ldst_string[BPF_SIZE(insn->code) >> 3],
-				insn->dst_reg, insn->off,
-				insn->src_reg);
-		else
-			verbose("BUG_%02x\n", insn->code);
-	} else if (class == BPF_ST) {
-		if (BPF_MODE(insn->code) != BPF_MEM) {
-			verbose("BUG_st_%02x\n", insn->code);
-			return;
-		}
-		verbose("(%02x) *(%s *)(r%d %+d) = %d\n",
-			insn->code,
-			bpf_ldst_string[BPF_SIZE(insn->code) >> 3],
-			insn->dst_reg,
-			insn->off, insn->imm);
-	} else if (class == BPF_LDX) {
-		if (BPF_MODE(insn->code) != BPF_MEM) {
-			verbose("BUG_ldx_%02x\n", insn->code);
-			return;
-		}
-		verbose("(%02x) r%d = *(%s *)(r%d %+d)\n",
-			insn->code, insn->dst_reg,
-			bpf_ldst_string[BPF_SIZE(insn->code) >> 3],
-			insn->src_reg, insn->off);
-	} else if (class == BPF_LD) {
-		if (BPF_MODE(insn->code) == BPF_ABS) {
-			verbose("(%02x) r0 = *(%s *)skb[%d]\n",
-				insn->code,
-				bpf_ldst_string[BPF_SIZE(insn->code) >> 3],
-				insn->imm);
-		} else if (BPF_MODE(insn->code) == BPF_IND) {
-			verbose("(%02x) r0 = *(%s *)skb[r%d + %d]\n",
-				insn->code,
-				bpf_ldst_string[BPF_SIZE(insn->code) >> 3],
-				insn->src_reg, insn->imm);
-		} else if (BPF_MODE(insn->code) == BPF_IMM &&
-			   BPF_SIZE(insn->code) == BPF_DW) {
-			/* At this point, we already made sure that the second
-			 * part of the ldimm64 insn is accessible.
-			 */
-			u64 imm = ((u64)(insn + 1)->imm << 32) | (u32)insn->imm;
-			bool map_ptr = insn->src_reg == BPF_PSEUDO_MAP_FD;
-
-			if (map_ptr && !env->allow_ptr_leaks)
-				imm = 0;
-
-			verbose("(%02x) r%d = 0x%llx\n", insn->code,
-				insn->dst_reg, (unsigned long long)imm);
-		} else {
-			verbose("BUG_ld_%02x\n", insn->code);
-			return;
-		}
-	} else if (class == BPF_JMP) {
-		u8 opcode = BPF_OP(insn->code);
-
-		if (opcode == BPF_CALL) {
-			verbose("(%02x) call %s#%d\n", insn->code,
-				func_id_name(insn->imm), insn->imm);
-		} else if (insn->code == (BPF_JMP | BPF_JA)) {
-			verbose("(%02x) goto pc%+d\n",
-				insn->code, insn->off);
-		} else if (insn->code == (BPF_JMP | BPF_EXIT)) {
-			verbose("(%02x) exit\n", insn->code);
-		} else if (BPF_SRC(insn->code) == BPF_X) {
-			verbose("(%02x) if r%d %s r%d goto pc%+d\n",
-				insn->code, insn->dst_reg,
-				bpf_jmp_string[BPF_OP(insn->code) >> 4],
-				insn->src_reg, insn->off);
-		} else {
-			verbose("(%02x) if r%d %s 0x%x goto pc%+d\n",
-				insn->code, insn->dst_reg,
-				bpf_jmp_string[BPF_OP(insn->code) >> 4],
-				insn->imm, insn->off);
-		}
-	} else {
-		verbose("(%02x) %s\n", insn->code, bpf_class_string[class]);
+	if (!src->stack)
+		return 0;
+	if (WARN_ON_ONCE(dst->allocated_stack < src->allocated_stack)) {
+		/* internal bug, make state invalid to reject the program */
+		memset(dst, 0, sizeof(*dst));
+		return -EFAULT;
 	}
 	memcpy(dst->stack, src->stack,
 	       sizeof(*src->stack) * (src->allocated_stack / BPF_REG_SIZE));
@@ -2352,11 +2235,7 @@ static int check_map_func_compatibility(struct bpf_verifier_env *env,
 
 	return 0;
 error:
-<<<<<<< HEAD
 	verbose(env, "cannot pass map_type %d into func %s#%d\n",
-=======
-	verbose("cannot pass map_type %d into func %s#%d\n",
->>>>>>> a4dc9a8140f1 (bpf: Print function name in addition to function id)
 		map->map_type, func_id_name(func_id), func_id);
 	return -EINVAL;
 }
@@ -2630,14 +2509,16 @@ static int check_helper_call(struct bpf_verifier_env *env, int func_id, int insn
 
 	/* find function prototype */
 	if (func_id < 0 || func_id >= __BPF_FUNC_MAX_ID) {
-		verbose("invalid func %s#%d\n", func_id_name(func_id), func_id);
+		verbose(env, "invalid func %s#%d\n", func_id_name(func_id),
+			func_id);
 		return -EINVAL;
 	}
 
 	if (env->ops->get_func_proto)
 		fn = env->ops->get_func_proto(func_id, env->prog);
 	if (!fn) {
-		verbose("unknown func %s#%d\n", func_id_name(func_id), func_id);
+		verbose(env, "unknown func %s#%d\n", func_id_name(func_id),
+			func_id);
 		return -EINVAL;
 	}
 
@@ -2660,7 +2541,7 @@ static int check_helper_call(struct bpf_verifier_env *env, int func_id, int insn
 
 	err = check_func_proto(fn);
 	if (err) {
-		verbose("kernel subsystem misconfigured func %s#%d\n",
+		verbose(env, "kernel subsystem misconfigured func %s#%d\n",
 			func_id_name(func_id), func_id);
 		return err;
 	}
@@ -2739,7 +2620,7 @@ static int check_helper_call(struct bpf_verifier_env *env, int func_id, int insn
 		regs[BPF_REG_0].map_ptr = meta.map_ptr;
 		regs[BPF_REG_0].id = ++env->id_gen;
 	} else {
-		verbose("unknown return type %d of func %s#%d\n",
+		verbose(env, "unknown return type %d of func %s#%d\n",
 			fn->ret_type, func_id_name(func_id), func_id);
 		return -EINVAL;
 	}
