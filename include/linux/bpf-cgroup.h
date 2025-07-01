@@ -89,6 +89,38 @@ int __cgroup_bpf_run_filter_skb(struct sock *sk,
 int __cgroup_bpf_run_filter_sk(struct sock *sk,
 			       enum bpf_attach_type type);
 
+int __cgroup_bpf_run_filter_sock_addr(struct sock *sk,
+				      struct sockaddr *uaddr,
+				      enum bpf_attach_type type,
+				      void *t_ctx);
+
+int __cgroup_bpf_run_filter_sock_ops(struct sock *sk,
+				     struct bpf_sock_ops_kern *sock_ops,
+				     enum bpf_attach_type type);
+
+int __cgroup_bpf_check_dev_permission(short dev_type, u32 major, u32 minor,
+				      short access, enum bpf_attach_type type);
+
+static inline void bpf_cgroup_storage_set(struct bpf_cgroup_storage *storage)
+{
+	struct bpf_storage_buffer *buf;
+
+	if (!storage)
+		return;
+
+	buf = READ_ONCE(storage->buf);
+	this_cpu_write(bpf_cgroup_storage, &buf->data[0]);
+}
+
+struct bpf_cgroup_storage *bpf_cgroup_storage_alloc(struct bpf_prog *prog);
+void bpf_cgroup_storage_free(struct bpf_cgroup_storage *storage);
+void bpf_cgroup_storage_link(struct bpf_cgroup_storage *storage,
+			     struct cgroup *cgroup,
+			     enum bpf_attach_type type);
+void bpf_cgroup_storage_unlink(struct bpf_cgroup_storage *storage);
+int bpf_cgroup_storage_assign(struct bpf_prog *prog, struct bpf_map *map);
+void bpf_cgroup_storage_release(struct bpf_prog *prog, struct bpf_map *map);
+
 /* Wrappers for __cgroup_bpf_run_filter_skb() guarded by cgroup_bpf_enabled. */
 #define BPF_CGROUP_RUN_PROG_INET_INGRESS(sk, skb)			      \
 ({									      \
@@ -101,18 +133,6 @@ int __cgroup_bpf_run_filter_sk(struct sock *sk,
 })
 
 #define BPF_CGROUP_RUN_PROG_INET_EGRESS(sk, skb)			       \
-({									       \
-	int __ret = 0;							       \
-	if (cgroup_bpf_enabled && sk && sk == skb->sk) {		       \
-		typeof(sk) __sk = sk_to_full_sk(sk);			       \
-		if (sk_fullsock(__sk))					       \
-			__ret = __cgroup_bpf_run_filter_skb(__sk, skb,	       \
-						      BPF_CGROUP_INET_EGRESS); \
-	}								       \
-	__ret;								       \
-})
-
-#define BPF_CGROUP_RUN_PROG_INET_SOCK(sk)				       \
 ({									       \
 	int __ret = 0;							       \
 	if (cgroup_bpf_enabled && sk && sk == skb->sk) {		       \
