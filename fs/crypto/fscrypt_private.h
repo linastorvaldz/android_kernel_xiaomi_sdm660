@@ -374,11 +374,8 @@ fscrypt_is_key_prepared(struct fscrypt_prepared_key *prep_key,
 	return smp_load_acquire(&prep_key->tfm) != NULL;
 }
 
-<<<<<<< HEAD
 extern int fscrypt_find_storage_type(char **device);
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #else /* CONFIG_FS_ENCRYPTION_INLINE_CRYPT */
 
 static inline int fscrypt_select_encryption_impl(struct fscrypt_info *ci,
@@ -425,7 +422,6 @@ fscrypt_is_key_prepared(struct fscrypt_prepared_key *prep_key,
 {
 	return smp_load_acquire(&prep_key->tfm) != NULL;
 }
-<<<<<<< HEAD
 
 static inline int fscrypt_find_storage_type(char **device)
 {
@@ -433,10 +429,6 @@ static inline int fscrypt_find_storage_type(char **device)
 }
 #endif /* !CONFIG_FS_ENCRYPTION_INLINE_CRYPT */
 
-=======
-#endif /* !CONFIG_FS_ENCRYPTION_INLINE_CRYPT */
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /* keyring.c */
 
 /*

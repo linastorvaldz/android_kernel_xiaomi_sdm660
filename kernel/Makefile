@@ -39,12 +39,9 @@ endif
 
 # Don't instrument error handlers
 CFLAGS_cfi.o = $(DISABLE_CFI_CLANG)
-<<<<<<< HEAD
 
 # Don't instrument error handlers
 CFLAGS_cfi.o = $(DISABLE_CFI_CLANG)
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 obj-y += sched/
 obj-y += locking/

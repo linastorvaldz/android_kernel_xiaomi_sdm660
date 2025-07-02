@@ -2918,13 +2918,10 @@ add_detailed_modes(struct drm_connector *connector, struct edid *edid,
 #define VIDEO_BLOCK     0x02
 #define VENDOR_BLOCK    0x03
 #define SPEAKER_BLOCK	0x04
-<<<<<<< HEAD
 #define VENDOR_SPECIFIC_VIDEO_DATA_BLOCK 0x01
 #define VSVDB_HDR10_PLUS_IEEE_CODE 0x90848b
 #define VSVDB_HDR10_PLUS_APP_VER_MASK 0x3
 #define HDR_STATIC_METADATA_EXTENDED_DATA_BLOCK 0x08
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #define COLORIMETRY_EXTENDED_DATA_BLOCK 0x05
 #define HDR_STATIC_METADATA_BLOCK	0x6
 #define USE_EXTENDED_TAG 0x07
@@ -4168,10 +4165,7 @@ drm_hdmi_extract_extended_blk_info(struct drm_connector *connector,
 				case VENDOR_SPECIFIC_VIDEO_DATA_BLOCK:
 					drm_extract_vsvdb_info(connector, db);
 					break;
-<<<<<<< HEAD
 				case HDR_STATIC_METADATA_EXTENDED_DATA_BLOCK:
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				case HDR_STATIC_METADATA_BLOCK:
 					drm_extract_hdr_db(connector, db);
 					break;
@@ -4888,10 +4882,6 @@ drm_hdmi_extract_vsdbs_info(struct drm_connector *connector,
 	}
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 u32 drm_add_display_info(struct drm_connector *connector, const struct edid *edid)
 {
 	struct drm_display_info *info = &connector->display_info;

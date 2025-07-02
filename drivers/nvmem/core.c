@@ -64,7 +64,6 @@ static int nvmem_reg_write(struct nvmem_device *nvmem, unsigned int offset,
 	return -EINVAL;
 }
 
-<<<<<<< HEAD
 static ssize_t bin_attr_nvmem_cell_read(struct file *filp, struct kobject *kobj,
 				    struct bin_attribute *attr,
 				    char *buf, loff_t pos, size_t count)
@@ -85,8 +84,6 @@ static ssize_t bin_attr_nvmem_cell_read(struct file *filp, struct kobject *kobj,
 	return len;
 }
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static void nvmem_release(struct device *dev)
 {
 	struct nvmem_device *nvmem = to_nvmem_device(dev);
@@ -126,10 +123,7 @@ static struct nvmem_device *of_nvmem_find(struct device_node *nvmem_np)
 static void nvmem_cell_drop(struct nvmem_cell *cell)
 {
 	mutex_lock(&nvmem_mutex);
-<<<<<<< HEAD
 	device_remove_bin_file(&cell->nvmem->dev, &cell->attr);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	list_del(&cell->node);
 	mutex_unlock(&nvmem_mutex);
 	of_node_put(cell->np);
@@ -146,7 +140,6 @@ static void nvmem_device_remove_all_cells(const struct nvmem_device *nvmem)
 
 static void nvmem_cell_add(struct nvmem_cell *cell)
 {
-<<<<<<< HEAD
 	int rval;
 	struct bin_attribute *nvmem_cell_attr = &cell->attr;
 
@@ -165,10 +158,6 @@ static void nvmem_cell_add(struct nvmem_cell *cell)
 		dev_err(&cell->nvmem->dev,
 			"Failed to create cell binary file %d\n", rval);
 
-=======
-	mutex_lock(&nvmem_mutex);
-	list_add_tail(&cell->node, &cell->nvmem->cells);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	mutex_unlock(&nvmem_mutex);
 }
 

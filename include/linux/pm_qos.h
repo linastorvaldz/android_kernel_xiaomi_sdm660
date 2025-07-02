@@ -8,10 +8,6 @@
 #include <linux/plist.h>
 #include <linux/notifier.h>
 #include <linux/device.h>
-<<<<<<< HEAD
-=======
-#include <linux/workqueue.h>
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #include <linux/cpumask.h>
 #include <linux/interrupt.h>
 
@@ -58,13 +54,8 @@ enum pm_qos_req_type {
 };
 
 struct pm_qos_request {
-<<<<<<< HEAD
 	unsigned long cpus_affine;
 	enum pm_qos_req_type type;
-=======
-	enum pm_qos_req_type type;
-	struct cpumask cpus_affine;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #ifdef CONFIG_SMP
 	uint32_t irq;
 	/* Internal structure members */

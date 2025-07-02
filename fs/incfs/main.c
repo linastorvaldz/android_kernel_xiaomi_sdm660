@@ -42,11 +42,7 @@ static struct kobj_attribute bugfix_inode_eviction_attr =
 static ssize_t mounter_context_for_backing_rw_show(struct kobject *kobj,
 			  struct kobj_attribute *attr, char *buff)
 {
-<<<<<<< HEAD
 	return scnprintf(buff, PAGE_SIZE, "%s", "supported\n");
-=======
-	return snprintf(buff, PAGE_SIZE, "supported\n");
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static struct kobj_attribute mounter_context_for_backing_rw_attr =

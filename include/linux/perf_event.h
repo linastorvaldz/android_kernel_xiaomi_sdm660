@@ -722,16 +722,11 @@ struct perf_event {
 	/* Is this event shared with other events */
 	bool				shared;
 
-<<<<<<< HEAD
 	/*
 	 * Entry into the list that holds the events whose CPUs
 	 * are offline. These events will be installed once the
 	 * CPU wakes up and will be removed from the list after that
 	 */
-=======
-	/* TODO: need to cherry-pick 3d3eb5fb85d97. This is just padding for now
-	 * to reduce the ABI diff */
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	struct list_head		dormant_event_entry;
 #endif /* CONFIG_PERF_EVENTS */
 };

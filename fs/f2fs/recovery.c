@@ -154,11 +154,7 @@ static int init_recovered_filename(const struct inode *dir,
 		f2fs_hash_filename(dir, fname);
 #ifdef CONFIG_UNICODE
 		/* Case-sensitive match is fine for recovery */
-<<<<<<< HEAD
 		kmem_cache_free(f2fs_cf_name_slab, fname->cf_name.name);
-=======
-		kfree(fname->cf_name.name);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		fname->cf_name.name = NULL;
 #endif
 	} else {
@@ -348,7 +344,6 @@ static int recover_inode(struct inode *inode, struct page *page)
 	f2fs_notice(F2FS_I_SB(inode), "recover_inode: ino = %x, name = %s, inline = %x",
 		    ino_of_node(page), name, raw->i_inline);
 	return 0;
-<<<<<<< HEAD
 }
 
 static unsigned int adjust_por_ra_blocks(struct f2fs_sb_info *sbi,
@@ -362,8 +357,6 @@ static unsigned int adjust_por_ra_blocks(struct f2fs_sb_info *sbi,
 		ra_blocks = max_t(unsigned int, RECOVERY_MIN_RA_BLOCKS,
 							ra_blocks / 2);
 	return ra_blocks;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static int find_fsync_dnodes(struct f2fs_sb_info *sbi, struct list_head *head,
@@ -657,20 +650,14 @@ retry_dn:
 		if (__is_valid_data_blkaddr(src) &&
 			!f2fs_is_valid_blkaddr(sbi, src, META_POR)) {
 			err = -EFSCORRUPTED;
-<<<<<<< HEAD
 			f2fs_handle_error(sbi, ERROR_INVALID_BLKADDR);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			goto err;
 		}
 
 		if (__is_valid_data_blkaddr(dest) &&
 			!f2fs_is_valid_blkaddr(sbi, dest, META_POR)) {
 			err = -EFSCORRUPTED;
-<<<<<<< HEAD
 			f2fs_handle_error(sbi, ERROR_INVALID_BLKADDR);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			goto err;
 		}
 
@@ -825,7 +812,7 @@ next:
 		f2fs_ra_meta_pages_cond(sbi, blkaddr, ra_blocks);
 	}
 	if (!err)
-		f2fs_allocate_new_segments(sbi, NO_CHECK_TYPE);
+		f2fs_allocate_new_segments(sbi);
 	return err;
 }
 

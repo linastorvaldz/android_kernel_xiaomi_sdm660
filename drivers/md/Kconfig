@@ -500,7 +500,6 @@ config DM_VERITY
 
 	  If unsure, say N.
 
-<<<<<<< HEAD
 config DM_VERITY_HASH_PREFETCH_MIN_SIZE_128
 	bool "Prefetch size 128"
 
@@ -516,8 +515,6 @@ config DM_VERITY_HASH_PREFETCH_MIN_SIZE
 	  performance with increased memory consumption for keeping more hashes
 	  in RAM.
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 config DM_VERITY_AVB
 	tristate "Support AVB specific verity error behavior"
 	depends on DM_VERITY
@@ -607,7 +604,6 @@ config DM_ZONED
 
 	  If unsure, say N.
 
-<<<<<<< HEAD
 config DM_ANDROID_VERITY
 	bool "Android verity target support"
 	depends on BLK_DEV_DM=y
@@ -647,8 +643,6 @@ config DM_ANDROID_VERITY_AT_MOST_ONCE_DEFAULT_ENABLED
 
 	  If unsure, say N.
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 config DM_BOW
 	tristate "Backup block device"
 	depends on BLK_DEV_DM

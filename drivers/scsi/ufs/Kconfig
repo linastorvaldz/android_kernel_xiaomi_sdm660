@@ -140,7 +140,6 @@ config SCSI_UFS_CRYPTO
 	  Enabling this makes it possible for the kernel to use the crypto
 	  capabilities of the UFS device (if present) to perform crypto
 	  operations on data being transferred to/from the device.
-<<<<<<< HEAD
 
 config SCSI_UFS_CRYPTO_QTI
 	tristate "Vendor specific UFS Crypto Engine Support"
@@ -149,5 +148,3 @@ config SCSI_UFS_CRYPTO_QTI
 	 Enable Vendor Crypto Engine Support in UFS
 	 Enabling this allows kernel to use UFS crypto operations defined
 	 and implemented by QTI.
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)

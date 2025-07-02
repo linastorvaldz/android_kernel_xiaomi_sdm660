@@ -711,14 +711,10 @@ int wil_cid_fill_sinfo(struct wil6210_vif *vif, int cid,
 			BIT_ULL(NL80211_STA_INFO_RX_DROP_MISC) |
 			BIT_ULL(NL80211_STA_INFO_TX_FAILED);
 
-<<<<<<< HEAD
 	if (wil->use_enhanced_dma_hw && reply.evt.tx_mode != WMI_TX_MODE_DMG)
 		txflag = RATE_INFO_FLAGS_EDMG;
 
 	sinfo->txrate.flags = txflag;
-=======
-	sinfo->txrate.flags = RATE_INFO_FLAGS_DMG;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	sinfo->txrate.mcs = le16_to_cpu(reply.evt.bf_mcs);
 	sinfo->rxrate.mcs = stats->last_mcs_rx;
 	sinfo->txrate.n_bonded_ch =

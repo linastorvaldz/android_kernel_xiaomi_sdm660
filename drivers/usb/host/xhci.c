@@ -179,11 +179,8 @@ int xhci_start(struct xhci_hcd *xhci)
 	if (!ret)
 		/* clear state flags. Including dying, halted or removing */
 		xhci->xhc_state = 0;
-<<<<<<< HEAD
 
 	enable_irq(hcd->irq);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	return ret;
 }
@@ -5299,13 +5296,8 @@ static phys_addr_t xhci_get_sec_event_ring_phys_addr(struct usb_hcd *hcd,
 	struct sg_table sgt;
 	phys_addr_t pa;
 
-<<<<<<< HEAD
 	if (intr_num >= xhci->max_interrupters) {
 		xhci_err(xhci, "intr num %d >= max intrs %d\n", intr_num,
-=======
-	if (intr_num > xhci->max_interrupters) {
-		xhci_err(xhci, "intr num %d > max intrs %d\n", intr_num,
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			xhci->max_interrupters);
 		return 0;
 	}
@@ -5369,7 +5361,6 @@ static phys_addr_t xhci_get_xfer_ring_phys_addr(struct usb_hcd *hcd,
 	return 0;
 }
 
-<<<<<<< HEAD
 int xhci_get_core_id(struct usb_hcd *hcd)
 {
 	struct xhci_hcd *xhci = hcd_to_xhci(hcd);
@@ -5381,25 +5372,12 @@ static int  xhci_stop_endpoint(struct usb_hcd *hcd,
 	struct usb_device *udev, struct usb_host_endpoint *ep)
 {
 	struct xhci_hcd *xhci = hcd_to_xhci(hcd);
-=======
-static int  xhci_stop_endpoint(struct usb_hcd *hcd,
-	struct usb_device *udev, struct usb_host_endpoint *ep)
-{
-	struct xhci_hcd *xhci;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	unsigned int ep_index;
 	struct xhci_virt_device *virt_dev;
 	struct xhci_command *cmd;
 	unsigned long flags;
 	int ret = 0;
 
-<<<<<<< HEAD
-=======
-	if (!hcd || !udev || !ep)
-		return -EINVAL;
-
-	xhci = hcd_to_xhci(hcd);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	cmd = xhci_alloc_command(xhci, true, GFP_NOIO);
 	if (!cmd)
 		return -ENOMEM;
@@ -5443,11 +5421,8 @@ free_cmd:
 	return ret;
 }
 
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static const struct hc_driver xhci_hc_driver = {
 	.description =		"xhci-hcd",
 	.product_desc =		"xHCI Host Controller",
@@ -5512,10 +5487,7 @@ static const struct hc_driver xhci_hc_driver = {
 	.sec_event_ring_cleanup =	xhci_sec_event_ring_cleanup,
 	.get_sec_event_ring_phys_addr =	xhci_get_sec_event_ring_phys_addr,
 	.get_xfer_ring_phys_addr =	xhci_get_xfer_ring_phys_addr,
-<<<<<<< HEAD
 	.get_core_id =			xhci_get_core_id,
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	.stop_endpoint =		xhci_stop_endpoint,
 };
 

@@ -59,12 +59,9 @@ unsigned long f2fs_shrink_count(struct shrinker *shrink,
 		/* count read extent cache entries */
 		count += __count_extent_cache(sbi, EX_READ);
 
-<<<<<<< HEAD
 		/* count block age extent cache entries */
 		count += __count_extent_cache(sbi, EX_BLOCK_AGE);
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		/* count clean nat cache entries */
 		count += __count_nat_entries(sbi);
 

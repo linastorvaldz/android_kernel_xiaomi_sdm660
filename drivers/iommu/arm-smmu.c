@@ -40,7 +40,6 @@
 #include <linux/interrupt.h>
 #include <linux/io.h>
 #include <linux/io-64-nonatomic-hi-lo.h>
-#include <linux/io-pgtable.h>
 #include <linux/iommu.h>
 #include <linux/io-pgtable.h>
 #include <linux/iopoll.h>
@@ -64,12 +63,9 @@
 
 #include <linux/amba/bus.h>
 
-<<<<<<< HEAD
 #include <soc/qcom/msm_tz_smmu.h>
 #include <soc/qcom/scm.h>
 #include <asm/dma-iommu.h>
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #include "arm-smmu-regs.h"
 #include "arm-smmu-debug.h"
 #include "iommu-logger.h"
@@ -5936,7 +5932,6 @@ static struct platform_driver arm_smmu_driver = {
 	.remove	= arm_smmu_device_remove,
 };
 
-<<<<<<< HEAD
 static struct platform_driver qsmmuv500_tbu_driver;
 static int __init arm_smmu_init(void)
 {
@@ -7237,8 +7232,6 @@ static struct platform_driver qsmmuv500_tbu_driver = {
 	.probe	= qsmmuv500_tbu_probe,
 };
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int __init arm_smmu_driver_init(void)
 {
 	int ret;

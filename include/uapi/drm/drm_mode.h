@@ -116,15 +116,9 @@ extern "C" {
 #define  DRM_MODE_FLAG_PIC_AR_256_135 \
 			(DRM_MODE_PICTURE_ASPECT_256_135<<19)
 
-<<<<<<< HEAD
 #define  DRM_MODE_FLAG_SUPPORTS_RGB		(1<<23)
 
 #define  DRM_MODE_FLAG_SUPPORTS_YUV		(1<<24)
-=======
-#define  DRM_MODE_FLAG_SUPPORTS_RGB		(1<<27)
-
-#define  DRM_MODE_FLAG_SUPPORTS_YUV		(1<<28)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #define  DRM_MODE_FLAG_VID_MODE_PANEL	(1<<29)
 #define  DRM_MODE_FLAG_CMD_MODE_PANEL	(1<<30)
 #define  DRM_MODE_FLAG_SEAMLESS			(1<<31)

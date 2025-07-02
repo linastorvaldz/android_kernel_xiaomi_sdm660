@@ -89,7 +89,6 @@ struct schedtune {
 	/* Boost value for tasks on that SchedTune CGroup */
 	int boost;
 
-<<<<<<< HEAD
 #ifdef CONFIG_SCHED_WALT
 	/* Toggle ability to override sched boost enabled */
 	bool sched_boost_no_override;
@@ -111,8 +110,6 @@ struct schedtune {
 	bool colocate_update_disabled;
 #endif /* CONFIG_SCHED_WALT */
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/* Hint to bias scheduling of tasks on that SchedTune CGroup
 	 * towards idle CPUs */
 	int prefer_idle;
@@ -145,15 +142,12 @@ static inline struct schedtune *parent_st(struct schedtune *st)
 static struct schedtune
 root_schedtune = {
 	.boost	= 0,
-<<<<<<< HEAD
 #ifdef CONFIG_SCHED_WALT
 	.sched_boost_no_override = false,
 	.sched_boost_enabled = true,
 	.colocate = false,
 	.colocate_update_disabled = false,
 #endif
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	.prefer_idle = 0,
 };
 
@@ -168,11 +162,7 @@ root_schedtune = {
  *    implementation especially for the computation of the per-CPU boost
  *    value
  */
-<<<<<<< HEAD
 #define BOOSTGROUPS_COUNT 7
-=======
-#define BOOSTGROUPS_COUNT 6
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /* Array of configured boostgroups */
 static struct schedtune *allocated_group[BOOSTGROUPS_COUNT] = {
@@ -209,7 +199,6 @@ struct boost_groups {
 /* Boost groups affecting each CPU in the system */
 DEFINE_PER_CPU(struct boost_groups, cpu_boost_groups);
 
-<<<<<<< HEAD
 #ifdef CONFIG_SCHED_WALT
 static inline void init_sched_boost(struct schedtune *st)
 {
@@ -280,8 +269,6 @@ static int sched_boost_override_write(struct cgroup_subsys_state *css,
 
 #endif /* CONFIG_SCHED_WALT */
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static inline bool schedtune_boost_timeout(u64 now, u64 ts)
 {
 	return ((now - ts) > SCHEDTUNE_BOOST_HOLD_NS);
@@ -433,10 +420,6 @@ void schedtune_enqueue_task(struct task_struct *p, int cpu)
 {
 	struct boost_groups *bg = &per_cpu(cpu_boost_groups, cpu);
 	unsigned long irq_flags;
-<<<<<<< HEAD
-=======
-	struct schedtune *st;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int idx;
 
 	if (unlikely(!schedtune_initialized))
@@ -448,28 +431,16 @@ void schedtune_enqueue_task(struct task_struct *p, int cpu)
 	 * do_exit()::cgroup_exit() and task migration.
 	 */
 	raw_spin_lock_irqsave(&bg->lock, irq_flags);
-<<<<<<< HEAD
 
 	idx = p->stune_idx;
 
 	schedtune_tasks_update(p, cpu, idx, ENQUEUE_TASK);
 
-=======
-	rcu_read_lock();
-
-	st = task_schedtune(p);
-	idx = st->idx;
-
-	schedtune_tasks_update(p, cpu, idx, ENQUEUE_TASK);
-
-	rcu_read_unlock();
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	raw_spin_unlock_irqrestore(&bg->lock, irq_flags);
 }
 
 int schedtune_can_attach(struct cgroup_taskset *tset)
 {
-<<<<<<< HEAD
 	return 0;
 }
 
@@ -518,82 +489,6 @@ static inline void init_sched_boost(struct schedtune *st) { }
 
 #endif /* CONFIG_SCHED_WALT */
 
-=======
-	struct task_struct *task;
-	struct cgroup_subsys_state *css;
-	struct boost_groups *bg;
-	struct rq_flags rq_flags;
-	unsigned int cpu;
-	struct rq *rq;
-	int src_bg; /* Source boost group index */
-	int dst_bg; /* Destination boost group index */
-	int tasks;
-	u64 now;
-
-	if (unlikely(!schedtune_initialized))
-		return 0;
-
-
-	cgroup_taskset_for_each(task, css, tset) {
-
-		/*
-		 * Lock the CPU's RQ the task is enqueued to avoid race
-		 * conditions with migration code while the task is being
-		 * accounted
-		 */
-		rq = task_rq_lock(task, &rq_flags);
-
-		if (!task->on_rq) {
-			task_rq_unlock(rq, task, &rq_flags);
-			continue;
-		}
-
-		/*
-		 * Boost group accouting is protected by a per-cpu lock and requires
-		 * interrupt to be disabled to avoid race conditions on...
-		 */
-		cpu = cpu_of(rq);
-		bg = &per_cpu(cpu_boost_groups, cpu);
-		raw_spin_lock(&bg->lock);
-
-		dst_bg = css_st(css)->idx;
-		src_bg = task_schedtune(task)->idx;
-
-		/*
-		 * Current task is not changing boostgroup, which can
-		 * happen when the new hierarchy is in use.
-		 */
-		if (unlikely(dst_bg == src_bg)) {
-			raw_spin_unlock(&bg->lock);
-			task_rq_unlock(rq, task, &rq_flags);
-			continue;
-		}
-
-		/*
-		 * This is the case of a RUNNABLE task which is switching its
-		 * current boost group.
-		 */
-
-		/* Move task from src to dst boost group */
-		tasks = bg->group[src_bg].tasks - 1;
-		bg->group[src_bg].tasks = max(0, tasks);
-		bg->group[dst_bg].tasks += 1;
-
-		/* Update boost hold start for this group */
-		now = sched_clock_cpu(cpu);
-		bg->group[dst_bg].ts = now;
-
-		/* Force boost group re-evaluation at next boost check */
-		bg->boost_ts = now - SCHEDTUNE_BOOST_HOLD_NS;
-
-		raw_spin_unlock(&bg->lock);
-		task_rq_unlock(rq, task, &rq_flags);
-	}
-
-	return 0;
-}
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 void schedtune_cancel_attach(struct cgroup_taskset *tset)
 {
 	/* This can happen only if SchedTune controller is mounted with
@@ -610,10 +505,6 @@ void schedtune_dequeue_task(struct task_struct *p, int cpu)
 {
 	struct boost_groups *bg = &per_cpu(cpu_boost_groups, cpu);
 	unsigned long irq_flags;
-<<<<<<< HEAD
-=======
-	struct schedtune *st;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int idx;
 
 	if (unlikely(!schedtune_initialized))
@@ -624,22 +515,11 @@ void schedtune_dequeue_task(struct task_struct *p, int cpu)
 	 * interrupt to be disabled to avoid race conditions on...
 	 */
 	raw_spin_lock_irqsave(&bg->lock, irq_flags);
-<<<<<<< HEAD
 
 	idx = p->stune_idx;
 
 	schedtune_tasks_update(p, cpu, idx, DEQUEUE_TASK);
 
-=======
-	rcu_read_lock();
-
-	st = task_schedtune(p);
-	idx = st->idx;
-
-	schedtune_tasks_update(p, cpu, idx, DEQUEUE_TASK);
-
-	rcu_read_unlock();
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	raw_spin_unlock_irqrestore(&bg->lock, irq_flags);
 }
 
@@ -676,7 +556,6 @@ int schedtune_task_boost(struct task_struct *p)
 	return task_boost;
 }
 
-<<<<<<< HEAD
 /*  The same as schedtune_task_boost except assuming the caller has the rcu read
  *  lock.
  */
@@ -695,8 +574,6 @@ int schedtune_task_boost_rcu_locked(struct task_struct *p)
 	return task_boost;
 }
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 int schedtune_prefer_idle(struct task_struct *p)
 {
 	struct schedtune *st;
@@ -740,7 +617,6 @@ boost_read(struct cgroup_subsys_state *css, struct cftype *cft)
 	return st->boost;
 }
 
-<<<<<<< HEAD
 static void schedtune_attach(struct cgroup_taskset *tset)
 {
 	struct task_struct *task;
@@ -826,8 +702,6 @@ static void schedtune_attach(struct cgroup_taskset *tset)
 	}
 }
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int
 boost_write(struct cgroup_subsys_state *css, struct cftype *cft,
 	    s64 boost)
@@ -846,7 +720,6 @@ boost_write(struct cgroup_subsys_state *css, struct cftype *cft,
 }
 
 static struct cftype files[] = {
-<<<<<<< HEAD
 #ifdef CONFIG_SCHED_WALT
 	{
 		.name = "sched_boost_no_override",
@@ -859,8 +732,6 @@ static struct cftype files[] = {
 		.write_u64 = sched_colocate_write,
 	},
 #endif
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	{
 		.name = "boost",
 		.read_s64 = boost_read,
@@ -923,10 +794,7 @@ schedtune_css_alloc(struct cgroup_subsys_state *parent_css)
 		goto out;
 
 	/* Initialize per CPUs boost group support */
-<<<<<<< HEAD
 	init_sched_boost(st);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	schedtune_boostgroup_init(st, idx);
 
 	return &st->css;
@@ -965,14 +833,9 @@ schedtune_css_free(struct cgroup_subsys_state *css)
 struct cgroup_subsys schedtune_cgrp_subsys = {
 	.css_alloc	= schedtune_css_alloc,
 	.css_free	= schedtune_css_free,
-<<<<<<< HEAD
 	.attach		= schedtune_attach,
 	.can_attach	= schedtune_can_attach,
 	.cancel_attach	= schedtune_cancel_attach,
-=======
-	.can_attach     = schedtune_can_attach,
-	.cancel_attach  = schedtune_cancel_attach,
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	.legacy_cftypes	= files,
 	.early_init	= 1,
 };

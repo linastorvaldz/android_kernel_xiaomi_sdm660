@@ -77,7 +77,6 @@ struct iommu_domain_geometry {
 	bool force_aperture;       /* DMA only allowed in mappable range? */
 };
 
-<<<<<<< HEAD
 /* iommu transaction flags */
 #define IOMMU_TRANS_WRITE	BIT(0)	/* 1 Write, 0 Read */
 #define IOMMU_TRANS_PRIV	BIT(1)	/* 1 Privileged, 0 Unprivileged */
@@ -87,8 +86,6 @@ struct iommu_domain_geometry {
 /* Non secure unprivileged Data read operation */
 #define IOMMU_TRANS_DEFAULT	(0U)
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 struct iommu_pgtbl_info {
 	void *ops;
 };
@@ -277,11 +274,7 @@ struct iommu_ops {
 	void (*iotlb_sync)(struct iommu_domain *domain);
 	phys_addr_t (*iova_to_phys)(struct iommu_domain *domain, dma_addr_t iova);
 	phys_addr_t (*iova_to_phys_hard)(struct iommu_domain *domain,
-<<<<<<< HEAD
 				 dma_addr_t iova, unsigned long trans_flags);
-=======
-					 dma_addr_t iova);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int (*add_device)(struct device *dev);
 	void (*remove_device)(struct device *dev);
 	struct iommu_group *(*device_group)(struct device *dev);
@@ -389,21 +382,11 @@ extern size_t iommu_unmap_fast(struct iommu_domain *domain,
 extern size_t iommu_map_sg(struct iommu_domain *domain, unsigned long iova,
 				struct scatterlist *sg, unsigned int nents,
 				int prot);
-<<<<<<< HEAD
 extern size_t default_iommu_map_sg(struct iommu_domain *domain, unsigned long iova,
 			   struct scatterlist *sg,unsigned int nents, int prot);
 extern phys_addr_t iommu_iova_to_phys(struct iommu_domain *domain, dma_addr_t iova);
 extern phys_addr_t iommu_iova_to_phys_hard(struct iommu_domain *domain,
 				   dma_addr_t iova, unsigned long trans_flags);
-=======
-extern size_t default_iommu_map_sg(struct iommu_domain *domain,
-				   unsigned long iova,
-				   struct scatterlist *sg, unsigned int nents,
-				   int prot);
-extern phys_addr_t iommu_iova_to_phys(struct iommu_domain *domain, dma_addr_t iova);
-extern phys_addr_t iommu_iova_to_phys_hard(struct iommu_domain *domain,
-					   dma_addr_t iova);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 extern bool iommu_is_iova_coherent(struct iommu_domain *domain,
 				dma_addr_t iova);
 extern void iommu_set_fault_handler(struct iommu_domain *domain,
@@ -534,10 +517,7 @@ int iommu_fwspec_init(struct device *dev, struct fwnode_handle *iommu_fwnode,
 void iommu_fwspec_free(struct device *dev);
 int iommu_fwspec_add_ids(struct device *dev, u32 *ids, int num_ids);
 const struct iommu_ops *iommu_ops_from_fwnode(struct fwnode_handle *fwnode);
-<<<<<<< HEAD
 int iommu_fwspec_get_id(struct device *dev, u32 *id);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 int iommu_is_available(struct device *dev);
 
 #else /* CONFIG_IOMMU_API */
@@ -643,11 +623,7 @@ static inline phys_addr_t iommu_iova_to_phys(struct iommu_domain *domain, dma_ad
 }
 
 static inline phys_addr_t iommu_iova_to_phys_hard(struct iommu_domain *domain,
-<<<<<<< HEAD
 				dma_addr_t iova, unsigned long trans_flags)
-=======
-						  dma_addr_t iova)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	return 0;
 }
@@ -873,14 +849,11 @@ const struct iommu_ops *iommu_ops_from_fwnode(struct fwnode_handle *fwnode)
 	return NULL;
 }
 
-<<<<<<< HEAD
 static inline int iommu_fwspec_get_id(struct device *dev, u32 *id)
 {
 	return -ENODEV;
 }
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static inline int iommu_is_available(struct device *dev)
 {
 	return -ENODEV;

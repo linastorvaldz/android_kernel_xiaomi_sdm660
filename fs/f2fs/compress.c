@@ -13,7 +13,6 @@
 #include <linux/lz4.h>
 #include <linux/zstd.h>
 #include <linux/moduleparam.h>
-<<<<<<< HEAD
 #include <linux/pagevec.h>
 
 #include "f2fs.h"
@@ -49,13 +48,6 @@ static void page_array_free(struct inode *inode, void *pages, int nr)
 		kfree(pages);
 }
 
-=======
-
-#include "f2fs.h"
-#include "node.h"
-#include <trace/events/f2fs.h>
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 struct f2fs_compress_ops {
 	int (*init_compress_ctx)(struct compress_ctx *cc);
 	void (*destroy_compress_ctx)(struct compress_ctx *cc);
@@ -86,14 +78,9 @@ bool f2fs_is_compressed_page(struct page *page)
 		return false;
 	if (!page_private(page))
 		return false;
-<<<<<<< HEAD
 	if (page_private_nonpointer(page))
 		return false;
 
-=======
-	if (IS_ATOMIC_WRITTEN_PAGE(page) || IS_DUMMY_WRITTEN_PAGE(page))
-		return false;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	f2fs_bug_on(F2FS_M_SB(page->mapping),
 		*((u32 *)page_private(page)) != F2FS_COMPRESSED_PAGE_MAGIC);
 	return true;
@@ -102,12 +89,7 @@ bool f2fs_is_compressed_page(struct page *page)
 static void f2fs_set_compressed_page(struct page *page,
 		struct inode *inode, pgoff_t index, void *data)
 {
-<<<<<<< HEAD
 	attach_page_private(page, (void *)data);
-=======
-	SetPagePrivate(page);
-	set_page_private(page, (unsigned long)data);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/* i_crypto_info and iv index */
 	page->index = index;
@@ -138,22 +120,6 @@ static void f2fs_unlock_rpages(struct compress_ctx *cc, int len)
 	f2fs_drop_rpages(cc, len, true);
 }
 
-<<<<<<< HEAD
-=======
-static void f2fs_put_rpages_mapping(struct address_space *mapping,
-				pgoff_t start, int len)
-{
-	int i;
-
-	for (i = 0; i < len; i++) {
-		struct page *page = find_get_page(mapping, start + i);
-
-		put_page(page);
-		put_page(page);
-	}
-}
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static void f2fs_put_rpages_wbc(struct compress_ctx *cc,
 		struct writeback_control *wbc, bool redirty, int unlock)
 {
@@ -175,7 +141,6 @@ struct page *f2fs_compress_control_page(struct page *page)
 
 int f2fs_init_compress_ctx(struct compress_ctx *cc)
 {
-<<<<<<< HEAD
 	if (cc->rpages)
 		return 0;
 
@@ -192,25 +157,6 @@ void f2fs_destroy_compress_ctx(struct compress_ctx *cc, bool reuse)
 	cc->valid_nr_cpages = 0;
 	if (!reuse)
 		cc->cluster_idx = NULL_CLUSTER;
-=======
-	struct f2fs_sb_info *sbi = F2FS_I_SB(cc->inode);
-
-	if (cc->nr_rpages)
-		return 0;
-
-	cc->rpages = f2fs_kzalloc(sbi, sizeof(struct page *) <<
-					cc->log_cluster_size, GFP_NOFS);
-	return cc->rpages ? 0 : -ENOMEM;
-}
-
-void f2fs_destroy_compress_ctx(struct compress_ctx *cc)
-{
-	kfree(cc->rpages);
-	cc->rpages = NULL;
-	cc->nr_rpages = 0;
-	cc->nr_cpages = 0;
-	cc->cluster_idx = NULL_CLUSTER;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 void f2fs_compress_ctx_add_page(struct compress_ctx *cc, struct page *page)
@@ -292,7 +238,6 @@ static const struct f2fs_compress_ops f2fs_lzo_ops = {
 #ifdef CONFIG_F2FS_FS_LZ4
 static int lz4_init_compress_ctx(struct compress_ctx *cc)
 {
-<<<<<<< HEAD
 	unsigned int size = LZ4_MEM_COMPRESS;
 
 #ifdef CONFIG_F2FS_FS_LZ4HC
@@ -301,10 +246,6 @@ static int lz4_init_compress_ctx(struct compress_ctx *cc)
 #endif
 
 	cc->private = f2fs_kvmalloc(F2FS_I_SB(cc->inode), size, GFP_NOFS);
-=======
-	cc->private = f2fs_kvmalloc(F2FS_I_SB(cc->inode),
-				LZ4_MEM_COMPRESS, GFP_NOFS);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!cc->private)
 		return -ENOMEM;
 
@@ -323,7 +264,6 @@ static void lz4_destroy_compress_ctx(struct compress_ctx *cc)
 	cc->private = NULL;
 }
 
-<<<<<<< HEAD
 #ifdef CONFIG_F2FS_FS_LZ4HC
 static int lz4hc_compress_pages(struct compress_ctx *cc)
 {
@@ -345,18 +285,13 @@ static int lz4hc_compress_pages(struct compress_ctx *cc)
 }
 #endif
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int lz4_compress_pages(struct compress_ctx *cc)
 {
 	int len;
 
-<<<<<<< HEAD
 #ifdef CONFIG_F2FS_FS_LZ4HC
 	return lz4hc_compress_pages(cc);
 #endif
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	len = LZ4_compress_default(cc->rbuf, cc->cbuf->cdata, cc->rlen,
 						cc->clen, cc->private);
 	if (!len)
@@ -370,7 +305,6 @@ static int lz4_decompress_pages(struct decompress_io_ctx *dic)
 {
 	int ret;
 
-<<<<<<< HEAD
 #if defined(CONFIG_ARM64) && defined(CONFIG_KERNEL_MODE_NEON)
 	ret = LZ4_arm64_decompress_safe(dic->cbuf->cdata, dic->rbuf,
 						dic->clen, dic->rlen, false);
@@ -379,10 +313,6 @@ static int lz4_decompress_pages(struct decompress_io_ctx *dic)
 						dic->clen, dic->rlen);
 #endif
 
-=======
-	ret = LZ4_decompress_safe(dic->cbuf->cdata, dic->rbuf,
-						dic->clen, dic->rlen);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (ret < 0) {
 		printk_ratelimited("%sF2FS-fs (%s): lz4 decompress failed, ret:%d\n",
 				KERN_ERR, F2FS_I_SB(dic->inode)->sb->s_id, ret);
@@ -390,16 +320,9 @@ static int lz4_decompress_pages(struct decompress_io_ctx *dic)
 	}
 
 	if (ret != PAGE_SIZE << dic->log_cluster_size) {
-<<<<<<< HEAD
 		printk_ratelimited("%sF2FS-fs (%s): lz4 invalid ret:%d, "
 					"expected:%lu\n", KERN_ERR,
 					F2FS_I_SB(dic->inode)->sb->s_id, ret,
-=======
-		printk_ratelimited("%sF2FS-fs (%s): lz4 invalid rlen:%zu, "
-					"expected:%lu\n", KERN_ERR,
-					F2FS_I_SB(dic->inode)->sb->s_id,
-					dic->rlen,
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 					PAGE_SIZE << dic->log_cluster_size);
 		return -EIO;
 	}
@@ -419,7 +342,6 @@ static const struct f2fs_compress_ops f2fs_lz4_ops = {
 
 static int zstd_init_compress_ctx(struct compress_ctx *cc)
 {
-<<<<<<< HEAD
 	zstd_parameters params;
 	zstd_cstream *stream;
 	void *workspace;
@@ -432,30 +354,15 @@ static int zstd_init_compress_ctx(struct compress_ctx *cc)
 
 	params = zstd_get_params(level, cc->rlen, 0);
 	workspace_size = zstd_cstream_workspace_bound(params.cParams);
-=======
-	ZSTD_parameters params;
-	ZSTD_CStream *stream;
-	void *workspace;
-	unsigned int workspace_size;
-
-	params = ZSTD_getParams(F2FS_ZSTD_DEFAULT_CLEVEL, cc->rlen, 0);
-	workspace_size = ZSTD_CStreamWorkspaceBound(params.cParams);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	workspace = f2fs_kvmalloc(F2FS_I_SB(cc->inode),
 					workspace_size, GFP_NOFS);
 	if (!workspace)
 		return -ENOMEM;
 
-<<<<<<< HEAD
 	stream = zstd_init_cstream(&params, 0, workspace, workspace_size);
 	if (!stream) {
 		printk_ratelimited("%sF2FS-fs (%s): %s zstd_init_cstream failed\n",
-=======
-	stream = ZSTD_initCStream(params, 0, workspace, workspace_size);
-	if (!stream) {
-		printk_ratelimited("%sF2FS-fs (%s): %s ZSTD_initCStream failed\n",
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				KERN_ERR, F2FS_I_SB(cc->inode)->sb->s_id,
 				__func__);
 		kvfree(workspace);
@@ -478,15 +385,9 @@ static void zstd_destroy_compress_ctx(struct compress_ctx *cc)
 
 static int zstd_compress_pages(struct compress_ctx *cc)
 {
-<<<<<<< HEAD
 	zstd_cstream *stream = cc->private2;
 	zstd_in_buffer inbuf;
 	zstd_out_buffer outbuf;
-=======
-	ZSTD_CStream *stream = cc->private2;
-	ZSTD_inBuffer inbuf;
-	ZSTD_outBuffer outbuf;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int src_size = cc->rlen;
 	int dst_size = src_size - PAGE_SIZE - COMPRESS_HEADER_SIZE;
 	int ret;
@@ -499,7 +400,6 @@ static int zstd_compress_pages(struct compress_ctx *cc)
 	outbuf.dst = cc->cbuf->cdata;
 	outbuf.size = dst_size;
 
-<<<<<<< HEAD
 	ret = zstd_compress_stream(stream, &outbuf, &inbuf);
 	if (zstd_is_error(ret)) {
 		printk_ratelimited("%sF2FS-fs (%s): %s zstd_compress_stream failed, ret: %d\n",
@@ -513,21 +413,6 @@ static int zstd_compress_pages(struct compress_ctx *cc)
 		printk_ratelimited("%sF2FS-fs (%s): %s zstd_end_stream returned %d\n",
 				KERN_ERR, F2FS_I_SB(cc->inode)->sb->s_id,
 				__func__, zstd_get_error_code(ret));
-=======
-	ret = ZSTD_compressStream(stream, &outbuf, &inbuf);
-	if (ZSTD_isError(ret)) {
-		printk_ratelimited("%sF2FS-fs (%s): %s ZSTD_compressStream failed, ret: %d\n",
-				KERN_ERR, F2FS_I_SB(cc->inode)->sb->s_id,
-				__func__, ZSTD_getErrorCode(ret));
-		return -EIO;
-	}
-
-	ret = ZSTD_endStream(stream, &outbuf);
-	if (ZSTD_isError(ret)) {
-		printk_ratelimited("%sF2FS-fs (%s): %s ZSTD_endStream returned %d\n",
-				KERN_ERR, F2FS_I_SB(cc->inode)->sb->s_id,
-				__func__, ZSTD_getErrorCode(ret));
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return -EIO;
 	}
 
@@ -544,7 +429,6 @@ static int zstd_compress_pages(struct compress_ctx *cc)
 
 static int zstd_init_decompress_ctx(struct decompress_io_ctx *dic)
 {
-<<<<<<< HEAD
 	zstd_dstream *stream;
 	void *workspace;
 	unsigned int workspace_size;
@@ -552,29 +436,15 @@ static int zstd_init_decompress_ctx(struct decompress_io_ctx *dic)
 			MAX_COMPRESS_WINDOW_SIZE(dic->log_cluster_size);
 
 	workspace_size = zstd_dstream_workspace_bound(max_window_size);
-=======
-	ZSTD_DStream *stream;
-	void *workspace;
-	unsigned int workspace_size;
-
-	workspace_size = ZSTD_DStreamWorkspaceBound(MAX_COMPRESS_WINDOW_SIZE);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	workspace = f2fs_kvmalloc(F2FS_I_SB(dic->inode),
 					workspace_size, GFP_NOFS);
 	if (!workspace)
 		return -ENOMEM;
 
-<<<<<<< HEAD
 	stream = zstd_init_dstream(max_window_size, workspace, workspace_size);
 	if (!stream) {
 		printk_ratelimited("%sF2FS-fs (%s): %s zstd_init_dstream failed\n",
-=======
-	stream = ZSTD_initDStream(MAX_COMPRESS_WINDOW_SIZE,
-					workspace, workspace_size);
-	if (!stream) {
-		printk_ratelimited("%sF2FS-fs (%s): %s ZSTD_initDStream failed\n",
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				KERN_ERR, F2FS_I_SB(dic->inode)->sb->s_id,
 				__func__);
 		kvfree(workspace);
@@ -596,15 +466,9 @@ static void zstd_destroy_decompress_ctx(struct decompress_io_ctx *dic)
 
 static int zstd_decompress_pages(struct decompress_io_ctx *dic)
 {
-<<<<<<< HEAD
 	zstd_dstream *stream = dic->private2;
 	zstd_in_buffer inbuf;
 	zstd_out_buffer outbuf;
-=======
-	ZSTD_DStream *stream = dic->private2;
-	ZSTD_inBuffer inbuf;
-	ZSTD_outBuffer outbuf;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int ret;
 
 	inbuf.pos = 0;
@@ -615,19 +479,11 @@ static int zstd_decompress_pages(struct decompress_io_ctx *dic)
 	outbuf.dst = dic->rbuf;
 	outbuf.size = dic->rlen;
 
-<<<<<<< HEAD
 	ret = zstd_decompress_stream(stream, &outbuf, &inbuf);
 	if (zstd_is_error(ret)) {
 		printk_ratelimited("%sF2FS-fs (%s): %s zstd_compress_stream failed, ret: %d\n",
 				KERN_ERR, F2FS_I_SB(dic->inode)->sb->s_id,
 				__func__, zstd_get_error_code(ret));
-=======
-	ret = ZSTD_decompressStream(stream, &outbuf, &inbuf);
-	if (ZSTD_isError(ret)) {
-		printk_ratelimited("%sF2FS-fs (%s): %s ZSTD_compressStream failed, ret: %d\n",
-				KERN_ERR, F2FS_I_SB(dic->inode)->sb->s_id,
-				__func__, ZSTD_getErrorCode(ret));
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return -EIO;
 	}
 
@@ -678,11 +534,7 @@ bool f2fs_is_compress_backend_ready(struct inode *inode)
 	return f2fs_cops[F2FS_I(inode)->i_compress_algorithm];
 }
 
-<<<<<<< HEAD
 static mempool_t *compress_page_pool;
-=======
-static mempool_t *compress_page_pool = NULL;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int num_compress_pages = 512;
 module_param(num_compress_pages, uint, 0444);
 MODULE_PARM_DESC(num_compress_pages,
@@ -691,14 +543,7 @@ MODULE_PARM_DESC(num_compress_pages,
 int f2fs_init_compress_mempool(void)
 {
 	compress_page_pool = mempool_create_page_pool(num_compress_pages, 0);
-<<<<<<< HEAD
 	return compress_page_pool ? 0 : -ENOMEM;
-=======
-	if (!compress_page_pool)
-		return -ENOMEM;
-
-	return 0;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 void f2fs_destroy_compress_mempool(void)
@@ -720,18 +565,12 @@ static void f2fs_compress_free_page(struct page *page)
 {
 	if (!page)
 		return;
-<<<<<<< HEAD
 	detach_page_private(page);
-=======
-	set_page_private(page, (unsigned long)NULL);
-	ClearPagePrivate(page);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	page->mapping = NULL;
 	unlock_page(page);
 	mempool_free(page, compress_page_pool);
 }
 
-<<<<<<< HEAD
 #define MAX_VMAP_RETRIES	3
 
 static void *f2fs_vmap(struct page **pages, unsigned int count)
@@ -755,15 +594,6 @@ static int f2fs_compress_pages(struct compress_ctx *cc)
 				f2fs_cops[fi->i_compress_algorithm];
 	unsigned int max_len, new_nr_cpages;
 	u32 chksum = 0;
-=======
-static int f2fs_compress_pages(struct compress_ctx *cc)
-{
-	struct f2fs_sb_info *sbi = F2FS_I_SB(cc->inode);
-	struct f2fs_inode_info *fi = F2FS_I(cc->inode);
-	const struct f2fs_compress_ops *cops =
-				f2fs_cops[fi->i_compress_algorithm];
-	unsigned int max_len, nr_cpages;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int i, ret;
 
 	trace_f2fs_compress_pages_start(cc->inode, cc->cluster_idx,
@@ -777,15 +607,9 @@ static int f2fs_compress_pages(struct compress_ctx *cc)
 
 	max_len = COMPRESS_HEADER_SIZE + cc->clen;
 	cc->nr_cpages = DIV_ROUND_UP(max_len, PAGE_SIZE);
-<<<<<<< HEAD
 	cc->valid_nr_cpages = cc->nr_cpages;
 
 	cc->cpages = page_array_alloc(cc->inode, cc->nr_cpages);
-=======
-
-	cc->cpages = f2fs_kzalloc(sbi, sizeof(struct page *) *
-					cc->nr_cpages, GFP_NOFS);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!cc->cpages) {
 		ret = -ENOMEM;
 		goto destroy_compress_ctx;
@@ -799,21 +623,13 @@ static int f2fs_compress_pages(struct compress_ctx *cc)
 		}
 	}
 
-<<<<<<< HEAD
 	cc->rbuf = f2fs_vmap(cc->rpages, cc->cluster_size);
-=======
-	cc->rbuf = vmap(cc->rpages, cc->cluster_size, VM_MAP, PAGE_KERNEL_RO);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!cc->rbuf) {
 		ret = -ENOMEM;
 		goto out_free_cpages;
 	}
 
-<<<<<<< HEAD
 	cc->cbuf = f2fs_vmap(cc->cpages, cc->nr_cpages);
-=======
-	cc->cbuf = vmap(cc->cpages, cc->nr_cpages, VM_MAP, PAGE_KERNEL);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!cc->cbuf) {
 		ret = -ENOMEM;
 		goto out_vunmap_rbuf;
@@ -832,7 +648,6 @@ static int f2fs_compress_pages(struct compress_ctx *cc)
 
 	cc->cbuf->clen = cpu_to_le32(cc->clen);
 
-<<<<<<< HEAD
 	if (fi->i_compress_flag & 1 << COMPRESS_CHKSUM)
 		chksum = f2fs_crc32(F2FS_I_SB(cc->inode),
 					cc->cbuf->cdata, cc->clen);
@@ -854,21 +669,6 @@ static int f2fs_compress_pages(struct compress_ctx *cc)
 	for (i = 0; i < cc->nr_cpages; i++) {
 		if (i < new_nr_cpages)
 			continue;
-=======
-	for (i = 0; i < COMPRESS_DATA_RESERVED_SIZE; i++)
-		cc->cbuf->reserved[i] = cpu_to_le32(0);
-
-	nr_cpages = DIV_ROUND_UP(cc->clen + COMPRESS_HEADER_SIZE, PAGE_SIZE);
-
-	/* zero out any unused part of the last page */
-	memset(&cc->cbuf->cdata[cc->clen], 0,
-	       (nr_cpages * PAGE_SIZE) - (cc->clen + COMPRESS_HEADER_SIZE));
-
-	vunmap(cc->cbuf);
-	vunmap(cc->rbuf);
-
-	for (i = nr_cpages; i < cc->nr_cpages; i++) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		f2fs_compress_free_page(cc->cpages[i]);
 		cc->cpages[i] = NULL;
 	}
@@ -876,36 +676,22 @@ static int f2fs_compress_pages(struct compress_ctx *cc)
 	if (cops->destroy_compress_ctx)
 		cops->destroy_compress_ctx(cc);
 
-<<<<<<< HEAD
 	cc->valid_nr_cpages = new_nr_cpages;
-=======
-	cc->nr_cpages = nr_cpages;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	trace_f2fs_compress_pages_end(cc->inode, cc->cluster_idx,
 							cc->clen, ret);
 	return 0;
 
 out_vunmap_cbuf:
-<<<<<<< HEAD
 	vm_unmap_ram(cc->cbuf, cc->nr_cpages);
 out_vunmap_rbuf:
 	vm_unmap_ram(cc->rbuf, cc->cluster_size);
-=======
-	vunmap(cc->cbuf);
-out_vunmap_rbuf:
-	vunmap(cc->rbuf);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 out_free_cpages:
 	for (i = 0; i < cc->nr_cpages; i++) {
 		if (cc->cpages[i])
 			f2fs_compress_free_page(cc->cpages[i]);
 	}
-<<<<<<< HEAD
 	page_array_free(cc->inode, cc->cpages, cc->nr_cpages);
-=======
-	kfree(cc->cpages);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	cc->cpages = NULL;
 destroy_compress_ctx:
 	if (cops->destroy_compress_ctx)
@@ -916,7 +702,6 @@ out:
 	return ret;
 }
 
-<<<<<<< HEAD
 static int f2fs_prepare_decomp_mem(struct decompress_io_ctx *dic,
 		bool pre_alloc);
 static void f2fs_release_decomp_mem(struct decompress_io_ctx *dic,
@@ -943,51 +728,6 @@ void f2fs_decompress_cluster(struct decompress_io_ctx *dic, bool in_task)
 	if (ret) {
 		bypass_callback = true;
 		goto out_release;
-=======
-void f2fs_decompress_pages(struct bio *bio, struct page *page, bool verity)
-{
-	struct decompress_io_ctx *dic =
-			(struct decompress_io_ctx *)page_private(page);
-	struct f2fs_sb_info *sbi = F2FS_I_SB(dic->inode);
-	struct f2fs_inode_info *fi= F2FS_I(dic->inode);
-	const struct f2fs_compress_ops *cops =
-			f2fs_cops[fi->i_compress_algorithm];
-	int ret;
-
-	dec_page_count(sbi, F2FS_RD_DATA);
-
-	if (bio->bi_status || PageError(page))
-		dic->failed = true;
-
-	if (refcount_dec_not_one(&dic->ref))
-		return;
-
-	trace_f2fs_decompress_pages_start(dic->inode, dic->cluster_idx,
-				dic->cluster_size, fi->i_compress_algorithm);
-
-	/* submit partial compressed pages */
-	if (dic->failed) {
-		ret = -EIO;
-		goto out_free_dic;
-	}
-
-	if (cops->init_decompress_ctx) {
-		ret = cops->init_decompress_ctx(dic);
-		if (ret)
-			goto out_free_dic;
-	}
-
-	dic->rbuf = vmap(dic->tpages, dic->cluster_size, VM_MAP, PAGE_KERNEL);
-	if (!dic->rbuf) {
-		ret = -ENOMEM;
-		goto destroy_decompress_ctx;
-	}
-
-	dic->cbuf = vmap(dic->cpages, dic->nr_cpages, VM_MAP, PAGE_KERNEL_RO);
-	if (!dic->cbuf) {
-		ret = -ENOMEM;
-		goto out_vunmap_rbuf;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	dic->clen = le32_to_cpu(dic->cbuf->clen);
@@ -995,17 +735,12 @@ void f2fs_decompress_pages(struct bio *bio, struct page *page, bool verity)
 
 	if (dic->clen > PAGE_SIZE * dic->nr_cpages - COMPRESS_HEADER_SIZE) {
 		ret = -EFSCORRUPTED;
-<<<<<<< HEAD
 		f2fs_handle_error(sbi, ERROR_FAIL_DECOMPRESSION);
 		goto out_release;
-=======
-		goto out_vunmap_cbuf;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	ret = cops->decompress_pages(dic);
 
-<<<<<<< HEAD
 	if (!ret && (fi->i_compress_flag & 1 << COMPRESS_CHKSUM)) {
 		u32 provided = le32_to_cpu(dic->cbuf->chksum);
 		u32 calculated = f2fs_crc32(sbi, dic->cbuf->cdata, dic->clen);
@@ -1054,26 +789,6 @@ void f2fs_end_read_compressed_page(struct page *page, bool failed,
 
 	if (atomic_dec_and_test(&dic->remaining_pages))
 		f2fs_decompress_cluster(dic, in_task);
-=======
-out_vunmap_cbuf:
-	vunmap(dic->cbuf);
-out_vunmap_rbuf:
-	vunmap(dic->rbuf);
-destroy_decompress_ctx:
-	if (cops->destroy_decompress_ctx)
-		cops->destroy_decompress_ctx(dic);
-out_free_dic:
-	if (verity)
-		refcount_set(&dic->ref, dic->nr_cpages);
-	if (!verity)
-		f2fs_decompress_end_io(dic->rpages, dic->cluster_size,
-								ret, false);
-
-	trace_f2fs_decompress_pages_end(dic->inode, dic->cluster_idx,
-							dic->clen, ret);
-	if (!verity)
-		f2fs_free_dic(dic);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static bool is_page_in_cluster(struct compress_ctx *cc, pgoff_t index)
@@ -1100,7 +815,6 @@ bool f2fs_cluster_can_merge_page(struct compress_ctx *cc, pgoff_t index)
 	return is_page_in_cluster(cc, index);
 }
 
-<<<<<<< HEAD
 bool f2fs_all_cluster_page_ready(struct compress_ctx *cc, struct page **pages,
 				int index, int nr_pages, bool uptodate)
 {
@@ -1129,11 +843,6 @@ bool f2fs_all_cluster_page_ready(struct compress_ctx *cc, struct page **pages,
 
 static bool cluster_has_invalid_data(struct compress_ctx *cc)
 {
-=======
-static bool __cluster_may_compress(struct compress_ctx *cc)
-{
-	struct f2fs_sb_info *sbi = F2FS_I_SB(cc->inode);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	loff_t i_size = i_size_read(cc->inode);
 	unsigned nr_pages = DIV_ROUND_UP(i_size, PAGE_SIZE);
 	int i;
@@ -1141,7 +850,6 @@ static bool __cluster_may_compress(struct compress_ctx *cc)
 	for (i = 0; i < cc->cluster_size; i++) {
 		struct page *page = cc->rpages[i];
 
-<<<<<<< HEAD
 		f2fs_bug_on(F2FS_I_SB(cc->inode), !page);
 
 		/* beyond EOF */
@@ -1208,54 +916,23 @@ static int __f2fs_cluster_blocks(struct inode *inode,
 
 	set_new_dnode(&dn, inode, NULL, NULL, 0);
 	ret = f2fs_get_dnode_of_data(&dn, start_idx, LOOKUP_NODE);
-=======
-		f2fs_bug_on(sbi, !page);
-
-		if (unlikely(f2fs_cp_error(sbi)))
-			return false;
-		if (unlikely(is_sbi_flag_set(sbi, SBI_POR_DOING)))
-			return false;
-
-		/* beyond EOF */
-		if (page->index >= nr_pages)
-			return false;
-	}
-	return true;
-}
-
-static int __f2fs_cluster_blocks(struct compress_ctx *cc, bool compr)
-{
-	struct dnode_of_data dn;
-	int ret;
-
-	set_new_dnode(&dn, cc->inode, NULL, NULL, 0);
-	ret = f2fs_get_dnode_of_data(&dn, start_idx_of_cluster(cc),
-							LOOKUP_NODE);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (ret) {
 		if (ret == -ENOENT)
 			ret = 0;
 		goto fail;
 	}
 
-<<<<<<< HEAD
 	if (f2fs_sanity_check_cluster(&dn)) {
 		ret = -EFSCORRUPTED;
 		f2fs_handle_error(F2FS_I_SB(inode), ERROR_CORRUPTED_CLUSTER);
 		goto fail;
 	}
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (dn.data_blkaddr == COMPRESS_ADDR) {
 		int i;
 
 		ret = 1;
-<<<<<<< HEAD
 		for (i = 1; i < cluster_size; i++) {
-=======
-		for (i = 1; i < cc->cluster_size; i++) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			block_t blkaddr;
 
 			blkaddr = data_blkaddr(dn.inode,
@@ -1268,13 +945,10 @@ static int __f2fs_cluster_blocks(struct compress_ctx *cc, bool compr)
 					ret++;
 			}
 		}
-<<<<<<< HEAD
 
 		f2fs_bug_on(F2FS_I_SB(inode),
 			!compr && ret != cluster_size &&
 			!is_inode_flag_set(inode, FI_COMPRESS_RELEASED));
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 fail:
 	f2fs_put_dnode(&dn);
@@ -1284,7 +958,6 @@ fail:
 /* return # of compressed blocks in compressed cluster */
 static int f2fs_compressed_blocks(struct compress_ctx *cc)
 {
-<<<<<<< HEAD
 	return __f2fs_cluster_blocks(cc->inode, cc->cluster_idx, true);
 }
 
@@ -1294,53 +967,19 @@ int f2fs_is_compressed_cluster(struct inode *inode, pgoff_t index)
 	return __f2fs_cluster_blocks(inode,
 		index >> F2FS_I(inode)->i_log_cluster_size,
 		false);
-=======
-	return __f2fs_cluster_blocks(cc, true);
-}
-
-/* return # of valid blocks in compressed cluster */
-static int f2fs_cluster_blocks(struct compress_ctx *cc, bool compr)
-{
-	return __f2fs_cluster_blocks(cc, false);
-}
-
-int f2fs_is_compressed_cluster(struct inode *inode, pgoff_t index)
-{
-	struct compress_ctx cc = {
-		.inode = inode,
-		.log_cluster_size = F2FS_I(inode)->i_log_cluster_size,
-		.cluster_size = F2FS_I(inode)->i_cluster_size,
-		.cluster_idx = index >> F2FS_I(inode)->i_log_cluster_size,
-	};
-
-	return f2fs_cluster_blocks(&cc, false);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static bool cluster_may_compress(struct compress_ctx *cc)
 {
-<<<<<<< HEAD
 	if (!f2fs_need_compress_data(cc->inode))
 		return false;
 	if (f2fs_is_atomic_file(cc->inode))
 		return false;
-=======
-	if (!f2fs_compressed_file(cc->inode))
-		return false;
-	if (f2fs_is_atomic_file(cc->inode))
-		return false;
-	if (f2fs_is_mmap_file(cc->inode))
-		return false;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!f2fs_cluster_is_full(cc))
 		return false;
 	if (unlikely(f2fs_cp_error(F2FS_I_SB(cc->inode))))
 		return false;
-<<<<<<< HEAD
 	return !cluster_has_invalid_data(cc);
-=======
-	return __cluster_may_compress(cc);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static void set_cluster_writeback(struct compress_ctx *cc)
@@ -1368,33 +1007,16 @@ static int prepare_compress_overwrite(struct compress_ctx *cc,
 	struct f2fs_sb_info *sbi = F2FS_I_SB(cc->inode);
 	struct address_space *mapping = cc->inode->i_mapping;
 	struct page *page;
-<<<<<<< HEAD
-=======
-	struct dnode_of_data dn;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	sector_t last_block_in_bio;
 	unsigned fgp_flag = FGP_LOCK | FGP_WRITE | FGP_CREAT;
 	pgoff_t start_idx = start_idx_of_cluster(cc);
 	int i, ret;
-<<<<<<< HEAD
 
 retry:
 	ret = f2fs_is_compressed_cluster(cc->inode, start_idx);
 	if (ret <= 0)
 		return ret;
 
-=======
-	bool prealloc;
-
-retry:
-	ret = f2fs_cluster_blocks(cc, false);
-	if (ret <= 0)
-		return ret;
-
-	/* compressed case */
-	prealloc = (ret < cc->cluster_size);
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	ret = f2fs_init_compress_ctx(cc);
 	if (ret)
 		return ret;
@@ -1409,11 +1031,7 @@ retry:
 		}
 
 		if (PageUptodate(page))
-<<<<<<< HEAD
 			f2fs_put_page(page, 1);
-=======
-			unlock_page(page);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		else
 			f2fs_compress_ctx_add_page(cc, page);
 	}
@@ -1423,7 +1041,6 @@ retry:
 
 		ret = f2fs_read_multi_pages(cc, &bio, cc->cluster_size,
 					&last_block_in_bio, false, true);
-<<<<<<< HEAD
 		f2fs_put_rpages(cc);
 		f2fs_destroy_compress_ctx(cc, true);
 		if (ret)
@@ -1434,24 +1051,12 @@ retry:
 		ret = f2fs_init_compress_ctx(cc);
 		if (ret)
 			goto out;
-=======
-		f2fs_destroy_compress_ctx(cc);
-		if (ret)
-			goto release_pages;
-		if (bio)
-			f2fs_submit_bio(sbi, bio, DATA);
-
-		ret = f2fs_init_compress_ctx(cc);
-		if (ret)
-			goto release_pages;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	for (i = 0; i < cc->cluster_size; i++) {
 		f2fs_bug_on(sbi, cc->rpages[i]);
 
 		page = find_lock_page(mapping, start_idx + i);
-<<<<<<< HEAD
 		if (!page) {
 			/* page can be truncated */
 			goto release_and_retry;
@@ -1465,46 +1070,10 @@ release_and_retry:
 			f2fs_put_rpages(cc);
 			f2fs_unlock_rpages(cc, i + 1);
 			f2fs_destroy_compress_ctx(cc, true);
-=======
-		f2fs_bug_on(sbi, !page);
-
-		f2fs_wait_on_page_writeback(page, DATA, true, true);
-
-		f2fs_compress_ctx_add_page(cc, page);
-		f2fs_put_page(page, 0);
-
-		if (!PageUptodate(page)) {
-			f2fs_unlock_rpages(cc, i + 1);
-			f2fs_put_rpages_mapping(mapping, start_idx,
-					cc->cluster_size);
-			f2fs_destroy_compress_ctx(cc);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			goto retry;
 		}
 	}
 
-<<<<<<< HEAD
-=======
-	if (prealloc) {
-		__do_map_lock(sbi, F2FS_GET_BLOCK_PRE_AIO, true);
-
-		set_new_dnode(&dn, cc->inode, NULL, NULL, 0);
-
-		for (i = cc->cluster_size - 1; i > 0; i--) {
-			ret = f2fs_get_block(&dn, start_idx + i);
-			if (ret) {
-				i = cc->cluster_size;
-				break;
-			}
-
-			if (dn.data_blkaddr != NEW_ADDR)
-				break;
-		}
-
-		__do_map_lock(sbi, F2FS_GET_BLOCK_PRE_AIO, false);
-	}
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (likely(!ret)) {
 		*fsdata = cc->rpages;
 		*pagep = cc->rpages[offset_in_cluster(cc, index)];
@@ -1512,17 +1081,10 @@ release_and_retry:
 	}
 
 unlock_pages:
-<<<<<<< HEAD
 	f2fs_put_rpages(cc);
 	f2fs_unlock_rpages(cc, i);
 	f2fs_destroy_compress_ctx(cc, true);
 out:
-=======
-	f2fs_unlock_rpages(cc, i);
-release_pages:
-	f2fs_put_rpages_mapping(mapping, start_idx, i);
-	f2fs_destroy_compress_ctx(cc);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return ret;
 }
 
@@ -1546,10 +1108,7 @@ bool f2fs_compress_write_end(struct inode *inode, void *fsdata,
 
 {
 	struct compress_ctx cc = {
-<<<<<<< HEAD
 		.inode = inode,
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		.log_cluster_size = F2FS_I(inode)->i_log_cluster_size,
 		.cluster_size = F2FS_I(inode)->i_cluster_size,
 		.rpages = fsdata,
@@ -1560,11 +1119,7 @@ bool f2fs_compress_write_end(struct inode *inode, void *fsdata,
 		set_cluster_dirty(&cc);
 
 	f2fs_put_rpages_wbc(&cc, NULL, false, 1);
-<<<<<<< HEAD
 	f2fs_destroy_compress_ctx(&cc, false);
-=======
-	f2fs_destroy_compress_ctx(&cc);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	return first_index;
 }
@@ -1639,11 +1194,7 @@ static int f2fs_write_compressed_pages(struct compress_ctx *cc,
 		.submitted = false,
 		.io_type = io_type,
 		.io_wbc = wbc,
-<<<<<<< HEAD
 		.encrypted = fscrypt_inode_uses_fs_layer_crypto(cc->inode),
-=======
-		.encrypted = f2fs_encrypted_file(cc->inode),
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	};
 	struct dnode_of_data dn;
 	struct node_info ni;
@@ -1653,7 +1204,6 @@ static int f2fs_write_compressed_pages(struct compress_ctx *cc,
 	loff_t psize;
 	int i, err;
 
-<<<<<<< HEAD
 	/* we should bypass data pages to proceed the kworkder jobs */
 	if (unlikely(f2fs_cp_error(sbi))) {
 		mapping_set_error(cc->rpages[0]->mapping, -EIO);
@@ -1670,10 +1220,6 @@ static int f2fs_write_compressed_pages(struct compress_ctx *cc,
 	} else if (!f2fs_trylock_op(sbi)) {
 		goto out_free;
 	}
-=======
-	if (!IS_NOQUOTA(inode) && !f2fs_trylock_op(sbi))
-		return -EAGAIN;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	set_new_dnode(&dn, cc->inode, NULL, NULL, 0);
 
@@ -1689,40 +1235,25 @@ static int f2fs_write_compressed_pages(struct compress_ctx *cc,
 
 	psize = (loff_t)(cc->rpages[last_index]->index + 1) << PAGE_SHIFT;
 
-<<<<<<< HEAD
 	err = f2fs_get_node_info(fio.sbi, dn.nid, &ni, false);
-=======
-	err = f2fs_get_node_info(fio.sbi, dn.nid, &ni);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (err)
 		goto out_put_dnode;
 
 	fio.version = ni.version;
 
-<<<<<<< HEAD
 	cic = f2fs_kmem_cache_alloc(cic_entry_slab, GFP_F2FS_ZERO, false, sbi);
-=======
-	cic = f2fs_kzalloc(sbi, sizeof(struct compress_io_ctx), GFP_NOFS);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!cic)
 		goto out_put_dnode;
 
 	cic->magic = F2FS_COMPRESSED_PAGE_MAGIC;
 	cic->inode = inode;
-<<<<<<< HEAD
 	atomic_set(&cic->pending_pages, cc->valid_nr_cpages);
 	cic->rpages = page_array_alloc(cc->inode, cc->cluster_size);
-=======
-	refcount_set(&cic->ref, cc->nr_cpages);
-	cic->rpages = f2fs_kzalloc(sbi, sizeof(struct page *) <<
-			cc->log_cluster_size, GFP_NOFS);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!cic->rpages)
 		goto out_put_cic;
 
 	cic->nr_rpages = cc->cluster_size;
 
-<<<<<<< HEAD
 	for (i = 0; i < cc->valid_nr_cpages; i++) {
 		f2fs_set_compressed_page(cc->cpages[i], inode,
 					cc->rpages[i + 1]->index, cic);
@@ -1734,23 +1265,12 @@ static int f2fs_write_compressed_pages(struct compress_ctx *cc,
 		/* wait for GCed page writeback via META_MAPPING */
 		f2fs_wait_on_block_writeback(inode, fio.old_blkaddr);
 
-=======
-	for (i = 0; i < cc->nr_cpages; i++) {
-		f2fs_set_compressed_page(cc->cpages[i], inode,
-					cc->rpages[i + 1]->index, cic);
-		fio.compressed_page = cc->cpages[i];
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		if (fio.encrypted) {
 			fio.page = cc->rpages[i + 1];
 			err = f2fs_encrypt_one_page(&fio);
 			if (err)
 				goto out_destroy_crypt;
-<<<<<<< HEAD
 			cc->cpages[i] = fio.encrypted_page;
-=======
-			if (fscrypt_inode_uses_fs_layer_crypto(inode))
-				cc->cpages[i] = fio.encrypted_page;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		}
 	}
 
@@ -1779,11 +1299,7 @@ static int f2fs_write_compressed_pages(struct compress_ctx *cc,
 		if (fio.compr_blocks && __is_valid_data_blkaddr(blkaddr))
 			fio.compr_blocks++;
 
-<<<<<<< HEAD
 		if (i > cc->valid_nr_cpages) {
-=======
-		if (i > cc->nr_cpages) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			if (__is_valid_data_blkaddr(blkaddr)) {
 				f2fs_invalidate_blocks(sbi, blkaddr);
 				f2fs_update_data_blkaddr(&dn, NEW_ADDR);
@@ -1793,11 +1309,7 @@ static int f2fs_write_compressed_pages(struct compress_ctx *cc,
 
 		f2fs_bug_on(fio.sbi, blkaddr == NULL_ADDR);
 
-<<<<<<< HEAD
 		if (fio.encrypted)
-=======
-		if (fio.encrypted && fscrypt_inode_uses_fs_layer_crypto(inode))
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			fio.encrypted_page = cc->cpages[i - 1];
 		else
 			fio.compressed_page = cc->cpages[i - 1];
@@ -1812,25 +1324,17 @@ unlock_continue:
 
 	if (fio.compr_blocks)
 		f2fs_i_compr_blocks_update(inode, fio.compr_blocks - 1, false);
-<<<<<<< HEAD
 	f2fs_i_compr_blocks_update(inode, cc->valid_nr_cpages, true);
 	add_compr_block_stat(inode, cc->valid_nr_cpages);
-=======
-	f2fs_i_compr_blocks_update(inode, cc->nr_cpages, true);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	set_inode_flag(cc->inode, FI_APPEND_WRITE);
 	if (cc->cluster_idx == 0)
 		set_inode_flag(inode, FI_FIRST_BLOCK_WRITTEN);
 
 	f2fs_put_dnode(&dn);
-<<<<<<< HEAD
 	if (IS_NOQUOTA(inode))
 		f2fs_up_read(&sbi->node_write);
 	else
-=======
-	if (!IS_NOQUOTA(inode))
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		f2fs_unlock_op(sbi);
 
 	spin_lock(&fi->i_size_lock);
@@ -1839,7 +1343,6 @@ unlock_continue:
 	spin_unlock(&fi->i_size_lock);
 
 	f2fs_put_rpages(cc);
-<<<<<<< HEAD
 	page_array_free(cc->inode, cc->cpages, cc->nr_cpages);
 	cc->cpages = NULL;
 	f2fs_destroy_compress_ctx(cc, false);
@@ -1866,28 +1369,6 @@ out_free:
 	}
 	page_array_free(cc->inode, cc->cpages, cc->nr_cpages);
 	cc->cpages = NULL;
-=======
-	f2fs_destroy_compress_ctx(cc);
-	return 0;
-
-out_destroy_crypt:
-	kfree(cic->rpages);
-
-	for (--i; i >= 0; i--)
-		fscrypt_finalize_bounce_page(&cc->cpages[i]);
-	for (i = 0; i < cc->nr_cpages; i++) {
-		if (!cc->cpages[i])
-			continue;
-		f2fs_put_page(cc->cpages[i], 1);
-	}
-out_put_cic:
-	kfree(cic);
-out_put_dnode:
-	f2fs_put_dnode(&dn);
-out_unlock_op:
-	if (!IS_NOQUOTA(inode))
-		f2fs_unlock_op(sbi);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return -EAGAIN;
 }
 
@@ -1905,30 +1386,17 @@ void f2fs_compress_write_end_io(struct bio *bio, struct page *page)
 
 	dec_page_count(sbi, F2FS_WB_DATA);
 
-<<<<<<< HEAD
 	if (atomic_dec_return(&cic->pending_pages))
-=======
-	if (refcount_dec_not_one(&cic->ref))
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return;
 
 	for (i = 0; i < cic->nr_rpages; i++) {
 		WARN_ON(!cic->rpages[i]);
-<<<<<<< HEAD
 		clear_page_private_gcing(cic->rpages[i]);
 		end_page_writeback(cic->rpages[i]);
 	}
 
 	page_array_free(cic->inode, cic->rpages, cic->nr_rpages);
 	kmem_cache_free(cic_entry_slab, cic);
-=======
-		clear_cold_data(cic->rpages[i]);
-		end_page_writeback(cic->rpages[i]);
-	}
-
-	kfree(cic->rpages);
-	kfree(cic);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static int f2fs_write_raw_pages(struct compress_ctx *cc,
@@ -1937,7 +1405,6 @@ static int f2fs_write_raw_pages(struct compress_ctx *cc,
 					enum iostat_type io_type)
 {
 	struct address_space *mapping = cc->inode->i_mapping;
-<<<<<<< HEAD
 	int _submitted, compr_blocks, ret, i;
 
 	compr_blocks = f2fs_compressed_blocks(cc);
@@ -1953,34 +1420,18 @@ static int f2fs_write_raw_pages(struct compress_ctx *cc,
 	if (compr_blocks < 0)
 		return compr_blocks;
 
-=======
-	int _submitted, compr_blocks, ret;
-	int i = -1, err = 0;
-
-	compr_blocks = f2fs_compressed_blocks(cc);
-	if (compr_blocks < 0) {
-		err = compr_blocks;
-		goto out_err;
-	}
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	for (i = 0; i < cc->cluster_size; i++) {
 		if (!cc->rpages[i])
 			continue;
 retry_write:
-<<<<<<< HEAD
 		lock_page(cc->rpages[i]);
 
 		if (cc->rpages[i]->mapping != mapping) {
 continue_unlock:
-=======
-		if (cc->rpages[i]->mapping != mapping) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			unlock_page(cc->rpages[i]);
 			continue;
 		}
 
-<<<<<<< HEAD
 		if (!PageDirty(cc->rpages[i]))
 			goto continue_unlock;
 
@@ -1990,13 +1441,6 @@ continue_unlock:
 		ret = f2fs_write_single_data_page(cc->rpages[i], &_submitted,
 						NULL, NULL, wbc, io_type,
 						compr_blocks, false);
-=======
-		BUG_ON(!PageLocked(cc->rpages[i]));
-
-		ret = f2fs_write_single_data_page(cc->rpages[i], &_submitted,
-						NULL, NULL, wbc, io_type,
-						compr_blocks);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		if (ret) {
 			if (ret == AOP_WRITEPAGE_ACTIVATE) {
 				unlock_page(cc->rpages[i]);
@@ -2007,7 +1451,6 @@ continue_unlock:
 				 * avoid deadlock caused by cluster update race
 				 * from foreground operation.
 				 */
-<<<<<<< HEAD
 				if (IS_NOQUOTA(cc->inode))
 					return 0;
 				ret = 0;
@@ -2015,42 +1458,14 @@ continue_unlock:
 				goto retry_write;
 			}
 			return ret;
-=======
-				if (IS_NOQUOTA(cc->inode)) {
-					err = 0;
-					goto out_err;
-				}
-				ret = 0;
-				cond_resched();
-				congestion_wait(BLK_RW_ASYNC,
-						DEFAULT_IO_TIMEOUT);
-				lock_page(cc->rpages[i]);
-				clear_page_dirty_for_io(cc->rpages[i]);
-				goto retry_write;
-			}
-			err = ret;
-			goto out_err;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		}
 
 		*submitted += _submitted;
 	}
-<<<<<<< HEAD
 
 	f2fs_balance_fs(F2FS_M_SB(mapping), true);
 
 	return 0;
-=======
-	return 0;
-out_err:
-	for (++i; i < cc->cluster_size; i++) {
-		if (!cc->rpages[i])
-			continue;
-		redirty_page_for_writepage(wbc, cc->rpages[i]);
-		unlock_page(cc->rpages[i]);
-	}
-	return err;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 int f2fs_write_multi_pages(struct compress_ctx *cc,
@@ -2058,22 +1473,13 @@ int f2fs_write_multi_pages(struct compress_ctx *cc,
 					struct writeback_control *wbc,
 					enum iostat_type io_type)
 {
-<<<<<<< HEAD
-=======
-	struct f2fs_inode_info *fi = F2FS_I(cc->inode);
-	const struct f2fs_compress_ops *cops =
-			f2fs_cops[fi->i_compress_algorithm];
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	int err;
 
 	*submitted = 0;
 	if (cluster_may_compress(cc)) {
 		err = f2fs_compress_pages(cc);
 		if (err == -EAGAIN) {
-<<<<<<< HEAD
 			add_compr_block_stat(cc->inode, cc->cluster_size);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			goto write;
 		} else if (err) {
 			f2fs_put_rpages_wbc(cc, wbc, true, 1);
@@ -2082,10 +1488,6 @@ int f2fs_write_multi_pages(struct compress_ctx *cc,
 
 		err = f2fs_write_compressed_pages(cc, submitted,
 							wbc, io_type);
-<<<<<<< HEAD
-=======
-		cops->destroy_compress_ctx(cc);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		if (!err)
 			return 0;
 		f2fs_bug_on(F2FS_I_SB(cc->inode), err != -EAGAIN);
@@ -2096,7 +1498,6 @@ write:
 	err = f2fs_write_raw_pages(cc, submitted, wbc, io_type);
 	f2fs_put_rpages_wbc(cc, wbc, false, 0);
 destroy_out:
-<<<<<<< HEAD
 	f2fs_destroy_compress_ctx(cc, false);
 	return err;
 }
@@ -2182,86 +1583,44 @@ struct decompress_io_ctx *f2fs_alloc_dic(struct compress_ctx *cc)
 	dic->rpages = page_array_alloc(cc->inode, cc->cluster_size);
 	if (!dic->rpages) {
 		kmem_cache_free(dic_entry_slab, dic);
-=======
-	f2fs_destroy_compress_ctx(cc);
-	return err;
-}
-
-struct decompress_io_ctx *f2fs_alloc_dic(struct compress_ctx *cc)
-{
-	struct f2fs_sb_info *sbi = F2FS_I_SB(cc->inode);
-	struct decompress_io_ctx *dic;
-	pgoff_t start_idx = start_idx_of_cluster(cc);
-	int i;
-
-	dic = f2fs_kzalloc(sbi, sizeof(struct decompress_io_ctx), GFP_NOFS);
-	if (!dic)
-		return ERR_PTR(-ENOMEM);
-
-	dic->rpages = f2fs_kzalloc(sbi, sizeof(struct page *) <<
-			cc->log_cluster_size, GFP_NOFS);
-	if (!dic->rpages) {
-		kfree(dic);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		return ERR_PTR(-ENOMEM);
 	}
 
 	dic->magic = F2FS_COMPRESSED_PAGE_MAGIC;
 	dic->inode = cc->inode;
-<<<<<<< HEAD
 	atomic_set(&dic->remaining_pages, cc->nr_cpages);
-=======
-	refcount_set(&dic->ref, cc->nr_cpages);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	dic->cluster_idx = cc->cluster_idx;
 	dic->cluster_size = cc->cluster_size;
 	dic->log_cluster_size = cc->log_cluster_size;
 	dic->nr_cpages = cc->nr_cpages;
-<<<<<<< HEAD
 	refcount_set(&dic->refcnt, 1);
 	dic->failed = false;
 	dic->need_verity = f2fs_need_verity(cc->inode, start_idx);
-=======
-	dic->failed = false;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	for (i = 0; i < dic->cluster_size; i++)
 		dic->rpages[i] = cc->rpages[i];
 	dic->nr_rpages = cc->cluster_size;
 
-<<<<<<< HEAD
 	dic->cpages = page_array_alloc(dic->inode, dic->nr_cpages);
 	if (!dic->cpages) {
 		ret = -ENOMEM;
 		goto out_free;
 	}
-=======
-	dic->cpages = f2fs_kzalloc(sbi, sizeof(struct page *) *
-					dic->nr_cpages, GFP_NOFS);
-	if (!dic->cpages)
-		goto out_free;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	for (i = 0; i < dic->nr_cpages; i++) {
 		struct page *page;
 
 		page = f2fs_compress_alloc_page();
-<<<<<<< HEAD
 		if (!page) {
 			ret = -ENOMEM;
 			goto out_free;
 		}
-=======
-		if (!page)
-			goto out_free;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		f2fs_set_compressed_page(page, cc->inode,
 					start_idx + i + 1, dic);
 		dic->cpages[i] = page;
 	}
 
-<<<<<<< HEAD
 	ret = f2fs_prepare_decomp_mem(dic, true);
 	if (ret)
 		goto out_free;
@@ -2280,35 +1639,6 @@ static void f2fs_free_dic(struct decompress_io_ctx *dic,
 
 	f2fs_release_decomp_mem(dic, bypass_destroy_callback, true);
 
-=======
-	dic->tpages = f2fs_kzalloc(sbi, sizeof(struct page *) *
-					dic->cluster_size, GFP_NOFS);
-	if (!dic->tpages)
-		goto out_free;
-
-	for (i = 0; i < dic->cluster_size; i++) {
-		if (cc->rpages[i]) {
-			dic->tpages[i] = cc->rpages[i];
-			continue;
-		}
-
-		dic->tpages[i] = f2fs_compress_alloc_page();
-		if (!dic->tpages[i])
-			goto out_free;
-	}
-
-	return dic;
-
-out_free:
-	f2fs_free_dic(dic);
-	return ERR_PTR(-ENOMEM);
-}
-
-void f2fs_free_dic(struct decompress_io_ctx *dic)
-{
-	int i;
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (dic->tpages) {
 		for (i = 0; i < dic->cluster_size; i++) {
 			if (dic->rpages[i])
@@ -2317,11 +1647,7 @@ void f2fs_free_dic(struct decompress_io_ctx *dic)
 				continue;
 			f2fs_compress_free_page(dic->tpages[i]);
 		}
-<<<<<<< HEAD
 		page_array_free(dic->inode, dic->tpages, dic->cluster_size);
-=======
-		kfree(dic->tpages);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	if (dic->cpages) {
@@ -2330,7 +1656,6 @@ void f2fs_free_dic(struct decompress_io_ctx *dic)
 				continue;
 			f2fs_compress_free_page(dic->cpages[i]);
 		}
-<<<<<<< HEAD
 		page_array_free(dic->inode, dic->cpages, dic->nr_cpages);
 	}
 
@@ -2370,27 +1695,10 @@ static void __f2fs_decompress_end_io(struct decompress_io_ctx *dic, bool failed,
 
 	for (i = 0; i < dic->cluster_size; i++) {
 		struct page *rpage = dic->rpages[i];
-=======
-		kfree(dic->cpages);
-	}
-
-	kfree(dic->rpages);
-	kfree(dic);
-}
-
-void f2fs_decompress_end_io(struct page **rpages,
-			unsigned int cluster_size, bool err, bool verity)
-{
-	int i;
-
-	for (i = 0; i < cluster_size; i++) {
-		struct page *rpage = rpages[i];
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		if (!rpage)
 			continue;
 
-<<<<<<< HEAD
 		/* PG_error was set if verity failed. */
 		if (failed || PageError(rpage)) {
 			ClearPageUptodate(rpage);
@@ -2681,19 +1989,4 @@ void f2fs_destroy_compress_cache(void)
 {
 	kmem_cache_destroy(dic_entry_slab);
 	kmem_cache_destroy(cic_entry_slab);
-=======
-		if (err || PageError(rpage))
-			goto clear_uptodate;
-
-		if (!verity || fsverity_verify_page(rpage)) {
-			SetPageUptodate(rpage);
-			goto unlock;
-		}
-clear_uptodate:
-		ClearPageUptodate(rpage);
-		ClearPageError(rpage);
-unlock:
-		unlock_page(rpage);
-	}
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }

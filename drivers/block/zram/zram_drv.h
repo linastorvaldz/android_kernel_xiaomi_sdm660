@@ -30,28 +30,19 @@
 
 
 /*
-<<<<<<< HEAD
  * ZRAM is mainly used for memory efficiency so we want to keep memory
  * footprint small and thus squeeze size and zram pageflags into a flags
  * member. The lower ZRAM_FLAG_SHIFT bits is for object size (excluding
  * header), which cannot be larger than PAGE_SIZE (requiring PAGE_SHIFT
  * bits), the higher bits are for zram_pageflags.
-=======
- * The lower ZRAM_FLAG_SHIFT bits of table.flags is for
- * object size (excluding header), the higher bits is for
- * zram_pageflags.
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  *
  * We use BUILD_BUG_ON() to make sure that zram pageflags don't overflow.
  */
 #define ZRAM_FLAG_SHIFT (PAGE_SHIFT + 1)
 
-<<<<<<< HEAD
 /* Only 2 bits are allowed for comp priority index */
 #define ZRAM_COMP_PRIORITY_MASK	0x3
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /* Flags for zram pages (table[page_no].flags) */
 enum zram_pageflags {
 	/* zram slot is locked */
@@ -59,16 +50,11 @@ enum zram_pageflags {
 	ZRAM_SAME,	/* Page consists the same element */
 	ZRAM_WB,	/* page is stored on backing_device */
 	ZRAM_UNDER_WB,	/* page is under writeback */
-<<<<<<< HEAD
 	ZRAM_IDLE,	/* not accessed page since last idle marking */
 	ZRAM_INCOMPRESSIBLE, /* none of the algorithms could compress it */
 
 	ZRAM_COMP_PRIORITY_BIT1, /* First bit of comp priority index */
 	ZRAM_COMP_PRIORITY_BIT2, /* Second bit of comp priority index */
-=======
-	ZRAM_HUGE,	/* Incompressible page */
-	ZRAM_IDLE,	/* not accessed page since last idle marking */
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	__NR_ZRAM_PAGEFLAGS,
 };
@@ -82,10 +68,6 @@ struct zram_table_entry {
 		unsigned long element;
 	};
 	unsigned long flags;
-<<<<<<< HEAD
-=======
-#ifdef CONFIG_ZRAM_MEMORY_TRACKING
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	ktime_t ac_time;
 };
 
@@ -141,13 +123,8 @@ struct zram {
 	 * zram is claimed so open request will be failed
 	 */
 	bool claim; /* Protected by bdev->bd_mutex */
-<<<<<<< HEAD
 #ifdef CONFIG_ZRAM_WRITEBACK
         struct file *backing_dev;
-=======
-	struct file *backing_dev;
-#ifdef CONFIG_ZRAM_WRITEBACK
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	spinlock_t wb_limit_lock;
 	bool wb_limit_enable;
 	u64 bd_wb_limit;

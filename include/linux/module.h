@@ -24,10 +24,7 @@
 #include <linux/tracepoint-defs.h>
 #include <linux/cfi.h>
 #include <linux/android_kabi.h>
-<<<<<<< HEAD
 #include <linux/srcu.h>
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #include <linux/percpu.h>
 #include <asm/module.h>

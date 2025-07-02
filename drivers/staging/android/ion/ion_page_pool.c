@@ -19,7 +19,6 @@
  */
 static long nr_total_pages;
 
-<<<<<<< HEAD
 /* do a simple check to see if we are in any low memory situation */
 static bool pool_refill_ok(struct ion_page_pool *pool)
 {
@@ -55,8 +54,6 @@ static bool pool_refill_ok(struct ion_page_pool *pool)
 	return true;
 }
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static inline struct page *ion_page_pool_alloc_pages(struct ion_page_pool *pool)
 {
 	if (fatal_signal_pending(current))
@@ -81,7 +78,6 @@ static void ion_page_pool_add(struct ion_page_pool *pool, struct page *page)
 		pool->low_count++;
 	}
 
-<<<<<<< HEAD
 	atomic_inc(&pool->count);
 	nr_total_pages += 1 << pool->order;
 	mod_node_page_state(page_pgdat(page), NR_KERNEL_MISC_RECLAIMABLE,
@@ -109,12 +105,6 @@ void ion_page_pool_refill(struct ion_page_pool *pool)
 						  DMA_BIDIRECTIONAL);
 		ion_page_pool_add(pool, page);
 	}
-=======
-	nr_total_pages += 1 << pool->order;
-	mod_node_page_state(page_pgdat(page), NR_KERNEL_MISC_RECLAIMABLE,
-							1 << pool->order);
-	mutex_unlock(&pool->mutex);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static struct page *ion_page_pool_remove(struct ion_page_pool *pool, bool high)
@@ -208,10 +198,7 @@ int ion_page_pool_total(struct ion_page_pool *pool, bool high)
 	return count << pool->order;
 }
 
-<<<<<<< HEAD
 #ifdef CONFIG_ION_SYSTEM_HEAP
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 long ion_page_pool_nr_pages(void)
 {
 	/* Correct possible overflow caused by racing writes */
@@ -219,10 +206,7 @@ long ion_page_pool_nr_pages(void)
 		nr_total_pages = 0;
 	return nr_total_pages;
 }
-<<<<<<< HEAD
 #endif
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 int ion_page_pool_shrink(struct ion_page_pool *pool, gfp_t gfp_mask,
 			 int nr_to_scan)

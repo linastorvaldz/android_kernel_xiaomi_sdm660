@@ -100,11 +100,7 @@ static const char *const usb_dr_modes[] = {
 	[USB_DR_MODE_HOST]		= "host",
 	[USB_DR_MODE_PERIPHERAL]	= "peripheral",
 	[USB_DR_MODE_OTG]		= "otg",
-<<<<<<< HEAD
 	[USB_DR_MODE_DRD]		= "drd",
-=======
-	[USB_DR_MODE_DRD]               = "drd",
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 static enum usb_dr_mode usb_get_dr_mode_from_string(const char *str)

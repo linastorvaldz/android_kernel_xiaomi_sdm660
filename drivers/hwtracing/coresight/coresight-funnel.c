@@ -93,11 +93,7 @@ static int funnel_enable(struct coresight_device *csdev, int inport,
 	spin_unlock_irqrestore(&drvdata->spinlock, flags);
 
 	if (first_enable)
-<<<<<<< HEAD
 		dev_info(drvdata->dev, "FUNNEL inport %d enabled\n", inport);
-=======
-		dev_dbg(drvdata->dev, "FUNNEL inport %d enabled\n", inport);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return rc;
 }
 
@@ -207,7 +203,6 @@ static struct attribute *coresight_funnel_attrs[] = {
 };
 ATTRIBUTE_GROUPS(coresight_funnel);
 
-<<<<<<< HEAD
 static int funnel_get_resource_byname(struct device_node *np,
 				   char *ch_base, struct resource *res)
 {
@@ -231,18 +226,13 @@ static int funnel_get_resource_byname(struct device_node *np,
 	return of_address_to_resource(np, index, res);
 }
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int funnel_probe(struct device *dev, struct resource *res)
 {
 	int ret;
 	void __iomem *base;
 	struct coresight_platform_data *pdata = NULL;
 	struct funnel_drvdata *drvdata;
-<<<<<<< HEAD
 	struct resource res_real;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	struct coresight_desc desc = { 0 };
 	struct device_node *np = dev->of_node;
 
@@ -268,7 +258,6 @@ static int funnel_probe(struct device *dev, struct resource *res)
 			return ret;
 	}
 
-<<<<<<< HEAD
 
 	if (of_property_read_bool(np, "qcom,duplicate-funnel")) {
 		ret = funnel_get_resource_byname(np, "funnel-base-real",
@@ -290,13 +279,6 @@ static int funnel_probe(struct device *dev, struct resource *res)
 		 * Map the device base for dynamic-funnel, which has been
 		 * validated by AMBA core.
 		 */
-=======
-	/*
-	 * Map the device base for dynamic-funnel, which has been
-	 * validated by AMBA core.
-	 */
-	if (res) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		base = devm_ioremap_resource(dev, res);
 		if (IS_ERR(base)) {
 			ret = PTR_ERR(base);

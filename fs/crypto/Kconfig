@@ -29,7 +29,6 @@ config FS_ENCRYPTION_INLINE_CRYPT
 	depends on FS_ENCRYPTION && BLK_INLINE_ENCRYPTION
 	help
 	  Enable fscrypt to use inline encryption hardware if available.
-<<<<<<< HEAD
 
 config ENABLE_LEGACY_PFK
 	bool "Legacy method to generate per file key"
@@ -39,5 +38,3 @@ config ENABLE_LEGACY_PFK
 	  from nonce and master key. In private mode the keys
 	  will be used by inline crypto hardware to encrypt the
 	  file content.
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)

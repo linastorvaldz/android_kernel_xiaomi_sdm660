@@ -255,11 +255,7 @@ extern struct extcon_dev *extcon_get_edev_by_phandle(struct device *dev,
 extern const char *extcon_get_edev_name(struct extcon_dev *edev);
 
 extern int extcon_blocking_sync(struct extcon_dev *edev, unsigned int id,
-<<<<<<< HEAD
 							u8 val);
-=======
-							bool val);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #else /* CONFIG_EXTCON */
 static inline int extcon_get_state(struct extcon_dev *edev, unsigned int id)
 {

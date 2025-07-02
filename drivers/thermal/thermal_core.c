@@ -466,23 +466,6 @@ static void store_temperature(struct thermal_zone_device *tz, int temp)
 			tz->last_temperature, tz->temperature);
 }
 
-static void store_temperature(struct thermal_zone_device *tz, int temp)
-{
-	mutex_lock(&tz->lock);
-	tz->last_temperature = tz->temperature;
-	tz->temperature = temp;
-	mutex_unlock(&tz->lock);
-
-	trace_thermal_temperature(tz);
-	if (tz->last_temperature == THERMAL_TEMP_INVALID ||
-		tz->last_temperature == THERMAL_TEMP_INVALID_LOW)
-		dev_dbg(&tz->device, "last_temperature N/A, current_temperature=%d\n",
-			tz->temperature);
-	else
-		dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
-			tz->last_temperature, tz->temperature);
-}
-
 static void update_temperature(struct thermal_zone_device *tz)
 {
 	int temp, ret;
@@ -534,39 +517,11 @@ void thermal_zone_device_update_temp(struct thermal_zone_device *tz,
 }
 EXPORT_SYMBOL(thermal_zone_device_update_temp);
 
-void thermal_zone_device_update_temp(struct thermal_zone_device *tz,
-				enum thermal_notify_event event, int temp)
-{
-	int count;
-
-	if (!tz || !tz->ops)
-		return;
-
-	if (atomic_read(&in_suspend) && (!tz->ops->is_wakeable ||
-					 !(tz->ops->is_wakeable(tz))))
-		return;
-
-	store_temperature(tz, temp);
-
-	thermal_zone_set_trips(tz);
-
-	tz->notify_event = event;
-
-	for (count = 0; count < tz->trips; count++)
-		handle_thermal_trip(tz, count);
-}
-
 void thermal_zone_device_update(struct thermal_zone_device *tz,
 				enum thermal_notify_event event)
 {
 	int count;
 
-<<<<<<< HEAD
-=======
-	if (!tz || !tz->ops)
-		return;
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (atomic_read(&in_suspend) && (!tz->ops->is_wakeable ||
 		!(tz->ops->is_wakeable(tz))))
 		return;
@@ -1677,7 +1632,6 @@ static int thermal_pm_notify(struct notifier_block *nb,
 	case PM_POST_SUSPEND:
 		atomic_set(&in_suspend, 0);
 		list_for_each_entry(tz, &thermal_tz_list, node) {
-<<<<<<< HEAD
 			tz_mode = THERMAL_DEVICE_ENABLED;
 			if (tz->ops->get_mode)
 				tz->ops->get_mode(tz, &tz_mode);
@@ -1687,11 +1641,6 @@ static int thermal_pm_notify(struct notifier_block *nb,
 				tz_mode == THERMAL_DEVICE_DISABLED)
 				continue;
 
-=======
-			if (tz->ops && tz->ops->is_wakeable &&
-			    tz->ops->is_wakeable(tz))
-				continue;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			thermal_zone_device_init(tz);
 			thermal_zone_device_update(tz,
 						   THERMAL_EVENT_UNSPECIFIED);

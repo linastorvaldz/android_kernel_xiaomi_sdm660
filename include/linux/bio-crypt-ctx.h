@@ -5,11 +5,8 @@
 #ifndef __LINUX_BIO_CRYPT_CTX_H
 #define __LINUX_BIO_CRYPT_CTX_H
 
-<<<<<<< HEAD
 #include <linux/string.h>
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 enum blk_crypto_mode_num {
 	BLK_ENCRYPTION_MODE_INVALID,
 	BLK_ENCRYPTION_MODE_AES_256_XTS,
@@ -109,10 +106,7 @@ struct bio_crypt_ctx {
 	 * with keyslot.
 	 */
 	struct keyslot_manager		*bc_ksm;
-<<<<<<< HEAD
 	bool is_ext4;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 int bio_crypt_ctx_init(void);
@@ -139,10 +133,7 @@ static inline void bio_crypt_set_ctx(struct bio *bio,
 	memcpy(bc->bc_dun, dun, sizeof(bc->bc_dun));
 	bc->bc_ksm = NULL;
 	bc->bc_keyslot = -1;
-<<<<<<< HEAD
 	bc->is_ext4 = false;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	bio->bi_crypt_context = bc;
 }

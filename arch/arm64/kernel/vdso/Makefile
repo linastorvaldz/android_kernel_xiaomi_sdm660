@@ -24,30 +24,17 @@ obj-vdso := $(addprefix $(obj)/, $(obj-vdso))
 ldflags-y := -shared -nostdlib -soname=linux-vdso.so.1 --hash-style=sysv \
 		-Bsymbolic --eh-frame-hdr --build-id -n -T
 
-<<<<<<< HEAD
-=======
-ccflags-y += $(DISABLE_LTO)
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 ccflags-y := -fno-common -fno-builtin -fno-stack-protector -ffixed-x18
 ccflags-y += -DDISABLE_BRANCH_PROFILING
 
 
 CFLAGS_REMOVE_vgettimeofday.o = $(CC_FLAGS_FTRACE) -Os $(CC_FLAGS_SCS)
-<<<<<<< HEAD
-=======
-KBUILD_CFLAGS			+= $(DISABLE_LTO)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 KASAN_SANITIZE			:= n
 UBSAN_SANITIZE			:= n
 OBJECT_FILES_NON_STANDARD	:= y
 KCOV_INSTRUMENT			:= n
 
-<<<<<<< HEAD
 CFLAGS_vgettimeofday.o = -O3 -mcmodel=tiny -fasynchronous-unwind-tables
-=======
-CFLAGS_vgettimeofday.o = -O2 -mcmodel=tiny -fasynchronous-unwind-tables
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 ifneq ($(c-gettimeofday-y),)
   CFLAGS_vgettimeofday.o += -include $(c-gettimeofday-y)

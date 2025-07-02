@@ -409,9 +409,6 @@ extern void ebitmap_cache_init(void);
 extern void hashtab_cache_init(void);
 extern void selinux_nlmsg_init(void);
 extern int security_sidtab_hash_stats(struct selinux_state *state, char *page);
-<<<<<<< HEAD
 extern void selinux_nlmsg_init(void);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #endif /* _SELINUX_SECURITY_H_ */

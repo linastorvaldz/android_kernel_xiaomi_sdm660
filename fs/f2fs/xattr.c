@@ -27,12 +27,8 @@ static void *xattr_alloc(struct f2fs_sb_info *sbi, int size, bool *is_inline)
 {
 	if (likely(size == sbi->inline_xattr_slab_size)) {
 		*is_inline = true;
-<<<<<<< HEAD
 		return f2fs_kmem_cache_alloc(sbi->inline_xattr_slab,
 					GFP_F2FS_ZERO, false, sbi);
-=======
-		return kmem_cache_zalloc(sbi->inline_xattr_slab, GFP_NOFS);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 	*is_inline = false;
 	return f2fs_kzalloc(sbi, size, GFP_NOFS);
@@ -44,11 +40,7 @@ static void xattr_free(struct f2fs_sb_info *sbi, void *xattr_addr,
 	if (is_inline)
 		kmem_cache_free(sbi->inline_xattr_slab, xattr_addr);
 	else
-<<<<<<< HEAD
 		kfree(xattr_addr);
-=======
-		kvfree(xattr_addr);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static int f2fs_xattr_generic_get(const struct xattr_handler *handler,
@@ -429,11 +421,7 @@ static int read_all_xattrs(struct inode *inode, struct page *ipage,
 	*base_addr = txattr_addr;
 	return 0;
 fail:
-<<<<<<< HEAD
 	kfree(txattr_addr);
-=======
-	kvfree(txattr_addr);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return err;
 }
 
@@ -540,11 +528,7 @@ int f2fs_getxattr(struct inode *inode, int index, const char *name,
 	f2fs_down_read(&F2FS_I(inode)->i_xattr_sem);
 	error = lookup_all_xattrs(inode, ipage, index, len, name,
 				&entry, &base_addr, &base_size, &is_inline);
-<<<<<<< HEAD
 	f2fs_up_read(&F2FS_I(inode)->i_xattr_sem);
-=======
-	up_read(&F2FS_I(inode)->i_xattr_sem);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (error)
 		return error;
 
@@ -625,11 +609,7 @@ ssize_t f2fs_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size)
 	}
 	error = buffer_size - rest;
 cleanup:
-<<<<<<< HEAD
 	kfree(base_addr);
-=======
-	kvfree(base_addr);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return error;
 }
 
@@ -785,11 +765,7 @@ same:
 	}
 
 exit:
-<<<<<<< HEAD
 	kfree(base_addr);
-=======
-	kvfree(base_addr);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return error;
 }
 
@@ -805,11 +781,7 @@ int f2fs_setxattr(struct inode *inode, int index, const char *name,
 	if (!f2fs_is_checkpoint_ready(sbi))
 		return -ENOSPC;
 
-<<<<<<< HEAD
 	err = f2fs_dquot_initialize(inode);
-=======
-	err = dquot_initialize(inode);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (err)
 		return err;
 
@@ -820,15 +792,9 @@ int f2fs_setxattr(struct inode *inode, int index, const char *name,
 	f2fs_balance_fs(sbi, true);
 
 	f2fs_lock_op(sbi);
-<<<<<<< HEAD
 	f2fs_down_write(&F2FS_I(inode)->i_xattr_sem);
 	err = __f2fs_setxattr(inode, index, name, value, size, ipage, flags);
 	f2fs_up_write(&F2FS_I(inode)->i_xattr_sem);
-=======
-	down_write(&F2FS_I(inode)->i_xattr_sem);
-	err = __f2fs_setxattr(inode, index, name, value, size, ipage, flags);
-	up_write(&F2FS_I(inode)->i_xattr_sem);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	f2fs_unlock_op(sbi);
 
 	f2fs_update_time(sbi, REQ_TIME);

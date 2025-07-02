@@ -1307,7 +1307,6 @@ static void v4l_fill_fmtdesc(struct v4l2_fmtdesc *fmt)
 					descr = "Y/CbCr 4:2:0 TP10 UBWC"; break;
 	case V4L2_PIX_FMT_NV12_512:
 				descr = "Y/CbCr 4:2:0 (512 align)"; break;
-<<<<<<< HEAD
 	case V4L2_PIX_FMT_NV12_P010_UBWC:
 					descr = "Y/CbCr 4:2:0 P010 UBWC"; break;
 	case V4L2_PIX_FMT_RGBA8888_UBWC:
@@ -1384,8 +1383,6 @@ static void v4l_fill_fmtdesc(struct v4l2_fmtdesc *fmt)
 					descr = "Y/CbCr 4:2:0 TP10"; break;
 	case V4L2_PIX_FMT_SDE_Y_CBCR_H2V2_P010:
 					descr = "Y/CbCr 4:2:0 P10"; break;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	default:
 		/* Compressed formats */

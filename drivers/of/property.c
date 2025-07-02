@@ -1357,11 +1357,7 @@ static int of_link_to_suppliers(struct device *dev,
 	return ret;
 }
 
-<<<<<<< HEAD
 static bool of_devlink;
-=======
-static bool of_devlink = true;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 core_param(of_devlink, of_devlink, bool, 0);
 
 static int of_fwnode_add_links(const struct fwnode_handle *fwnode,

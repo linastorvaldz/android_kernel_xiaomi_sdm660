@@ -296,11 +296,7 @@ static void fuse_dentry_canonical_path(const struct path *path,
 	char *path_name;
 	int err;
 
-<<<<<<< HEAD
 	path_name = (char *)get_zeroed_page(GFP_KERNEL);
-=======
-	path_name = (char *)__get_free_page(GFP_KERNEL);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!path_name)
 		goto default_path;
 

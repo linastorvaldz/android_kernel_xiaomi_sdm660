@@ -12,7 +12,4 @@ obj-$(CONFIG_SCSI_UFS_TEST) += ufs_test.o
 obj-$(CONFIG_DEBUG_FS) += ufs-debugfs.o ufs-qcom-debugfs.o
 obj-$(CONFIG_SCSI_UFS_HISI) += ufs-hisi.o
 ufshcd-core-$(CONFIG_SCSI_UFS_CRYPTO) += ufshcd-crypto.o
-<<<<<<< HEAD
 ufshcd-core-$(CONFIG_SCSI_UFS_CRYPTO_QTI) += ufshcd-crypto-qti.o
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)

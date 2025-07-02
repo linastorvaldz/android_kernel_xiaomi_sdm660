@@ -1286,10 +1286,6 @@ void tick_irq_enter(void)
  * High resolution timer specific code
  */
 #ifdef CONFIG_HIGH_RES_TIMERS
-<<<<<<< HEAD
-=======
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static void (*wake_callback)(void);
 
 void register_tick_sched_wakeup_callback(void (*cb)(void))
@@ -1320,12 +1316,8 @@ static enum hrtimer_restart tick_sched_timer(struct hrtimer *timer)
 	 */
 	if (regs) {
 		tick_sched_handle(ts, regs);
-<<<<<<< HEAD
 		if (rq_info.init == 1 && wake_callback &&
 				tick_do_timer_cpu == smp_processor_id()) {
-=======
-		if (wake_callback && tick_do_timer_cpu == smp_processor_id()) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			/*
 			 * wakeup user if needed
 			 */

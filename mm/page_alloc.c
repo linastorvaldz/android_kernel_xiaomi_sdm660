@@ -7696,15 +7696,9 @@ static void __setup_per_zone_wmarks(void)
 		u64 min, low;
 
 		spin_lock_irqsave(&zone->lock, flags);
-<<<<<<< HEAD
 		min = (u64)pages_min * zone_managed_pages(zone);
 		do_div(min, lowmem_pages);
 		low = (u64)pages_low * zone_managed_pages(zone);
-=======
-		min = (u64)pages_min * zone->managed_pages;
-		do_div(min, lowmem_pages);
-		low = (u64)pages_low * zone->managed_pages;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		do_div(low, vm_total_pages);
 
 		if (is_highmem(zone)) {
@@ -7736,11 +7730,7 @@ static void __setup_per_zone_wmarks(void)
 		 * ensure a minimum size on small systems.
 		 */
 		min = max_t(u64, min >> 2,
-<<<<<<< HEAD
 			    mult_frac(zone_managed_pages(zone),
-=======
-			    mult_frac(zone->managed_pages,
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				      watermark_scale_factor, 10000));
 
 		zone->watermark[WMARK_LOW]  = min_wmark_pages(zone) +

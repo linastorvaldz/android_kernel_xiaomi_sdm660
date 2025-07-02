@@ -593,17 +593,10 @@ bool __init wg_allowedips_selftest(void)
 	wg_allowedips_remove_by_peer(&t, a, &mutex);
 	test_negative(4, a, 192, 168, 0, 1);
 
-<<<<<<< HEAD
 	/* These will hit the WARN_ON(len >= MAX_ALLOWEDIPS_BITS) in free_node
 	 * if something goes wrong.
 	 */
 	for (i = 0; i < MAX_ALLOWEDIPS_BITS; ++i) {
-=======
-	/* These will hit the WARN_ON(len >= 128) in free_node if something
-	 * goes wrong.
-	 */
-	for (i = 0; i < 128; ++i) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		part = cpu_to_be64(~(1LLU << (i % 64)));
 		memset(&ip, 0xff, 16);
 		memcpy((u8 *)&ip + (i < 64) * 8, &part, 8);

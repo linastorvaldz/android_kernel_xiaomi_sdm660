@@ -57,12 +57,8 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
 		    stat->total_time * dfso_upthreshold)
 			*freq = max;
 		else if (stat->busy_time * 100 <
-<<<<<<< HEAD
 			 stat->total_time *
 			 (dfso_upthreshold - dfso_downdifferential))
-=======
-		    stat->total_time * dfso_downdifferential)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			*freq = min;
 		else
 			*freq = df->previous_freq;

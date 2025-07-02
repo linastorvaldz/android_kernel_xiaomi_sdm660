@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 // SPDX-License-Identifier: GPL-2.0
-=======
-/* SPDX-License-Identifier: GPL-2.0 */
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #include <linux/compiler_types.h>
 #include <linux/errno.h>
@@ -213,22 +209,14 @@ err:
 }
 
 /**
-<<<<<<< HEAD
  * binder_ctl_ioctl - handle binder device node allocation requests
-=======
- * binderfs_ctl_ioctl - handle binder device node allocation requests
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  *
  * The request handler for the binder-control device. All requests operate on
  * the binderfs mount the binder-control device resides in:
  * - BINDER_CTL_ADD
  *   Allocate a new binder device.
  *
-<<<<<<< HEAD
  * Return: %0 on success, negative errno on failure.
-=======
- * Return: 0 on success, negative errno on failure
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  */
 static long binder_ctl_ioctl(struct file *file, unsigned int cmd,
 			     unsigned long arg)
@@ -372,10 +360,7 @@ static const struct super_operations binderfs_super_ops = {
 static inline bool is_binderfs_control_device(const struct dentry *dentry)
 {
 	struct binderfs_info *info = dentry->d_sb->s_fs_info;
-<<<<<<< HEAD
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return info->control_dentry == dentry;
 }
 
@@ -570,10 +555,7 @@ out:
 	return dentry;
 }
 
-<<<<<<< HEAD
 #ifdef CONFIG_ANDROID_BINDER_LOGS
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static struct dentry *binderfs_create_dir(struct dentry *parent,
 					  const char *name)
 {
@@ -672,26 +654,19 @@ static int init_binder_logs(struct super_block *sb)
 out:
 	return ret;
 }
-<<<<<<< HEAD
 #else
 static inline int init_binder_logs(struct super_block *sb)
 {
 	return 0;
 }
 #endif
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 static int binderfs_fill_super(struct super_block *sb, void *data, int silent)
 {
 	int ret;
 	struct binderfs_info *info;
 	struct inode *inode = NULL;
-<<<<<<< HEAD
 	struct binderfs_device device_info = {};
-=======
-	struct binderfs_device device_info = { 0 };
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	const char *name;
 	size_t len;
 

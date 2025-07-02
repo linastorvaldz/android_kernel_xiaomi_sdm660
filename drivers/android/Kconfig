@@ -24,11 +24,7 @@ config ANDROID_BINDERFS
 	bool "Android Binderfs filesystem"
 	depends on ANDROID_BINDER_IPC
 	default n
-<<<<<<< HEAD
 	help
-=======
-	---help---
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	  Binderfs is a pseudo-filesystem for the Android Binder IPC driver
 	  which can be mounted per-ipc namespace allowing to run multiple
 	  instances of Android.

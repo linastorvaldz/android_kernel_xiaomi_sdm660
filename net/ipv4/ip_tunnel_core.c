@@ -455,9 +455,6 @@ __be16 ip_tunnel_parse_protocol(const struct sk_buff *skb)
 	return 0;
 }
 EXPORT_SYMBOL(ip_tunnel_parse_protocol);
-<<<<<<< HEAD
 
 const struct header_ops ip_tunnel_header_ops = { .parse_protocol = ip_tunnel_parse_protocol };
 EXPORT_SYMBOL(ip_tunnel_header_ops);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)

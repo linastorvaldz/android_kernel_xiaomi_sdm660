@@ -48,7 +48,6 @@
 #include "ufs_quirks.h"
 #include "unipro.h"
 #include "ufs-sysfs.h"
-<<<<<<< HEAD
 #include "ufs-debugfs.h"
 #include "ufs-qcom.h"
 
@@ -205,8 +204,6 @@ static void ufshcd_update_uic_error_cnt(struct ufs_hba *hba, u32 reg, int type)
 		break;
 	}
 }
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #include "ufshcd-crypto.h"
 
 #define CREATE_TRACE_POINTS
@@ -254,7 +251,6 @@ static void ufshcd_update_uic_error_cnt(struct ufs_hba *hba, u32 reg, int type)
 /* Interrupt aggregation default timeout, unit: 40us */
 #define INT_AGGR_DEF_TO	0x02
 
-<<<<<<< HEAD
 /* default value of auto suspend is 3 seconds */
 #define UFSHCD_AUTO_SUSPEND_DELAY_MS 3000 /* millisecs */
 
@@ -266,10 +262,6 @@ static void ufshcd_update_uic_error_cnt(struct ufs_hba *hba, u32 reg, int type)
 
 /* IOCTL opcode for command - ufs set device read only */
 #define UFS_IOCTL_BLKROSET      BLKROSET
-=======
-/* default delay of autosuspend: 2000 ms */
-#define RPM_AUTOSUSPEND_DELAY_MS 2000
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #define ufshcd_toggle_vreg(_dev, _vreg, _on)				\
 	({                                                              \
@@ -914,17 +906,12 @@ static inline void __ufshcd_print_host_regs(struct ufs_hba *hba, bool no_sleep)
 
 	ufshcd_print_clk_freqs(hba);
 
-<<<<<<< HEAD
 	ufshcd_vops_dbg_register_dump(hba, no_sleep);
 }
 
 static void ufshcd_print_host_regs(struct ufs_hba *hba)
 {
 	__ufshcd_print_host_regs(hba, false);
-=======
-	if (hba->vops && hba->vops->dbg_register_dump)
-		hba->vops->dbg_register_dump(hba);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	ufshcd_crypto_debug(hba);
 }
@@ -972,13 +959,8 @@ void ufshcd_print_trs(struct ufs_hba *hba, unsigned long bitmap, bool pr_prdt)
 			(u64)lrbp->ucd_prdt_dma_addr);
 
 		if (pr_prdt)
-<<<<<<< HEAD
 			ufshcd_hex_dump(hba, "UPIU PRDT: ", lrbp->ucd_prdt_ptr,
 					hba->sg_entry_size * prdt_length);
-=======
-			ufshcd_hex_dump("UPIU PRDT: ", lrbp->ucd_prdt_ptr,
-				hba->sg_entry_size * prdt_length);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 }
 
@@ -3831,18 +3813,6 @@ static int ufshcd_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *cmd)
 	lrbp->task_tag = tag;
 	lrbp->lun = ufshcd_scsi_to_upiu_lun(cmd->device->lun);
 	lrbp->intr_cmd = !ufshcd_is_intr_aggr_allowed(hba) ? true : false;
-<<<<<<< HEAD
-=======
-
-	err = ufshcd_prepare_lrbp_crypto(hba, cmd, lrbp);
-	if (err) {
-		ufshcd_release(hba);
-		lrbp->cmd = NULL;
-		clear_bit_unlock(tag, &hba->lrb_in_use);
-		goto out;
-	}
-	lrbp->req_abort_skip = false;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	err = ufshcd_prepare_lrbp_crypto(hba, cmd, lrbp);
 	if (err) {
@@ -6243,7 +6213,6 @@ static int ufshcd_slave_configure(struct scsi_device *sdev)
 	blk_queue_update_dma_pad(q, PRDT_DATA_BYTE_COUNT_PAD - 1);
 	blk_queue_max_segment_size(q, PRDT_DATA_BYTE_COUNT_MAX);
 
-<<<<<<< HEAD
 	if (hba->scsi_cmd_timeout) {
 		blk_queue_rq_timeout(q, hba->scsi_cmd_timeout * HZ);
 		scsi_set_cmd_timeout_override(sdev, hba->scsi_cmd_timeout * HZ);
@@ -6251,10 +6220,6 @@ static int ufshcd_slave_configure(struct scsi_device *sdev)
 
 	sdev->autosuspend_delay = UFSHCD_AUTO_SUSPEND_DELAY_MS;
 	sdev->use_rpm_auto = 1;
-=======
-	if (ufshcd_is_rpm_autosuspend_allowed(hba))
-		sdev->rpm_autosuspend = 1;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	ufshcd_crypto_setup_rq_keyslot_manager(hba, q);
 
@@ -6444,10 +6409,7 @@ ufshcd_transfer_rsp_status(struct ufs_hba *hba, struct ufshcd_lrb *lrbp)
 	case OCS_MISMATCH_RESP_UPIU_SIZE:
 	case OCS_PEER_COMM_FAILURE:
 	case OCS_FATAL_ERROR:
-<<<<<<< HEAD
 	case OCS_DEVICE_FATAL_ERROR:
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	case OCS_INVALID_CRYPTO_CONFIG:
 	case OCS_GENERAL_CRYPTO_ERROR:
 	default:
@@ -6555,11 +6517,8 @@ static void __ufshcd_transfer_req_compl(struct ufs_hba *hba,
 			result = ufshcd_transfer_rsp_status(hba, lrbp);
 			scsi_dma_unmap(cmd);
 			cmd->result = result;
-<<<<<<< HEAD
 			lrbp->compl_time_stamp = ktime_get();
 			update_req_stats(hba, lrbp);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			ufshcd_complete_lrbp_crypto(hba, cmd, lrbp);
 			/* Mark completed command as NULL in LRB */
 			lrbp->cmd = NULL;
@@ -9608,7 +9567,6 @@ static struct scsi_host_template ufshcd_driver_template = {
 	.max_host_blocked	= 1,
 	.track_queue_depth	= 1,
 	.sdev_groups		= ufshcd_driver_groups,
-	.rpm_autosuspend_delay	= RPM_AUTOSUSPEND_DELAY_MS,
 };
 
 static int ufshcd_config_vreg_load(struct device *dev, struct ufs_vreg *vreg,
@@ -10567,11 +10525,7 @@ enable_gating:
 		ufshcd_resume_clkscaling(hba);
 	hba->hibern8_on_idle.is_suspended = false;
 	hba->clk_gating.is_suspended = false;
-<<<<<<< HEAD
 	ufshcd_release_all(hba);
-=======
-	ufshcd_release(hba);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	ufshcd_crypto_resume(hba, pm_op);
 out:
 	hba->pm_op_in_progress = 0;
@@ -11221,7 +11175,6 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
 		goto exit_gating;
 	}
 
-<<<<<<< HEAD
 	/* Reset controller to power on reset (POR) state */
 	ufshcd_vops_full_reset(hba);
 
@@ -11233,8 +11186,6 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
 
 	if (hba->force_g4)
 		hba->phy_init_g4 = true;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/* Init crypto */
 	err = ufshcd_hba_init_crypto(hba);
 	if (err) {

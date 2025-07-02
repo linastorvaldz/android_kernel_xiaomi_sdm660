@@ -599,10 +599,6 @@ static void dm_bow_dtr(struct dm_target *ti)
 	struct bow_context *bc = (struct bow_context *) ti->private;
 	struct kobject *kobj;
 
-<<<<<<< HEAD
-=======
-	mutex_lock(&bc->ranges_lock);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	while (rb_first(&bc->ranges)) {
 		struct bow_range *br = container_of(rb_first(&bc->ranges),
 						    struct bow_range, node);
@@ -610,11 +606,6 @@ static void dm_bow_dtr(struct dm_target *ti)
 		rb_erase(&br->node, &bc->ranges);
 		kfree(br);
 	}
-<<<<<<< HEAD
-=======
-	mutex_unlock(&bc->ranges_lock);
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (bc->workqueue)
 		destroy_workqueue(bc->workqueue);
 	if (bc->bufio)
@@ -761,12 +752,7 @@ static int dm_bow_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	}
 
 	bc->workqueue = alloc_workqueue("dm-bow",
-<<<<<<< HEAD
 					WQ_MEM_RECLAIM | WQ_UNBOUND, num_online_cpus());
-=======
-					WQ_CPU_INTENSIVE | WQ_MEM_RECLAIM
-					| WQ_UNBOUND, num_online_cpus());
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!bc->workqueue) {
 		ti->error = "Cannot allocate workqueue";
 		ret = -ENOMEM;
@@ -1195,10 +1181,6 @@ static void dm_bow_tablestatus(struct dm_target *ti, char *result,
 		return;
 	}
 
-<<<<<<< HEAD
-=======
-	mutex_lock(&bc->ranges_lock);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	for (i = rb_first(&bc->ranges); i; i = rb_next(i)) {
 		struct bow_range *br = container_of(i, struct bow_range, node);
 
@@ -1206,19 +1188,11 @@ static void dm_bow_tablestatus(struct dm_target *ti, char *result,
 				    readable_type[br->type],
 				    (unsigned long long)br->sector);
 		if (result >= end)
-<<<<<<< HEAD
 			return;
 
 		result += scnprintf(result, end - result, "\n");
 		if (result >= end)
 			return;
-=======
-			goto unlock;
-
-		result += scnprintf(result, end - result, "\n");
-		if (result >= end)
-			goto unlock;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		if (br->type == TRIMMED)
 			++trimmed_range_count;
@@ -1240,33 +1214,19 @@ static void dm_bow_tablestatus(struct dm_target *ti, char *result,
 		if (!rb_next(i)) {
 			scnprintf(result, end - result,
 				  "\nERROR: Last range not of type TOP");
-<<<<<<< HEAD
 			return;
-=======
-			goto unlock;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		}
 
 		if (br->sector > range_top(br)) {
 			scnprintf(result, end - result,
 				  "\nERROR: sectors out of order");
-<<<<<<< HEAD
 			return;
-=======
-			goto unlock;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		}
 	}
 
 	if (trimmed_range_count != trimmed_list_length)
 		scnprintf(result, end - result,
 			  "\nERROR: not all trimmed ranges in trimmed list");
-<<<<<<< HEAD
-=======
-
-unlock:
-	mutex_unlock(&bc->ranges_lock);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static void dm_bow_status(struct dm_target *ti, status_type_t type,

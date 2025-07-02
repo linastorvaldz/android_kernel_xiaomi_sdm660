@@ -411,10 +411,7 @@ typedef int (*dma_buf_destructor)(struct dma_buf *dmabuf, void *dtor_data);
  * @exp_name: name of the exporter; useful for debugging.
  * @name: userspace-provided name; useful for accounting and debugging.
  * @name_lock: lock to protect name.
-<<<<<<< HEAD
  * @ktime: time (in jiffies) at which the buffer was born
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  * @owner: pointer to exporter module; used for refcounting when exporter is a
  *         kernel module.
  * @list_node: node for dma_buf accounting and debugging.
@@ -444,12 +441,9 @@ struct dma_buf {
 	const char *exp_name;
 	const char *name;
 	spinlock_t name_lock;
-<<<<<<< HEAD
 #if defined(CONFIG_DEBUG_FS)
 	ktime_t ktime;
 #endif
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	struct module *owner;
 	struct list_head list_node;
 	void *priv;
@@ -464,11 +458,8 @@ struct dma_buf {
 
 		__poll_t active;
 	} cb_excl, cb_shared;
-<<<<<<< HEAD
 
 	struct list_head refs;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	dma_buf_destructor dtor;
 	void *dtor_data;
 	atomic_t dent_count;
@@ -568,7 +559,6 @@ int dma_buf_begin_cpu_access(struct dma_buf *dma_buf,
 			     enum dma_data_direction dir);
 int dma_buf_begin_cpu_access_partial(struct dma_buf *dma_buf,
 				     enum dma_data_direction dir,
-<<<<<<< HEAD
 				     unsigned int offset,
 				     unsigned int len);
 int dma_buf_end_cpu_access(struct dma_buf *dma_buf,
@@ -576,14 +566,6 @@ int dma_buf_end_cpu_access(struct dma_buf *dma_buf,
 int dma_buf_end_cpu_access_partial(struct dma_buf *dma_buf,
 				   enum dma_data_direction dir,
 				   unsigned int offset, unsigned int len);
-=======
-				     unsigned int offset, unsigned int len);
-int dma_buf_end_cpu_access(struct dma_buf *dma_buf,
-			   enum dma_data_direction dir);
-int dma_buf_end_cpu_access_partial(struct dma_buf *dma_buf,
-				     enum dma_data_direction dir,
-				     unsigned int offset, unsigned int len);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 void *dma_buf_kmap(struct dma_buf *, unsigned long);
 void dma_buf_kunmap(struct dma_buf *, unsigned long, void *);
 
@@ -591,13 +573,8 @@ int dma_buf_mmap(struct dma_buf *, struct vm_area_struct *,
 		 unsigned long);
 void *dma_buf_vmap(struct dma_buf *);
 void dma_buf_vunmap(struct dma_buf *, void *vaddr);
-<<<<<<< HEAD
 int dma_buf_get_flags(struct dma_buf *dma_buf, unsigned long *flags);
 int dma_buf_get_uuid(struct dma_buf *dma_buf, uuid_t *uuid);
-=======
-int dma_buf_get_flags(struct dma_buf *dmabuf, unsigned long *flags);
-int dma_buf_get_uuid(struct dma_buf *dmabuf, uuid_t *uuid);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /**
  * dma_buf_set_destructor - set the dma-buf's destructor

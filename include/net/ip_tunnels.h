@@ -307,10 +307,7 @@ int ip_tunnel_newlink(struct net_device *dev, struct nlattr *tb[],
 		      struct ip_tunnel_parm *p, __u32 fwmark);
 void ip_tunnel_setup(struct net_device *dev, unsigned int net_id);
 
-<<<<<<< HEAD
 extern const struct header_ops ip_tunnel_header_ops;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 __be16 ip_tunnel_parse_protocol(const struct sk_buff *skb);
 
 struct ip_tunnel_encap_ops {

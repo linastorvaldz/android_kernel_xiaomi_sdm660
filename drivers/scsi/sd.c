@@ -3260,18 +3260,10 @@ static void sd_probe_async(void *data, async_cookie_t cookie)
 	}
 
 	blk_pm_runtime_init(sdp->request_queue, dev);
-<<<<<<< HEAD
 	if (sdp->autosuspend_delay >= 0)
 		pm_runtime_set_autosuspend_delay(dev, sdp->autosuspend_delay);
 
 	device_add_disk(dev, gd, NULL);
-=======
-	if (sdp->rpm_autosuspend) {
-		pm_runtime_set_autosuspend_delay(dev,
-			sdp->host->hostt->rpm_autosuspend_delay);
-	}
-	device_add_disk(dev, gd);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (sdkp->capacity)
 		sd_dif_config_host(sdkp);
 

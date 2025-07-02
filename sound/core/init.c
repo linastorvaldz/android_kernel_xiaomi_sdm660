@@ -1059,7 +1059,6 @@ void snd_card_change_online_state(struct snd_card *card, int online)
 	xchg(&card->offline_change, 1);
 	wake_up_interruptible(&card->offline_poll_wait);
 }
-<<<<<<< HEAD
 EXPORT_SYMBOL(snd_card_change_online_state);
 
 /**
@@ -1071,9 +1070,6 @@ bool snd_card_is_online_state(struct snd_card *card)
 	return !card->offline;
 }
 EXPORT_SYMBOL(snd_card_is_online_state);
-=======
-EXPORT_SYMBOL_GPL(snd_card_change_online_state);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #ifdef CONFIG_PM
 /**

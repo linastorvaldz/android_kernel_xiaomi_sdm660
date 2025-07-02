@@ -58,11 +58,7 @@ static const struct block_device_operations zram_devops;
 
 static void zram_free_page(struct zram *zram, size_t index);
 static int zram_bvec_read(struct zram *zram, struct bio_vec *bvec,
-<<<<<<< HEAD
 			  u32 index, int offset, struct bio *bio, bool access);
-=======
-				u32 index, int offset, struct bio *bio);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 
 static int zram_slot_trylock(struct zram *zram, u32 index)
@@ -312,7 +308,6 @@ static ssize_t mem_used_max_store(struct device *dev,
 	return len;
 }
 
-<<<<<<< HEAD
 /*
  * Mark all pages which are older than or equal to cutoff as IDLE.
  * Callers should hold the zram init lock in read mode
@@ -322,33 +317,6 @@ static void mark_idle(struct zram *zram, ktime_t cutoff)
 	int is_idle = 1;
 	unsigned long nr_pages = zram->disksize >> PAGE_SHIFT;
 	int index;
-=======
-static ssize_t idle_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t len)
-{
-	struct zram *zram = dev_to_zram(dev);
-	unsigned long nr_pages = zram->disksize >> PAGE_SHIFT;
-	int index;
-	char mode_buf[8];
-	ssize_t sz;
-
-	sz = strscpy(mode_buf, buf, sizeof(mode_buf));
-	if (sz <= 0)
-		return -EINVAL;
-
-	/* ignore trailing new line */
-	if (mode_buf[sz - 1] == '\n')
-		mode_buf[sz - 1] = 0x00;
-
-	if (strcmp(mode_buf, "all"))
-		return -EINVAL;
-
-	down_read(&zram->init_lock);
-	if (!init_done(zram)) {
-		up_read(&zram->init_lock);
-		return -EINVAL;
-	}
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	for (index = 0; index < nr_pages; index++) {
 		/*
@@ -357,7 +325,6 @@ static ssize_t idle_store(struct device *dev,
 		 */
 		zram_slot_lock(zram, index);
 		if (zram_allocated(zram, index) &&
-<<<<<<< HEAD
 				!zram_test_flag(zram, index, ZRAM_UNDER_WB)) {
 #ifdef CONFIG_ZRAM_MEMORY_TRACKING
 			is_idle = !cutoff || ktime_after(cutoff, zram->table[index].ac_time);
@@ -402,16 +369,6 @@ out_unlock:
 	up_read(&zram->init_lock);
 out:
 	return rv;
-=======
-				!zram_test_flag(zram, index, ZRAM_UNDER_WB))
-			zram_set_flag(zram, index, ZRAM_IDLE);
-		zram_slot_unlock(zram, index);
-	}
-
-	up_read(&zram->init_lock);
-
-	return len;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 #ifdef CONFIG_ZRAM_WRITEBACK
@@ -696,24 +653,17 @@ static int read_from_bdev_async(struct zram *zram, struct bio_vec *bvec,
 	return 1;
 }
 
-<<<<<<< HEAD
 #define PAGE_WB_SIG "page_index="
 
 #define PAGE_WRITEBACK 0
 #define IDLE_WRITEBACK 2
 
 
-=======
-#define HUGE_WRITEBACK 1
-#define IDLE_WRITEBACK 2
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static ssize_t writeback_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t len)
 {
 	struct zram *zram = dev_to_zram(dev);
 	unsigned long nr_pages = zram->disksize >> PAGE_SHIFT;
-<<<<<<< HEAD
 	unsigned long index = 0;
 	struct bio bio;
 	struct bio_vec bio_vec;
@@ -735,32 +685,6 @@ static ssize_t writeback_store(struct device *dev,
 		nr_pages = 1;
 		mode = PAGE_WRITEBACK;
 	}
-=======
-	unsigned long index;
-	struct bio bio;
-	struct bio_vec bio_vec;
-	struct page *page;
-	ssize_t ret, sz;
-	char mode_buf[8];
-	int mode = -1;
-	unsigned long blk_idx = 0;
-
-	sz = strscpy(mode_buf, buf, sizeof(mode_buf));
-	if (sz <= 0)
-		return -EINVAL;
-
-	/* ignore trailing newline */
-	if (mode_buf[sz - 1] == '\n')
-		mode_buf[sz - 1] = 0x00;
-
-	if (!strcmp(mode_buf, "idle"))
-		mode = IDLE_WRITEBACK;
-	else if (!strcmp(mode_buf, "huge"))
-		mode = HUGE_WRITEBACK;
-
-	if (mode == -1)
-		return -EINVAL;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	down_read(&zram->init_lock);
 	if (!init_done(zram)) {
@@ -779,19 +703,9 @@ static ssize_t writeback_store(struct device *dev,
 		goto release_init_lock;
 	}
 
-<<<<<<< HEAD
 	for (; nr_pages != 0; index++, nr_pages--) {
 		struct bio_vec bvec;
 
-=======
-	for (index = 0; index < nr_pages; index++) {
-		struct bio_vec bvec;
-
-		bvec.bv_page = page;
-		bvec.bv_len = PAGE_SIZE;
-		bvec.bv_offset = 0;
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		spin_lock(&zram->wb_limit_lock);
 		if (zram->wb_limit_enable && !zram->bd_wb_limit) {
 			spin_unlock(&zram->wb_limit_lock);
@@ -820,18 +734,11 @@ static ssize_t writeback_store(struct device *dev,
 		if (mode == IDLE_WRITEBACK &&
 			  !zram_test_flag(zram, index, ZRAM_IDLE))
 			goto next;
-<<<<<<< HEAD
-=======
-		if (mode == HUGE_WRITEBACK &&
-			  !zram_test_flag(zram, index, ZRAM_HUGE))
-			goto next;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		/*
 		 * Clearing ZRAM_UNDER_WB is duty of caller.
 		 * IOW, zram_free_page never clear it.
 		 */
 		zram_set_flag(zram, index, ZRAM_UNDER_WB);
-<<<<<<< HEAD
 		/*
 		 * For hugepage writeback, we also need to set ZRAM_IDLE bit
 		 * to prevent race window between writing the huge page and
@@ -848,12 +755,6 @@ static ssize_t writeback_store(struct device *dev,
 		bvec.bv_offset = 0;
 
 		if (zram_bvec_read(zram, &bvec, index, 0, NULL, false)) {
-=======
-		/* Need for hugepage writeback racing */
-		zram_set_flag(zram, index, ZRAM_IDLE);
-		zram_slot_unlock(zram, index);
-		if (zram_bvec_read(zram, &bvec, index, 0, NULL)) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			zram_slot_lock(zram, index);
 			zram_clear_flag(zram, index, ZRAM_UNDER_WB);
 			zram_clear_flag(zram, index, ZRAM_IDLE);
@@ -872,18 +773,12 @@ static ssize_t writeback_store(struct device *dev,
 		 * XXX: A single page IO would be inefficient for write
 		 * but it would be not bad as starter.
 		 */
-<<<<<<< HEAD
 		err = submit_bio_wait(&bio);
 		if (err) {
-=======
-		ret = submit_bio_wait(&bio);
-		if (ret) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			zram_slot_lock(zram, index);
 			zram_clear_flag(zram, index, ZRAM_UNDER_WB);
 			zram_clear_flag(zram, index, ZRAM_IDLE);
 			zram_slot_unlock(zram, index);
-<<<<<<< HEAD
 			/*
 			 * BIO errors are not fatal, we continue and simply
 			 * attempt to writeback the remaining objects (pages).
@@ -893,14 +788,11 @@ static ssize_t writeback_store(struct device *dev,
 			 * the most recent BIO error.
 			 */
 			ret = err;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			continue;
 		}
 
 		atomic64_inc(&zram->stats.bd_writes);
 		/*
-<<<<<<< HEAD
 		 * We released zram_slot_lock so need to verify if the slot was
 		 * changed under us. If slot was freed, we can catch it by
 		 * zram_allocated below.
@@ -911,15 +803,6 @@ static ssize_t writeback_store(struct device *dev,
 		 * ZRAM_IDLE on the slot with ZRAM_UNDER_WB. Thus, newl populated
 		 * page will not have ZRAM_IDLE bit any longer so we can catch it
 		 * by checking ZRAM_IDLE bit.
-=======
-		 * We released zram_slot_lock so need to check if the slot was
-		 * changed. If there is freeing for the slot, we can catch it
-		 * easily by zram_allocated.
-		 * A subtle case is the slot is freed/reallocated/marked as
-		 * ZRAM_IDLE again. To close the race, idle_store doesn't
-		 * mark ZRAM_IDLE once it found the slot was ZRAM_UNDER_WB.
-		 * Thus, we could close the race by checking ZRAM_IDLE bit.
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		 */
 		zram_slot_lock(zram, index);
 		if (!zram_allocated(zram, index) ||
@@ -945,10 +828,6 @@ next:
 
 	if (blk_idx)
 		free_block_bdev(zram, blk_idx);
-<<<<<<< HEAD
-=======
-	ret = len;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	__free_page(page);
 release_init_lock:
 	up_read(&zram->init_lock);
@@ -1075,24 +954,15 @@ static ssize_t read_block_state(struct file *file, char __user *buf,
 
 		ts = ktime_to_timespec64(zram->table[index].ac_time);
 		copied = snprintf(kbuf + written, count,
-<<<<<<< HEAD
 			"%12zd %12lld.%06lu %c%c%c%c%c%c\n",
-=======
-			"%12zd %12lld.%06lu %c%c%c%c\n",
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			index, (s64)ts.tv_sec,
 			ts.tv_nsec / NSEC_PER_USEC,
 			zram_test_flag(zram, index, ZRAM_SAME) ? 's' : '.',
 			zram_test_flag(zram, index, ZRAM_WB) ? 'w' : '.',
-<<<<<<< HEAD
 			zram_test_flag(zram, index, ZRAM_IDLE) ? 'i' : '.',
 			zram_get_priority(zram, index) ? 'r' : '.',
 			zram_test_flag(zram, index,
 				       ZRAM_INCOMPRESSIBLE) ? 'n' : '.');
-=======
-			zram_test_flag(zram, index, ZRAM_HUGE) ? 'h' : '.',
-			zram_test_flag(zram, index, ZRAM_IDLE) ? 'i' : '.');
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		if (count <= copied) {
 			zram_slot_unlock(zram, index);
@@ -1384,15 +1254,9 @@ static ssize_t bd_stat_show(struct device *dev,
 	down_read(&zram->init_lock);
 	ret = scnprintf(buf, PAGE_SIZE,
 		"%8llu %8llu %8llu\n",
-<<<<<<< HEAD
 			FOUR_K((u64)atomic64_read(&zram->stats.bd_count)) / 256,
 			FOUR_K((u64)atomic64_read(&zram->stats.bd_reads)) / 256,
 			FOUR_K((u64)atomic64_read(&zram->stats.bd_writes)) / 256);
-=======
-			FOUR_K((u64)atomic64_read(&zram->stats.bd_count)),
-			FOUR_K((u64)atomic64_read(&zram->stats.bd_reads)),
-			FOUR_K((u64)atomic64_read(&zram->stats.bd_writes)));
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	up_read(&zram->init_lock);
 
 	return ret;
@@ -1466,24 +1330,15 @@ static void zram_free_page(struct zram *zram, size_t index)
 {
 	unsigned long handle;
 
-<<<<<<< HEAD
 	zram->table[index].ac_time = 0;
-=======
-#ifdef CONFIG_ZRAM_MEMORY_TRACKING
-	zram->table[index].ac_time = 0;
-#endif
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (zram_test_flag(zram, index, ZRAM_IDLE))
 		zram_clear_flag(zram, index, ZRAM_IDLE);
 
 	if (zram_test_flag(zram, index, ZRAM_INCOMPRESSIBLE))
 		zram_clear_flag(zram, index, ZRAM_INCOMPRESSIBLE);
 
-<<<<<<< HEAD
 	zram_set_priority(zram, index, 0);
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (zram_test_flag(zram, index, ZRAM_WB)) {
 		zram_clear_flag(zram, index, ZRAM_WB);
 		free_block_bdev(zram, zram_get_element(zram, index));
@@ -1547,23 +1402,6 @@ static int zram_read_from_zspool(struct zram *zram, struct page *page,
 	u32 prio;
 	int ret;
 
-<<<<<<< HEAD
-=======
-	zram_slot_lock(zram, index);
-	if (zram_test_flag(zram, index, ZRAM_WB)) {
-		struct bio_vec bvec;
-
-		zram_slot_unlock(zram, index);
-
-		bvec.bv_page = page;
-		bvec.bv_len = PAGE_SIZE;
-		bvec.bv_offset = 0;
-		return read_from_bdev(zram, &bvec,
-				zram_get_element(zram, index),
-				bio, partial_io);
-	}
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	handle = zram_get_handle(zram, index);
 	if (!handle || zram_test_flag(zram, index, ZRAM_SAME)) {
 		unsigned long value;
@@ -2472,13 +2310,10 @@ static DEVICE_ATTR_RW(backing_dev);
 static DEVICE_ATTR_WO(writeback);
 static DEVICE_ATTR_RW(writeback_limit);
 static DEVICE_ATTR_RW(writeback_limit_enable);
-<<<<<<< HEAD
 #endif
 #ifdef CONFIG_ZRAM_MULTI_COMP
 static DEVICE_ATTR_RW(recomp_algorithm);
 static DEVICE_ATTR_WO(recompress);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #endif
 
 static struct attribute *zram_disk_attrs[] = {
@@ -2591,14 +2426,8 @@ static int zram_add(void)
 	if (ZRAM_LOGICAL_BLOCK_SIZE == PAGE_SIZE)
 		blk_queue_max_write_zeroes_sectors(zram->disk->queue, UINT_MAX);
 
-<<<<<<< HEAD
 	zram->disk->queue->backing_dev_info->capabilities |= BDI_CAP_STABLE_WRITES;
 	disk_to_dev(zram->disk)->groups = zram_disk_groups;
-=======
-	zram->disk->queue->backing_dev_info->capabilities |=
-			(BDI_CAP_STABLE_WRITES | BDI_CAP_SYNCHRONOUS_IO);
-	disk_to_dev(zram->disk)->groups = zram_disk_attr_groups;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	add_disk(zram->disk);
 
 	comp_algorithm_set(zram, ZRAM_PRIMARY_COMP, default_compressor);
@@ -2638,7 +2467,6 @@ static int zram_remove(struct zram *zram)
 	mutex_unlock(&bdev->bd_mutex);
 
 	zram_debugfs_unregister(zram);
-<<<<<<< HEAD
 	if (claimed) {
 		/*
 		 * If we were claimed by reset_store(), del_gendisk() will
@@ -2650,11 +2478,6 @@ static int zram_remove(struct zram *zram)
 		sync_blockdev(bdev);
 		zram_reset_device(zram);
 	}
-=======
-	/* Make sure all the pending I/O are finished */
-	fsync_bdev(bdev);
-	zram_reset_device(zram);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	bdput(bdev);
 
 	pr_info("Removed device: %s\n", zram->disk->disk_name);

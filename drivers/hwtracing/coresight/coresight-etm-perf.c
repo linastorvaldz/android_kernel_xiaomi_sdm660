@@ -142,10 +142,7 @@ static void free_event_data(struct work_struct *work)
 	int cpu;
 	cpumask_t *mask;
 	struct etm_event_data *event_data;
-<<<<<<< HEAD
 	struct coresight_device *source;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	event_data = container_of(work, struct etm_event_data, work);
 	mask = &event_data->mask;
@@ -223,7 +220,6 @@ static void *etm_setup_aux(struct perf_event *event, void **pages,
 		return NULL;
 	INIT_WORK(&event_data->work, free_event_data);
 
-<<<<<<< HEAD
 	mask = &event_data->mask;
 
 	/* First get the selected sink from user space. */
@@ -238,21 +234,6 @@ static void *etm_setup_aux(struct perf_event *event, void **pages,
 		cpumask_clear(mask);
 		goto err;
 	}
-=======
-	/* First get the selected sink from user space. */
-	if (event->attr.config2) {
-		id = (u32)event->attr.config2;
-		sink = coresight_get_sink_by_id(id);
-	} else {
-		sink = coresight_get_enabled_sink(true);
-	}
-
-	if (!sink)
-		goto err;
-
-	mask = &event_data->mask;
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/*
 	 * Setup the path for each CPU in a trace session. We try to build
 	 * trace path for each CPU in the mask. If we don't find an ETM

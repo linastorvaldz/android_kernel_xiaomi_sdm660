@@ -95,12 +95,9 @@
 #include <linux/thread_info.h>
 #include <linux/cpufreq_times.h>
 #include <linux/scs.h>
-<<<<<<< HEAD
 #include <linux/simple_lmk.h>
 #include <linux/devfreq_boost.h>
 #include <../drivers/misc/kprofiles/kprofiles.h>
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #include <asm/pgtable.h>
 #include <asm/pgalloc.h>

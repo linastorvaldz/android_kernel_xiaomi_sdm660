@@ -37,13 +37,9 @@
 #include <linux/sched/signal.h>
 #include <linux/fdtable.h>
 #include <linux/list_sort.h>
-<<<<<<< HEAD
 #include <linux/hashtable.h>
 #include <linux/mount.h>
 #include <linux/dcache.h>
-=======
-#include <linux/mount.h>
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #include <uapi/linux/dma-buf.h>
 #include <uapi/linux/magic.h>
@@ -70,7 +66,6 @@ struct dma_proc {
 
 static struct dma_buf_list db_list;
 
-<<<<<<< HEAD
 static void dmabuf_dent_put(struct dma_buf *dmabuf)
 {
 	if (atomic_dec_and_test(&dmabuf->dent_count)) {
@@ -85,47 +80,6 @@ static char *dmabuffs_dname(struct dentry *dentry, char *buffer, int buflen)
 	struct dma_buf *dmabuf;
 	char name[DMA_BUF_NAME_LEN];
 	size_t ret = 0;
-=======
-static char *dmabuffs_dname(struct dentry *dentry, char *buffer, int buflen)
-{
-	struct dma_buf *dmabuf;
-	char name[DMA_BUF_NAME_LEN];
-	size_t ret = 0;
-
-	dmabuf = dentry->d_fsdata;
-	spin_lock(&dmabuf->name_lock);
-	if (dmabuf->name)
-		ret = strlcpy(name, dmabuf->name, DMA_BUF_NAME_LEN);
-	spin_unlock(&dmabuf->name_lock);
-
-	return dynamic_dname(dentry, buffer, buflen, "/%s:%s",
-			     dentry->d_name.name, ret > 0 ? name : "");
-}
-
-static const struct dentry_operations dma_buf_dentry_ops = {
-	.d_dname = dmabuffs_dname,
-};
-
-static struct vfsmount *dma_buf_mnt;
-
-static struct dentry *dma_buf_fs_mount(struct file_system_type *fs_type,
-		int flags, const char *name, void *data)
-{
-	return mount_pseudo(fs_type, "dmabuf:", NULL, &dma_buf_dentry_ops,
-			DMA_BUF_MAGIC);
-}
-
-static struct file_system_type dma_buf_fs_type = {
-	.name = "dmabuf",
-	.mount = dma_buf_fs_mount,
-	.kill_sb = kill_anon_super,
-};
-
-static int dma_buf_release(struct inode *inode, struct file *file)
-{
-	struct dma_buf *dmabuf;
-	int dtor_ret = 0;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	spin_lock(&dentry->d_lock);
 	dmabuf = dentry->d_fsdata;
@@ -166,7 +120,6 @@ static void dma_buf_release(struct dentry *dentry)
 	 */
 	BUG_ON(dmabuf->cb_shared.active || dmabuf->cb_excl.active);
 
-<<<<<<< HEAD
 	if (dmabuf->dtor)
 		dtor_ret = dmabuf->dtor(dmabuf, dmabuf->dtor_data);
 
@@ -177,26 +130,11 @@ static void dma_buf_release(struct dentry *dentry)
 				    dmabuf->name, dtor_ret);
 
 	dma_buf_ref_destroy(dmabuf);
-=======
-	mutex_lock(&db_list.lock);
-	list_del(&dmabuf->list_node);
-	mutex_unlock(&db_list.lock);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
-
-	if (dmabuf->dtor)
-		dtor_ret = dmabuf->dtor(dmabuf, dmabuf->dtor_data);
-
-	if (!dtor_ret)
-		dmabuf->ops->release(dmabuf);
-	else
-		pr_warn_ratelimited("Leaking dmabuf %s because destructor failed error:%d\n",
-				    dmabuf->name, dtor_ret);
 
 	if (dmabuf->resv == (struct reservation_object *)&dmabuf[1])
 		reservation_object_fini(dmabuf->resv);
 
 	module_put(dmabuf->owner);
-<<<<<<< HEAD
 	dmabuf_dent_put(dmabuf);
 }
 
@@ -213,10 +151,6 @@ static int dma_buf_file_release(struct inode *inode, struct file *file)
 	list_del(&dmabuf->list_node);
 	mutex_unlock(&db_list.lock);
 
-=======
-	kfree(dmabuf->name);
-	kfree(dmabuf);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return 0;
 }
 
@@ -551,15 +485,6 @@ static void dma_buf_show_fdinfo(struct seq_file *m, struct file *file)
 	spin_unlock(&dmabuf->name_lock);
 }
 
-<<<<<<< HEAD
-=======
-static const struct file_operations dma_buf_fops = {
-	.release	= dma_buf_release,
-	.mmap		= dma_buf_mmap_internal,
-	.llseek		= dma_buf_llseek,
-	.poll		= dma_buf_poll,
-	.unlocked_ioctl	= dma_buf_ioctl,
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #ifdef CONFIG_COMPAT
 static long dma_buf_ioctl_compat(struct file *file, unsigned int cmd,
 				 unsigned long arg)
@@ -576,7 +501,6 @@ static long dma_buf_ioctl_compat(struct file *file, unsigned int cmd,
 	return dma_buf_ioctl(file, cmd, (unsigned long)compat_ptr(arg));
 }
 #endif
-<<<<<<< HEAD
 
 static const struct file_operations dma_buf_fops = {
 	.release = dma_buf_file_release,
@@ -588,9 +512,6 @@ static const struct file_operations dma_buf_fops = {
 	.compat_ioctl = dma_buf_ioctl_compat,
 #endif
 	.show_fdinfo = dma_buf_show_fdinfo,
-=======
-	.show_fdinfo	= dma_buf_show_fdinfo,
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 /*

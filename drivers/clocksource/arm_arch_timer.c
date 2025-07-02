@@ -1015,19 +1015,11 @@ void arch_timer_mem_get_cval(u32 *lo, u32 *hi)
 	if (!arch_counter_base)
 		return;
 
-<<<<<<< HEAD
 	ctrl = readl_relaxed_no_log(arch_counter_base + CNTV_CTL);
 
 	if (ctrl & ARCH_TIMER_CTRL_ENABLE) {
 		*lo = readl_relaxed_no_log(arch_counter_base + CNTCVAL_LO);
 		*hi = readl_relaxed_no_log(arch_counter_base + CNTCVAL_HI);
-=======
-	ctrl = readl_relaxed(arch_counter_base + CNTV_CTL);
-
-	if (ctrl & ARCH_TIMER_CTRL_ENABLE) {
-		*lo = readl_relaxed(arch_counter_base + CNTCVAL_LO);
-		*hi = readl_relaxed(arch_counter_base + CNTCVAL_HI);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 }
 EXPORT_SYMBOL_GPL(arch_timer_mem_get_cval);

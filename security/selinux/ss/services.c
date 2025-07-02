@@ -1992,11 +1992,7 @@ static int convert_context(struct context *oldc, struct context *newc, void *p)
 	int rc;
 #ifdef CONFIG_AUDIT
 	u32 len;
-<<<<<<< HEAD
 #endif
-=======
-	int rc;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	args = p;
 
@@ -2114,12 +2110,9 @@ bad:
 	pr_info("SELinux:  Context %s became invalid (unmapped).\n",
 		newc->str);
 	return 0;
-<<<<<<< HEAD
 #else
 	return 0;
 #endif
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static void security_load_policycaps(struct selinux_state *state)

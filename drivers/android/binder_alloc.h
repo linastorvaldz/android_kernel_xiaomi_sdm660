@@ -23,16 +23,11 @@ struct binder_transaction;
  * @entry:              entry alloc->buffers
  * @rb_node:            node for allocated_buffers/free_buffers rb trees
  * @free:               %true if buffer is free
-<<<<<<< HEAD
  * @clear_on_free:      %true if buffer must be zeroed after use
  * @allow_user_free:    %true if user is allowed to free buffer
  * @async_transaction:  %true if buffer is in use for an async txn
  * @oneway_spam_suspect: %true if total async allocate size just exceed
  * spamming detect threshold
-=======
- * @allow_user_free:    %true if user is allowed to free buffer
- * @async_transaction:  %true if buffer is in use for an async txn
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  * @debug_id:           unique ID for debugging
  * @transaction:        pointer to associated struct binder_transaction
  * @target_node:        struct binder_node associated with this buffer
@@ -177,7 +172,6 @@ binder_alloc_copy_user_to_buffer(struct binder_alloc *alloc,
 				 const void __user *from,
 				 size_t bytes);
 
-<<<<<<< HEAD
 int binder_alloc_copy_to_buffer(struct binder_alloc *alloc,
 				struct binder_buffer *buffer,
 				binder_size_t buffer_offset,
@@ -189,19 +183,6 @@ int binder_alloc_copy_from_buffer(struct binder_alloc *alloc,
 				  struct binder_buffer *buffer,
 				  binder_size_t buffer_offset,
 				  size_t bytes);
-=======
-void binder_alloc_copy_to_buffer(struct binder_alloc *alloc,
-				 struct binder_buffer *buffer,
-				 binder_size_t buffer_offset,
-				 void *src,
-				 size_t bytes);
-
-void binder_alloc_copy_from_buffer(struct binder_alloc *alloc,
-				   void *dest,
-				   struct binder_buffer *buffer,
-				   binder_size_t buffer_offset,
-				   size_t bytes);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #endif /* _LINUX_BINDER_ALLOC_H */
 

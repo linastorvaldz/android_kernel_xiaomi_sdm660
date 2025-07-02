@@ -1,11 +1,7 @@
 /*
  * Copyright (C) 2010-2011 Canonical Ltd <jeremy.kerr@canonical.com>
  * Copyright (C) 2011-2012 Linaro Ltd <mturquette@linaro.org>
-<<<<<<< HEAD
  * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
-=======
- * Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -53,13 +49,10 @@ struct clk_handoff_vdd {
 	struct clk_vdd_class *vdd_class;
 };
 
-<<<<<<< HEAD
 static LIST_HEAD(clk_handoff_vdd_list);
 static bool vdd_class_handoff_completed;
 static DEFINE_MUTEX(vdd_class_list_lock);
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * clk_rate_change_list is used during clk_core_set_rate_nolock() calls to
  * handle vdd_class vote tracking.  core->rate_change_node is added to
@@ -731,11 +724,7 @@ set_voltage_fail:
 /*
  *  Vote for a voltage level.
  */
-<<<<<<< HEAD
 static int clk_vote_vdd_level(struct clk_vdd_class *vdd_class, int level)
-=======
-int clk_vote_vdd_level(struct clk_vdd_class *vdd_class, int level)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	int rc = 0;
 
@@ -754,19 +743,11 @@ int clk_vote_vdd_level(struct clk_vdd_class *vdd_class, int level)
 
 	return rc;
 }
-<<<<<<< HEAD
-=======
-EXPORT_SYMBOL_GPL(clk_vote_vdd_level);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /*
  * Remove vote for a voltage level.
  */
-<<<<<<< HEAD
 static int clk_unvote_vdd_level(struct clk_vdd_class *vdd_class, int level)
-=======
-int clk_unvote_vdd_level(struct clk_vdd_class *vdd_class, int level)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	int rc = 0;
 
@@ -792,10 +773,6 @@ out:
 	mutex_unlock(&vdd_class->lock);
 	return rc;
 }
-<<<<<<< HEAD
-=======
-EXPORT_SYMBOL_GPL(clk_unvote_vdd_level);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /*
  * Vote for a voltage level corresponding to a clock's rate.
@@ -845,7 +822,6 @@ static bool clk_is_rate_level_valid(struct clk_core *core, unsigned long rate)
 	return level >= 0;
 }
 
-<<<<<<< HEAD
 static int clk_vdd_class_init(struct clk_vdd_class *vdd)
 {
 	struct clk_handoff_vdd *v;
@@ -888,8 +864,6 @@ done:
 	return ret;
 }
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /***        clk api        ***/
 
 static void clk_core_rate_unprotect(struct clk_core *core)
@@ -3281,16 +3255,6 @@ int clk_set_flags(struct clk *clk, unsigned long flags)
 	return clk->core->ops->set_flags(clk->core->hw, flags);
 }
 EXPORT_SYMBOL_GPL(clk_set_flags);
-<<<<<<< HEAD
-=======
-
-void clk_debug_print_hw(struct clk_core *clk, struct seq_file *f)
-{
-}
-EXPORT_SYMBOL(clk_debug_print_hw);
-
-/***        debugfs support        ***/
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #ifdef CONFIG_DEBUG_FS
 #include <linux/debugfs.h>

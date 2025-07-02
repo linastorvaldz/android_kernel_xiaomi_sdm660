@@ -635,7 +635,6 @@ bool __weak arch_bpf_jit_check_func(const struct bpf_prog *prog)
 EXPORT_SYMBOL_GPL(arch_bpf_jit_check_func);
 #endif
 
-<<<<<<< HEAD
 #ifdef CONFIG_MODULES
 void *__weak bpf_jit_alloc_exec(unsigned long size)
 {
@@ -648,8 +647,6 @@ void __weak bpf_jit_free_exec(void *addr)
 }
 #endif
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 struct bpf_binary_header *
 bpf_jit_binary_alloc(unsigned int proglen, u8 **image_ptr,
 		     unsigned int alignment,

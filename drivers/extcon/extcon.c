@@ -487,11 +487,7 @@ int extcon_sync(struct extcon_dev *edev, unsigned int id)
 }
 EXPORT_SYMBOL_GPL(extcon_sync);
 
-<<<<<<< HEAD
 int extcon_blocking_sync(struct extcon_dev *edev, unsigned int id, u8 val)
-=======
-int extcon_blocking_sync(struct extcon_dev *edev, unsigned int id, bool val)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 {
 	int index;
 
@@ -1323,11 +1319,7 @@ int extcon_dev_register(struct extcon_dev *edev)
 		goto err_dev;
 	}
 
-<<<<<<< HEAD
 	for (index = 0; index < edev->max_supported; index++) {
-=======
-	for (index = 0; index < edev->max_supported; index++)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		RAW_INIT_NOTIFIER_HEAD(&edev->nh[index]);
 		BLOCKING_INIT_NOTIFIER_HEAD(&edev->bnh[index]);
 	}

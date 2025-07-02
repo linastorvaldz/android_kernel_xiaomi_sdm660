@@ -142,7 +142,6 @@ static int compute_file_digest(struct fsverity_hash_alg *hash_alg,
 }
 
 /*
-<<<<<<< HEAD
  * Create a new fsverity_info from the given fsverity_descriptor (with optional
  * appended signature), and check the signature if present.  The
  * fsverity_descriptor must have already undergone basic validation.
@@ -154,47 +153,6 @@ struct fsverity_info *fsverity_create_info(const struct inode *inode,
 	struct fsverity_info *vi;
 	int err;
 
-=======
- * Validate the given fsverity_descriptor and create a new fsverity_info from
- * it.  The signature (if present) is also checked.
- */
-struct fsverity_info *fsverity_create_info(const struct inode *inode,
-					   void *_desc, size_t desc_size)
-{
-	struct fsverity_descriptor *desc = _desc;
-	struct fsverity_info *vi;
-	int err;
-
-	if (desc_size < sizeof(*desc)) {
-		fsverity_err(inode, "Unrecognized descriptor size: %zu bytes",
-			     desc_size);
-		return ERR_PTR(-EINVAL);
-	}
-
-	if (desc->version != 1) {
-		fsverity_err(inode, "Unrecognized descriptor version: %u",
-			     desc->version);
-		return ERR_PTR(-EINVAL);
-	}
-
-	if (memchr_inv(desc->__reserved, 0, sizeof(desc->__reserved))) {
-		fsverity_err(inode, "Reserved bits set in descriptor");
-		return ERR_PTR(-EINVAL);
-	}
-
-	if (desc->salt_size > sizeof(desc->salt)) {
-		fsverity_err(inode, "Invalid salt_size: %u", desc->salt_size);
-		return ERR_PTR(-EINVAL);
-	}
-
-	if (le64_to_cpu(desc->data_size) != inode->i_size) {
-		fsverity_err(inode,
-			     "Wrong data_size: %llu (desc) != %lld (inode)",
-			     le64_to_cpu(desc->data_size), inode->i_size);
-		return ERR_PTR(-EINVAL);
-	}
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	vi = kmem_cache_zalloc(fsverity_info_cachep, GFP_KERNEL);
 	if (!vi)
 		return ERR_PTR(-ENOMEM);
@@ -223,12 +181,8 @@ struct fsverity_info *fsverity_create_info(const struct inode *inode,
 		 vi->tree_params.hash_alg->name,
 		 vi->tree_params.digest_size, vi->file_digest);
 
-<<<<<<< HEAD
 	err = fsverity_verify_signature(vi, desc->signature,
 					le32_to_cpu(desc->sig_size));
-=======
-	err = fsverity_verify_signature(vi, desc, desc_size);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 out:
 	if (err) {
 		fsverity_free_info(vi);
@@ -240,7 +194,6 @@ out:
 void fsverity_set_info(struct inode *inode, struct fsverity_info *vi)
 {
 	/*
-<<<<<<< HEAD
 	 * Multiple tasks may race to set ->i_verity_info, so use
 	 * cmpxchg_release().  This pairs with the smp_load_acquire() in
 	 * fsverity_get_info().  I.e., here we publish ->i_verity_info with a
@@ -255,13 +208,6 @@ void fsverity_set_info(struct inode *inode, struct fsverity_info *vi)
 		 */
 		(void)fsverity_get_info(inode);
 	}
-=======
-	 * Multiple processes may race to set ->i_verity_info, so use cmpxchg.
-	 * This pairs with the READ_ONCE() in fsverity_get_info().
-	 */
-	if (cmpxchg(&inode->i_verity_info, NULL, vi) != NULL)
-		fsverity_free_info(vi);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 void fsverity_free_info(struct fsverity_info *vi)
@@ -272,7 +218,6 @@ void fsverity_free_info(struct fsverity_info *vi)
 	kmem_cache_free(fsverity_info_cachep, vi);
 }
 
-<<<<<<< HEAD
 static bool validate_fsverity_descriptor(struct inode *inode,
 					 const struct fsverity_descriptor *desc,
 					 size_t desc_size)
@@ -324,17 +269,6 @@ int fsverity_get_descriptor(struct inode *inode,
 {
 	int res;
 	struct fsverity_descriptor *desc;
-=======
-/* Ensure the inode has an ->i_verity_info */
-static int ensure_verity_info(struct inode *inode)
-{
-	struct fsverity_info *vi = fsverity_get_info(inode);
-	struct fsverity_descriptor *desc;
-	int res;
-
-	if (vi)
-		return 0;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	res = inode->i_sb->s_vop->get_verity_descriptor(inode, NULL, 0);
 	if (res < 0) {
@@ -353,7 +287,6 @@ static int ensure_verity_info(struct inode *inode)
 	res = inode->i_sb->s_vop->get_verity_descriptor(inode, desc, res);
 	if (res < 0) {
 		fsverity_err(inode, "Error %d reading verity descriptor", res);
-<<<<<<< HEAD
 		kfree(desc);
 		return res;
 	}
@@ -386,29 +319,14 @@ static int ensure_verity_info(struct inode *inode)
 	vi = fsverity_create_info(inode, desc, desc_size);
 	if (IS_ERR(vi)) {
 		err = PTR_ERR(vi);
-=======
-		goto out_free_desc;
-	}
-
-	vi = fsverity_create_info(inode, desc, res);
-	if (IS_ERR(vi)) {
-		res = PTR_ERR(vi);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		goto out_free_desc;
 	}
 
 	fsverity_set_info(inode, vi);
-<<<<<<< HEAD
 	err = 0;
 out_free_desc:
 	kfree(desc);
 	return err;
-=======
-	res = 0;
-out_free_desc:
-	kfree(desc);
-	return res;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 /**

@@ -1104,7 +1104,6 @@ static void wake_up_page(struct page *page, int bit)
 	wake_up_page_bit(page, bit);
 }
 
-<<<<<<< HEAD
 /*
  * A choice of three behaviors for wait_on_page_bit_common():
  */
@@ -1128,28 +1127,15 @@ static inline __sched int wait_on_page_bit_common(wait_queue_head_t *q,
 	bool bit_is_set;
 	bool thrashing = false;
 	bool delayacct = false;
-=======
-static inline __sched int wait_on_page_bit_common(wait_queue_head_t *q,
-		struct page *page, int bit_nr, int state, bool lock)
-{
-	struct wait_page_queue wait_page;
-	wait_queue_entry_t *wait = &wait_page.wait;
-	bool thrashing = false;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	unsigned long pflags;
 	int ret = 0;
 
 	if (bit_nr == PG_locked &&
 	    !PageUptodate(page) && PageWorkingset(page)) {
-<<<<<<< HEAD
 		if (!PageSwapBacked(page)) {
 			delayacct_thrashing_start();
 			delayacct = true;
 		}
-=======
-		if (!PageSwapBacked(page))
-			delayacct_thrashing_start();
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		psi_memstall_enter(&pflags);
 		thrashing = true;
 	}
@@ -1207,11 +1193,7 @@ static inline __sched int wait_on_page_bit_common(wait_queue_head_t *q,
 	finish_wait(q, wait);
 
 	if (thrashing) {
-<<<<<<< HEAD
 		if (delayacct)
-=======
-		if (!PageSwapBacked(page))
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			delayacct_thrashing_end();
 		psi_memstall_leave(&pflags);
 	}

@@ -307,10 +307,7 @@ struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
 struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev, struct device_node *np);
 struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
 int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu);
-<<<<<<< HEAD
 void dev_pm_opp_of_register_em(struct cpumask *cpus);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #else
 static inline int dev_pm_opp_of_add_table(struct device *dev)
 {
@@ -353,14 +350,11 @@ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
 {
 	return NULL;
 }
-<<<<<<< HEAD
 
 static inline void dev_pm_opp_of_register_em(struct cpumask *cpus)
 {
 }
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static inline int of_dev_pm_opp_get_cpu_power(unsigned long *mW, unsigned long *KHz, int cpu)
 {
 	return -ENOTSUPP;

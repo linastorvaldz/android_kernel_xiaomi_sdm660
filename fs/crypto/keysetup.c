@@ -47,7 +47,6 @@ struct fscrypt_mode fscrypt_modes[] = {
 		.ivsize = 32,
 		.blk_crypto_mode = BLK_ENCRYPTION_MODE_ADIANTUM,
 	},
-<<<<<<< HEAD
 	[FSCRYPT_MODE_PRIVATE] = {
 		.friendly_name = "ice",
 		.cipher_str = "xts(aes)",
@@ -55,8 +54,6 @@ struct fscrypt_mode fscrypt_modes[] = {
 		.ivsize = 16,
 		.blk_crypto_mode = BLK_ENCRYPTION_MODE_AES_256_XTS,
 	},
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 static DEFINE_MUTEX(fscrypt_mode_key_setup_mutex);

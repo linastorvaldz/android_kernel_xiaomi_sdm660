@@ -1499,11 +1499,7 @@ static int __init curve25519_mod_init(void)
 static void __exit curve25519_mod_exit(void)
 {
 	if (IS_REACHABLE(CONFIG_CRYPTO_KPP) &&
-<<<<<<< HEAD
 	    static_branch_likely(&curve25519_use_bmi2_adx))
-=======
-	    (boot_cpu_has(X86_FEATURE_BMI2) || boot_cpu_has(X86_FEATURE_ADX)))
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		crypto_unregister_kpp(&curve25519_alg);
 }
 

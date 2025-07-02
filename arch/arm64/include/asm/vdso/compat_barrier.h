@@ -20,22 +20,9 @@
 
 #define dmb(option) __asm__ __volatile__ ("dmb " #option : : : "memory")
 
-<<<<<<< HEAD
 #define aarch32_smp_mb()	dmb(ish)
 #define aarch32_smp_rmb()	dmb(ishld)
 #define aarch32_smp_wmb()	dmb(ishst)
-=======
-#if __LINUX_ARM_ARCH__ >= 8 && defined(CONFIG_AS_DMB_ISHLD)
-#define aarch32_smp_mb()	dmb(ish)
-#define aarch32_smp_rmb()	dmb(ishld)
-#define aarch32_smp_wmb()	dmb(ishst)
-#else
-#define aarch32_smp_mb()	dmb(ish)
-#define aarch32_smp_rmb()	aarch32_smp_mb()
-#define aarch32_smp_wmb()	dmb(ishst)
-#endif
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #undef smp_mb
 #undef smp_rmb

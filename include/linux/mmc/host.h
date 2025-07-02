@@ -491,7 +491,6 @@ struct mmc_host {
 #define MMC_CAP2_CQE		(1 << 23)	/* Has eMMC command queue engine */
 #define MMC_CAP2_CQE_DCMD	(1 << 24)	/* CQE can issue a direct command */
 #define MMC_CAP2_AVOID_3_3V	(1 << 25)	/* Host must negotiate down from 3.3V */
-<<<<<<< HEAD
 #define MMC_CAP2_PACKED_WR_CONTROL (1 << 26)    /* Allow write packed control */
 #define MMC_CAP2_CLK_SCALE      (1 << 27)       /* Allow dynamic clk scaling */
 #define MMC_CAP2_ASYNC_SDIO_IRQ_4BIT_MODE (1 << 28) /* Allow Async SDIO irq */
@@ -500,9 +499,6 @@ struct mmc_host {
 /* Some hosts need additional tuning */
 #define MMC_CAP2_HS400_POST_TUNING      (1 << 30)
 #define MMC_CAP2_SANITIZE       (1 << 31)               /* Support Sanitize */
-=======
-#define MMC_CAP2_CRYPTO		(1 << 27)	/* Host supports inline encryption */
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	int			fixed_drv_type;	/* fixed driver type for non-removable media */
 

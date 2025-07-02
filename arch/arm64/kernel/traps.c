@@ -1025,15 +1025,9 @@ static int kasan_handler(struct pt_regs *regs, unsigned int esr)
 #define KASAN_ESR_MASK 0xffffff00
 
 static struct break_hook kasan_break_hook = {
-<<<<<<< HEAD
 	.fn = kasan_handler,
 	.imm = KASAN_BRK_IMM,
 	.mask = KASAN_BRK_MASK,
-=======
-	.esr_val = KASAN_ESR_VAL,
-	.esr_mask = KASAN_ESR_MASK,
-	.fn = kasan_handler,
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 #endif
 
@@ -1090,16 +1084,9 @@ static struct break_hook refcount_break_hook = {
 /* This registration must happen early, before debug_traps_init(). */
 void __init trap_init(void)
 {
-<<<<<<< HEAD
 	register_kernel_break_hook(&bug_break_hook);
 #ifdef CONFIG_KASAN_SW_TAGS
 	register_break_hook(&kasan_break_hook);
 #endif
 	register_kernel_break_hook(&refcount_break_hook);
-=======
-	register_break_hook(&bug_break_hook);
-#ifdef CONFIG_KASAN_SW_TAGS
-	register_break_hook(&kasan_break_hook);
-#endif
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }

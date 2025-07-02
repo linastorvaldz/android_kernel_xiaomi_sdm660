@@ -344,16 +344,10 @@ const char * const *v4l2_ctrl_get_menu(u32 id)
 		"5",
 		"5.1",
 		"5.2",
-<<<<<<< HEAD
 		"6",
 		"6.1",
 		"6.2",
 		"Unknown",
-=======
-		"6.0",
-		"6.1",
-		"6.2",
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		NULL,
 	};
 	static const char * const h264_loop_filter[] = {

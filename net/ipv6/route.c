@@ -3530,10 +3530,6 @@ static struct fib6_info *rt6_get_route_info(struct net *net,
 					   struct net_device *dev)
 {
 	u32 tb_id = l3mdev_fib_table(dev) ? : addrconf_rt_table(dev, RT6_TABLE_INFO);
-<<<<<<< HEAD
-=======
-	int ifindex = dev->ifindex;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	struct fib6_node *fn;
 	struct fib6_info *rt = NULL;
 	struct fib6_table *table;

@@ -48,16 +48,7 @@
 #define __assume_aligned(a, ...)	\
 	__attribute__((__assume_aligned__(a, ## __VA_ARGS__)))
 
-<<<<<<< HEAD
 #ifdef CONFIG_CFI_CLANG
-=======
-#ifdef CONFIG_LTO_CLANG
-#ifdef CONFIG_FTRACE_MCOUNT_RECORD
-#define __norecordmcount \
-	__attribute__((__section__(".text..ftrace")))
-#endif
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #define __nocfi		__attribute__((no_sanitize("cfi")))
 #endif
 

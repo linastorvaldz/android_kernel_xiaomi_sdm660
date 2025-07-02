@@ -1480,21 +1480,14 @@ static void ufs_qcom_advertise_quirks(struct ufs_hba *hba)
 				| UFSHCD_QUIRK_BROKEN_PA_RXHSUNTERMCAP);
 	}
 
-<<<<<<< HEAD
 	if (host->disable_lpm)
 		hba->quirks |= UFSHCD_QUIRK_BROKEN_AUTO_HIBERN8;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/*
 	 * Inline crypto is currently broken with ufs-qcom at least because the
 	 * device tree doesn't include the crypto registers.  There are likely
 	 * to be other issues that will need to be addressed too.
 	 */
-<<<<<<< HEAD
 	//hba->quirks |= UFSHCD_QUIRK_BROKEN_CRYPTO;
-=======
-	hba->quirks |= UFSHCD_QUIRK_BROKEN_CRYPTO;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static void ufs_qcom_set_caps(struct ufs_hba *hba)

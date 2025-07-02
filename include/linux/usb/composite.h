@@ -170,11 +170,7 @@ struct usb_os_desc_table {
  * @get_status: Returns function status as a reply to
  *	GetStatus() request when the recipient is Interface.
  * @func_suspend: callback to be called when
-<<<<<<< HEAD
  *	SetFeature(FUNCTION_SUSPEND) is received
-=======
- *	SetFeature(FUNCTION_SUSPEND) is reseived
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  * @func_is_suspended: Tells whether the function is currently in
  *	Function Suspend state (used in Super Speed mode only).
  * @func_wakeup_allowed: Tells whether Function Remote Wakeup has been allowed

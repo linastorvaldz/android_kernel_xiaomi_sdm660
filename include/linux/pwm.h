@@ -424,13 +424,8 @@ int pwm_adjust_config(struct pwm_device *pwm);
 static inline int pwm_get_output_type_supported(struct pwm_device *pwm)
 {
 	if (pwm->chip->ops->get_output_type_supported != NULL)
-<<<<<<< HEAD
 		return pwm->chip->ops->
 			get_output_type_supported(pwm->chip, pwm);
-=======
-		return pwm->chip->ops->get_output_type_supported(pwm->chip,
-								 pwm);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	else
 		return PWM_OUTPUT_FIXED;
 }

@@ -314,11 +314,7 @@ static void nvme_mpath_set_live(struct nvme_ns *ns)
 		return;
 
 	if (!(head->disk->flags & GENHD_FL_UP)) {
-<<<<<<< HEAD
 		device_add_disk(&head->subsys->dev, head->disk, NULL);
-=======
-		device_add_disk(&head->subsys->dev, head->disk);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		if (sysfs_create_group(&disk_to_dev(head->disk)->kobj,
 				&nvme_ns_id_attr_group))
 			dev_warn(&head->subsys->dev,

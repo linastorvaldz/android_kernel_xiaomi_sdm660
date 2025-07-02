@@ -222,7 +222,6 @@ static int coresight_find_link_outport(struct coresight_device *csdev,
 	return -ENODEV;
 }
 
-<<<<<<< HEAD
 static void coresight_disable_links(void)
 {
 	struct coresight_link_node *node;
@@ -270,8 +269,6 @@ static void coresight_add_disabled_link(struct coresight_device *csdev,
 	}
 }
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static inline u32 coresight_read_claim_tags(void __iomem *base)
 {
 	return readl_relaxed(base + CORESIGHT_CLAIMCLR);
@@ -370,18 +367,12 @@ static int coresight_enable_sink(struct coresight_device *csdev,
 	if (!sink_ops(csdev)->enable)
 		return -EINVAL;
 
-<<<<<<< HEAD
 	coresight_enable_reg_clk(csdev);
 	ret = sink_ops(csdev)->enable(csdev, mode, data);
 	if (ret) {
 		coresight_disable_reg_clk(csdev);
 		return ret;
 	}
-=======
-	ret = sink_ops(csdev)->enable(csdev, mode, data);
-	if (ret)
-		return ret;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	csdev->enable = true;
 
 	return 0;
@@ -397,13 +388,10 @@ static void coresight_disable_sink(struct coresight_device *csdev)
 	ret = sink_ops(csdev)->disable(csdev);
 	if (ret)
 		return;
-<<<<<<< HEAD
 	coresight_disable_reg_clk(csdev);
 	if (coresight_link_late_disable())
 		coresight_disable_links();
 	csdev->activated = false;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	csdev->enable = false;
 }
 
@@ -428,17 +416,12 @@ static int coresight_enable_link(struct coresight_device *csdev,
 	if (link_subtype == CORESIGHT_DEV_SUBTYPE_LINK_SPLIT && outport < 0)
 		return outport;
 
-<<<<<<< HEAD
 	if (link_ops(csdev)->enable) {
 		coresight_enable_reg_clk(csdev);
 		ret = link_ops(csdev)->enable(csdev, inport, outport);
 		if (ret)
 			coresight_disable_reg_clk(csdev);
 	}
-=======
-	if (link_ops(csdev)->enable)
-		ret = link_ops(csdev)->enable(csdev, inport, outport);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!ret)
 		csdev->enable = true;
 
@@ -469,17 +452,12 @@ static void coresight_disable_link(struct coresight_device *csdev,
 		nr_conns = 1;
 	}
 
-<<<<<<< HEAD
 	if (coresight_link_late_disable()) {
 		coresight_add_disabled_link(csdev, inport, outport);
 	} else if (link_ops(csdev)->disable) {
 		link_ops(csdev)->disable(csdev, inport, outport);
 		coresight_disable_reg_clk(csdev);
 	}
-=======
-	if (link_ops(csdev)->disable)
-		link_ops(csdev)->disable(csdev, inport, outport);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	for (i = 0; i < nr_conns; i++)
 		if (atomic_read(&csdev->refcnt[i]) != 0)

@@ -50,10 +50,6 @@ struct proxy_consumer *regulator_proxy_consumer_register(struct device *reg_dev,
 	const char *reg_name = "";
 	u32 voltage[2] = {0};
 	int rc;
-<<<<<<< HEAD
-=======
-	bool no_sync_state = !reg_dev->driver->sync_state;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/* Return immediately if no proxy consumer properties are specified. */
 	if (!of_find_property(reg_node, "qcom,proxy-consumer-enable", NULL)
@@ -64,11 +60,7 @@ struct proxy_consumer *regulator_proxy_consumer_register(struct device *reg_dev,
 	mutex_lock(&proxy_consumer_list_mutex);
 
 	/* Do not register new consumers if they cannot be removed later. */
-<<<<<<< HEAD
 	if (proxy_consumers_removed) {
-=======
-	if (proxy_consumers_removed && no_sync_state) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		rc = -EPERM;
 		goto unlock;
 	}
@@ -82,10 +74,6 @@ struct proxy_consumer *regulator_proxy_consumer_register(struct device *reg_dev,
 		goto unlock;
 	}
 
-<<<<<<< HEAD
-=======
-	INIT_LIST_HEAD(&consumer->list);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	consumer->enable
 		= of_property_read_bool(reg_node, "qcom,proxy-consumer-enable");
 	of_property_read_u32(reg_node, "qcom,proxy-consumer-current",
@@ -137,12 +125,7 @@ struct proxy_consumer *regulator_proxy_consumer_register(struct device *reg_dev,
 		}
 	}
 
-<<<<<<< HEAD
 	list_add(&consumer->list, &proxy_consumer_list);
-=======
-	if (no_sync_state)
-		list_add(&consumer->list, &proxy_consumer_list);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	mutex_unlock(&proxy_consumer_list_mutex);
 
 	return consumer;
@@ -207,12 +190,8 @@ int regulator_proxy_consumer_unregister(struct proxy_consumer *consumer)
 		return 0;
 
 	mutex_lock(&proxy_consumer_list_mutex);
-<<<<<<< HEAD
 	if (!proxy_consumers_removed)
 		rc = regulator_proxy_consumer_remove(consumer);
-=======
-	rc = regulator_proxy_consumer_remove(consumer);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	mutex_unlock(&proxy_consumer_list_mutex);
 
 	return rc;
@@ -231,11 +210,7 @@ static int __init regulator_proxy_consumer_remove_all(void)
 	proxy_consumers_removed = true;
 
 	if (!list_empty(&proxy_consumer_list))
-<<<<<<< HEAD
 		pr_info("removing regulator proxy consumer requests\n");
-=======
-		pr_info("removing legacy regulator proxy consumer requests\n");
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	list_for_each_entry_safe(consumer, temp, &proxy_consumer_list, list) {
 		regulator_proxy_consumer_remove(consumer);

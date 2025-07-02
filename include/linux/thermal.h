@@ -384,13 +384,8 @@ struct thermal_zone_of_device_ops {
 	int (*get_trend)(void *, int, enum thermal_trend *);
 	int (*set_trips)(void *, int, int);
 	int (*set_emul_temp)(void *, int);
-<<<<<<< HEAD
 	int (*set_trip_temp)(void *data, int trip, int temp);
 	int (*get_trip_temp)(void *data, int trip, int *temp);
-=======
-	int (*set_trip_temp)(void *, int, int);
-	int (*get_trip_temp)(void *, int, int *);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 /**
@@ -413,10 +408,6 @@ enum aggregation_logic {
 	VIRT_WEIGHTED_AVG,
 	VIRT_MAXIMUM,
 	VIRT_MINIMUM,
-<<<<<<< HEAD
-=======
-	VIRT_COUNT_THRESHOLD,
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	VIRT_AGGREGATION_NR,
 };
 

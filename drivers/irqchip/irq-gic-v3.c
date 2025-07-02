@@ -28,13 +28,8 @@
 #include <linux/of_irq.h>
 #include <linux/percpu.h>
 #include <linux/slab.h>
-<<<<<<< HEAD
 #include <linux/msm_rtb.h>
 #include <linux/wakeup_reason.h>
-=======
-#include <linux/wakeup_reason.h>
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #include <linux/irqchip.h>
 #include <linux/irqchip/arm-gic-common.h>
@@ -365,30 +360,7 @@ static asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs
 	if (likely(irqnr > 15 && irqnr < 1020) || irqnr >= 8192) {
 		int err;
 
-<<<<<<< HEAD
 		if (static_branch_likely(&supports_deactivate_key))
-=======
-			if (static_branch_likely(&supports_deactivate_key))
-				gic_write_eoir(irqnr);
-			else
-				isb();
-
-			err = handle_domain_irq(gic_data.domain, irqnr, regs);
-			if (err) {
-				WARN_ONCE(true, "Unexpected interrupt received!\n");
-				log_abnormal_wakeup_reason(
-						"unexpected HW IRQ %u", irqnr);
-				if (static_branch_likely(&supports_deactivate_key)) {
-					if (irqnr < 8192)
-						gic_write_dir(irqnr);
-				} else {
-					gic_write_eoir(irqnr);
-				}
-			}
-			continue;
-		}
-		if (irqnr < 16) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			gic_write_eoir(irqnr);
 		else
 			isb();

@@ -382,7 +382,6 @@ void ion_page_pool_destroy(struct ion_page_pool *pool);
 struct page *ion_page_pool_alloc(struct ion_page_pool *a, bool *from_pool);
 void ion_page_pool_free(struct ion_page_pool *pool, struct page *page);
 
-<<<<<<< HEAD
 struct ion_heap *get_ion_heap(int heap_id);
 struct page *ion_page_pool_alloc_pool_only(struct ion_page_pool *a);
 void ion_page_pool_free_immediate(struct ion_page_pool *pool,
@@ -390,8 +389,6 @@ void ion_page_pool_free_immediate(struct ion_page_pool *pool,
 int ion_page_pool_total(struct ion_page_pool *pool, bool high);
 size_t ion_system_heap_secure_page_pool_total(struct ion_heap *heap, int vmid);
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #ifdef CONFIG_ION_SYSTEM_HEAP
 long ion_page_pool_nr_pages(void);
 #else
@@ -428,7 +425,6 @@ static inline void ion_pages_sync_for_device(struct device *dev,
 	dma_sync_sg_for_device(dev, &sg, 1, dir);
 }
 
-<<<<<<< HEAD
 static __always_inline int get_pool_fillmark(struct ion_page_pool *pool)
 {
 	return ION_POOL_FILL_MARK / (PAGE_SIZE << pool->order);
@@ -448,11 +444,4 @@ static __always_inline bool pool_fillmark_reached(struct ion_page_pool *pool)
 {
 	return atomic_read(&pool->count) >= get_pool_fillmark(pool);
 }
-=======
-#ifdef CONFIG_ION_MODULE
-int ion_add_cma_heaps(void);
-int ion_system_heap_create(void);
-int ion_system_contig_heap_create(void);
-#endif
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #endif /* _ION_H */

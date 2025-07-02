@@ -152,33 +152,19 @@ struct snd_usb_substream *find_snd_usb_substream(unsigned int card_num,
 	}
 
 	if (!chip || atomic_read(&chip->shutdown)) {
-<<<<<<< HEAD
 		pr_debug("%s: instance of usb crad # %d does not exist\n",
-=======
-		pr_debug("%s: instance of usb card # %d does not exist\n",
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 			__func__, card_num);
 		goto err;
 	}
 
 	if (pcm_idx >= chip->pcm_devs) {
-<<<<<<< HEAD
 		pr_err("%s: invalid pcm dev number %u > %d\n", __func__,
 			pcm_idx, chip->pcm_devs);
-=======
-		usb_audio_err(chip, "%s: invalid pcm dev number %u > %d\n",
-			      __func__, pcm_idx, chip->pcm_devs);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		goto err;
 	}
 
 	if (direction > SNDRV_PCM_STREAM_CAPTURE) {
-<<<<<<< HEAD
 		pr_err("%s: invalid direction %u\n", __func__, direction);
-=======
-		usb_audio_err(chip, "%s: invalid direction %u\n", __func__,
-			      direction);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		goto err;
 	}
 
@@ -186,15 +172,9 @@ struct snd_usb_substream *find_snd_usb_substream(unsigned int card_num,
 		if (as->pcm_index == pcm_idx) {
 			subs = &as->substream[direction];
 			if (subs->interface < 0 && !subs->data_endpoint &&
-<<<<<<< HEAD
 				!subs->sync_endpoint) {
 				pr_debug("%s: stream disconnected, bail out\n",
 					__func__);
-=======
-			    !subs->sync_endpoint) {
-				usb_audio_err(chip, "%s: stream disconnected, bail out\n",
-					      __func__);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 				subs = NULL;
 				goto err;
 			}
@@ -208,11 +188,7 @@ done:
 err:
 	*uchip = chip;
 	if (!subs)
-<<<<<<< HEAD
 		pr_debug("%s: substream instance not found\n", __func__);
-=======
-		pr_err("%s: substream instance not found\n", __func__);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	mutex_unlock(&register_mutex);
 	return subs;
 }

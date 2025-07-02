@@ -91,22 +91,13 @@
 /*
  * UtilEstimation. Use estimated CPU utilization.
  */
-<<<<<<< HEAD
 #define SCHED_FEAT_UTIL_EST 1
 #define SCHED_FEAT_UTIL_EST_FASTUP 1
-=======
-SCHED_FEAT(UTIL_EST, true)
-SCHED_FEAT(UTIL_EST_FASTUP, true)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /*
  * Fast pre-selection of CPU candidates for EAS.
  */
-<<<<<<< HEAD
 #define SCHED_FEAT_FIND_BEST_TARGET 1
-=======
-SCHED_FEAT(FIND_BEST_TARGET, false)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /*
  * Energy aware scheduling algorithm choices:
@@ -115,20 +106,12 @@ SCHED_FEAT(FIND_BEST_TARGET, false)
  *   the EAS path for wakeup task placement. Otherwise, put
  *   those tasks through the mainline slow path.
  */
-<<<<<<< HEAD
 #define SCHED_FEAT_EAS_PREFER_IDLE 1
-=======
-SCHED_FEAT(EAS_PREFER_IDLE, true)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /*
  * Request max frequency from schedutil whenever a RT task is running.
  */
-<<<<<<< HEAD
 #define SCHED_FEAT_SUGOV_RT_MAX_FREQ 0
-=======
-SCHED_FEAT(SUGOV_RT_MAX_FREQ, false)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /*
  * Apply schedtune boost hold to tasks of all sched classes.
@@ -139,8 +122,4 @@ SCHED_FEAT(SUGOV_RT_MAX_FREQ, false)
  * If disabled, this behaviour will only apply to tasks of the
  * RT class.
  */
-<<<<<<< HEAD
 #define SCHED_FEAT_SCHEDTUNE_BOOST_HOLD_ALL 0
-=======
-SCHED_FEAT(SCHEDTUNE_BOOST_HOLD_ALL, false)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)

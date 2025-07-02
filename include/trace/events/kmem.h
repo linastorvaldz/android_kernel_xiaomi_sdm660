@@ -319,7 +319,6 @@ TRACE_EVENT(mm_page_alloc_extfrag,
 		__entry->change_ownership)
 );
 
-<<<<<<< HEAD
 
 DECLARE_EVENT_CLASS(ion_alloc,
 
@@ -853,8 +852,6 @@ DEFINE_EVENT(iommu_sec_ptbl_map_range, iommu_sec_ptbl_map_range_end,
 	TP_ARGS(sec_id, num, va, pa, len)
 	);
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * Required for uniquely and securely identifying mm in rss_stat tracepoint.
  */

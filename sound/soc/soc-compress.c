@@ -1164,11 +1164,7 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd, int num)
 		}
 	}
 
-<<<<<<< HEAD
 	dev_dbg(rtd->card->dev, "Compress ASoC: %s <-> %s mapping ok\n",
-=======
-	dev_info(rtd->card->dev, "Compress ASoC: %s <-> %s mapping ok\n",
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		 codec_dai->name, cpu_dai->name);
 
 	return ret;

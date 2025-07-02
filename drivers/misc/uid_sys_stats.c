@@ -78,21 +78,12 @@ struct uid_entry {
 #endif
 };
 
-<<<<<<< HEAD
 static u64 compute_write_bytes(struct task_io_accounting *ioac)
 {
 	if (ioac->write_bytes <= ioac->cancelled_write_bytes)
 		return 0;
 
 	return ioac->write_bytes - ioac->cancelled_write_bytes;
-=======
-static u64 compute_write_bytes(struct task_struct *task)
-{
-	if (task->ioac.write_bytes <= task->ioac.cancelled_write_bytes)
-		return 0;
-
-	return task->ioac.write_bytes - task->ioac.cancelled_write_bytes;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static void compute_io_bucket_stats(struct io_stats *io_bucket,
@@ -249,7 +240,6 @@ static void set_io_uid_tasks_zero(struct uid_entry *uid_entry)
 	}
 }
 
-<<<<<<< HEAD
 static void add_uid_tasks_io_stats(struct task_entry *task_entry,
 				   struct task_io_accounting *ioac, int slot)
 {
@@ -260,19 +250,6 @@ static void add_uid_tasks_io_stats(struct task_entry *task_entry,
 	task_io_slot->rchar += ioac->rchar;
 	task_io_slot->wchar += ioac->wchar;
 	task_io_slot->fsync += ioac->syscfs;
-=======
-static void add_uid_tasks_io_stats(struct uid_entry *uid_entry,
-		struct task_struct *task, int slot)
-{
-	struct task_entry *task_entry = find_or_register_task(uid_entry, task);
-	struct io_stats *task_io_slot = &task_entry->io[slot];
-
-	task_io_slot->read_bytes += task->ioac.read_bytes;
-	task_io_slot->write_bytes += compute_write_bytes(task);
-	task_io_slot->rchar += task->ioac.rchar;
-	task_io_slot->wchar += task->ioac.wchar;
-	task_io_slot->fsync += task->ioac.syscfs;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static void compute_io_uid_tasks(struct uid_entry *uid_entry)
@@ -313,11 +290,6 @@ static void show_io_uid_tasks(struct seq_file *m, struct uid_entry *uid_entry)
 #else
 static void remove_uid_tasks(struct uid_entry *uid_entry) {};
 static void set_io_uid_tasks_zero(struct uid_entry *uid_entry) {};
-<<<<<<< HEAD
-=======
-static void add_uid_tasks_io_stats(struct uid_entry *uid_entry,
-		struct task_struct *task, int slot) {};
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static void compute_io_uid_tasks(struct uid_entry *uid_entry) {};
 static void show_io_uid_tasks(struct seq_file *m,
 		struct uid_entry *uid_entry) {}
@@ -427,11 +399,7 @@ static ssize_t uid_remove_write(struct file *file,
 {
 	struct uid_entry *uid_entry;
 	struct hlist_node *tmp;
-<<<<<<< HEAD
 	char uids[128] = "0";
-=======
-	char uids[128];
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	char *start_uid, *end_uid = NULL;
 	uid_t uid_start = 0, uid_end = 0;
 	u64 uid;
@@ -480,7 +448,6 @@ static const struct file_operations uid_remove_fops = {
 	.write		= uid_remove_write,
 };
 
-<<<<<<< HEAD
 static void __add_uid_io_stats(struct uid_entry *uid_entry,
 			struct task_io_accounting *ioac, int slot)
 {
@@ -492,37 +459,21 @@ static void __add_uid_io_stats(struct uid_entry *uid_entry,
 	io_slot->wchar += ioac->wchar;
 	io_slot->fsync += ioac->syscfs;
 }
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 static void add_uid_io_stats(struct uid_entry *uid_entry,
 			struct task_struct *task, int slot)
 {
-<<<<<<< HEAD
 	struct task_entry *task_entry __maybe_unused;
-=======
-	struct io_stats *io_slot = &uid_entry->io[slot];
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	/* avoid double accounting of dying threads */
 	if (slot != UID_STATE_DEAD_TASKS && (task->flags & PF_EXITING))
 		return;
 
-<<<<<<< HEAD
 #ifdef CONFIG_UID_SYS_STATS_DEBUG
 	task_entry = find_or_register_task(uid_entry, task);
 	add_uid_tasks_io_stats(task_entry, &task->ioac, slot);
 #endif
 	__add_uid_io_stats(uid_entry, &task->ioac, slot);
-=======
-	io_slot->read_bytes += task->ioac.read_bytes;
-	io_slot->write_bytes += compute_write_bytes(task);
-	io_slot->rchar += task->ioac.rchar;
-	io_slot->wchar += task->ioac.wchar;
-	io_slot->fsync += task->ioac.syscfs;
-
-	add_uid_tasks_io_stats(uid_entry, task, slot);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static void update_io_stats_all_locked(void)
@@ -637,11 +588,7 @@ static ssize_t uid_procstat_write(struct file *file,
 	struct uid_entry *uid_entry;
 	uid_t uid;
 	int argc, state;
-<<<<<<< HEAD
 	char input[128] = "0";
-=======
-	char input[128];
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (count >= sizeof(input))
 		return -EINVAL;
@@ -686,7 +633,6 @@ static const struct file_operations uid_procstat_fops = {
 	.write		= uid_procstat_write,
 };
 
-<<<<<<< HEAD
 struct update_stats_work {
 	struct work_struct work;
 	uid_t uid;
@@ -729,8 +675,6 @@ exit:
 	kfree(usw);
 }
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int process_notifier(struct notifier_block *self,
 			unsigned long cmd, void *v)
 {
@@ -742,7 +686,6 @@ static int process_notifier(struct notifier_block *self,
 	if (!task)
 		return NOTIFY_OK;
 
-<<<<<<< HEAD
 	uid = from_kuid_munged(current_user_ns(), task_uid(task));
 	if (!rt_mutex_trylock(&uid_lock)) {
 		struct update_stats_work *usw;
@@ -765,10 +708,6 @@ static int process_notifier(struct notifier_block *self,
 		return NOTIFY_OK;
 	}
 
-=======
-	rt_mutex_lock(&uid_lock);
-	uid = from_kuid_munged(current_user_ns(), task_uid(task));
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	uid_entry = find_or_register_uid(uid);
 	if (!uid_entry) {
 		pr_err("%s: failed to find uid %d\n", __func__, uid);

@@ -181,15 +181,10 @@ struct coresight_connection {
  * @orphan:	true if the component has connections that haven't been linked.
  * @enable:	'true' if component is currently part of an active path.
  * @activated:	'true' only if a _sink_ has been activated.  A sink can be
-<<<<<<< HEAD
 		activated but not yet enabled.  Enabling for a _sink_
 		happens when a source has been selected for that it.
  * @abort:     captures sink trace on abort.
  * @reg_clk:	as defined by @coresight_reg_clk.
-=======
- *		activated but not yet enabled.  Enabling for a _sink_
- *		appens when a source has been selected for that it.
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
  * @ea:		Device attribute for sink representation under PMU directory.
  */
 struct coresight_device {
@@ -207,10 +202,7 @@ struct coresight_device {
 	/* sink specific fields */
 	bool activated;	/* true only if a sink is part of a path */
 	struct dev_ext_attribute *ea;
-<<<<<<< HEAD
 	struct coresight_reg_clk *reg_clk;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 #define to_coresight_device(d) container_of(d, struct coresight_device, dev)
@@ -300,7 +292,6 @@ extern int coresight_enable(struct coresight_device *csdev);
 extern void coresight_disable(struct coresight_device *csdev);
 extern int coresight_timeout(void __iomem *addr, u32 offset,
 			     int position, int value);
-<<<<<<< HEAD
 extern void coresight_abort(void);
 extern void coresight_disable_reg_clk(struct coresight_device *csdev);
 extern int coresight_enable_reg_clk(struct coresight_device *csdev);
@@ -313,8 +304,6 @@ static inline bool coresight_link_late_disable(void)
 }
 extern void coresight_disable_all_source_link(void);
 extern void coresight_enable_all_source_link(void);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 extern int coresight_claim_device(void __iomem *base);
 extern int coresight_claim_device_unlocked(void __iomem *base);
@@ -332,15 +321,12 @@ coresight_enable(struct coresight_device *csdev) { return -ENOSYS; }
 static inline void coresight_disable(struct coresight_device *csdev) {}
 static inline int coresight_timeout(void __iomem *addr, u32 offset,
 				     int position, int value) { return 1; }
-<<<<<<< HEAD
 static inline void coresight_abort(void) {}
 static inline void coresight_disable_reg_clk(struct coresight_device *csdev) {}
 static inline int coresight_enable_reg_clk(struct coresight_device *csdev)
 { return -EINVAL; }
 static inline void coresight_disable_all_source_link(void) {};
 static inline void coresight_enable_all_source_link(void) {};
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static inline int coresight_claim_device_unlocked(void __iomem *base)
 {
 	return -EINVAL;

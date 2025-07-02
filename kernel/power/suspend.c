@@ -77,11 +77,8 @@ void s2idle_set_ops(const struct platform_s2idle_ops *ops)
 	unlock_system_sleep();
 }
 EXPORT_SYMBOL_GPL(s2idle_set_ops);
-<<<<<<< HEAD
 
 extern void thaw_fingerprintd(void);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 static void s2idle_begin(void)
 {
@@ -447,10 +444,6 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
 
 	error = disable_nonboot_cpus();
 	if (error || suspend_test(TEST_CPUS)) {
-<<<<<<< HEAD
-=======
-		log_suspend_abort_reason("Disabling non-boot cpus failed");
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		goto Enable_cpus;
 	}
 
@@ -521,11 +514,7 @@ int suspend_devices_and_enter(suspend_state_t state)
 	suspend_test_start();
 	error = dpm_suspend_start(PMSG_SUSPEND);
 	if (error) {
-<<<<<<< HEAD
 		pr_debug("Some devices failed to suspend, or early wake event detected\n");
-=======
-		pr_err("Some devices failed to suspend, or early wake event detected\n");
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		log_suspend_abort_reason(
 				"Some devices failed to suspend, or early wake event detected");
 		goto Recover_platform;

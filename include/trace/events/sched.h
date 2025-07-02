@@ -999,7 +999,6 @@ TRACE_EVENT(sched_load_rt_rq,
 		  __entry->util)
 );
 
-<<<<<<< HEAD
 #ifdef CONFIG_SCHED_WALT
 extern unsigned int sched_ravg_window;
 #endif
@@ -1041,8 +1040,6 @@ TRACE_EVENT(sched_load_avg_cpu,
 );
 
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * Tracepoint for sched_entity load tracking:
  */
@@ -1160,15 +1157,9 @@ TRACE_EVENT(sched_util_est_cpu,
 	TP_ARGS(cpu, cfs_rq),
 
 	TP_STRUCT__entry(
-<<<<<<< HEAD
 		__field(int,		cpu)
 		__field(unsigned int,	util_avg)
 		__field(unsigned int,	util_est_enqueued)
-=======
-		__field( int,		cpu			)
-		__field( unsigned int,	util_avg		)
-		__field( unsigned int,	util_est_enqueued	)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	),
 
 	TP_fast_assign(
@@ -1183,7 +1174,6 @@ TRACE_EVENT(sched_util_est_cpu,
 		  __entry->util_est_enqueued)
 );
 
-<<<<<<< HEAD
 TRACE_EVENT(sched_cpu_util,
 
 	TP_PROTO(int cpu),
@@ -1343,15 +1333,12 @@ TRACE_EVENT(sched_task_util,
 		__entry->unfilter, __entry->cpus_allowed, __entry->low_latency)
 );
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * Tracepoint for find_best_target
  */
 TRACE_EVENT(sched_find_best_target,
 
 	TP_PROTO(struct task_struct *tsk, bool prefer_idle,
-<<<<<<< HEAD
 		 unsigned long min_util, int start_cpu,
 		 int best_idle, int best_active, int most_spare_cap,
 		 int target, int backup),
@@ -1371,23 +1358,6 @@ TRACE_EVENT(sched_find_best_target,
 		__field(int,		most_spare_cap)
 		__field(int,		target)
 		__field(int,		backup)
-=======
-		 unsigned long min_util, int best_idle, int best_active,
-		 int target, int backup),
-
-	TP_ARGS(tsk, prefer_idle, min_util, best_idle,
-		best_active, target, backup),
-
-	TP_STRUCT__entry(
-		__array( char,  comm,   TASK_COMM_LEN   )
-		__field( pid_t, pid                     )
-		__field( unsigned long, min_util        )
-		__field( bool,  prefer_idle             )
-		__field( int,   best_idle               )
-		__field( int,   best_active             )
-		__field( int,   target                  )
-		__field( int,   backup                  )
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		),
 
 	TP_fast_assign(
@@ -1395,31 +1365,19 @@ TRACE_EVENT(sched_find_best_target,
 		__entry->pid            = tsk->pid;
 		__entry->min_util       = min_util;
 		__entry->prefer_idle    = prefer_idle;
-<<<<<<< HEAD
 		__entry->start_cpu      = start_cpu;
 		__entry->best_idle      = best_idle;
 		__entry->best_active    = best_active;
 		__entry->most_spare_cap = most_spare_cap;
-=======
-		__entry->best_idle      = best_idle;
-		__entry->best_active    = best_active;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		__entry->target         = target;
 		__entry->backup         = backup;
 		),
 
-<<<<<<< HEAD
 	TP_printk("pid=%d comm=%s prefer_idle=%d start_cpu=%d best_idle=%d best_active=%d most_spare_cap=%d target=%d backup=%d",
 		  __entry->pid, __entry->comm, __entry->prefer_idle,
 		  __entry->start_cpu,
 		  __entry->best_idle, __entry->best_active,
 		  __entry->most_spare_cap,
-=======
-	TP_printk("pid=%d comm=%s prefer_idle=%d "
-		  "best_idle=%d best_active=%d target=%d backup=%d",
-		  __entry->pid, __entry->comm, __entry->prefer_idle,
-		  __entry->best_idle, __entry->best_active,
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		  __entry->target, __entry->backup)
 );
 
@@ -1450,7 +1408,6 @@ TRACE_EVENT(sched_boost_cpu,
 		__entry->margin)
 );
 
-<<<<<<< HEAD
 TRACE_EVENT(core_ctl_eval_need,
 
 	TP_PROTO(unsigned int cpu, unsigned int last_need,
@@ -1580,8 +1537,6 @@ TRACE_EVENT(core_ctl_notif_data,
 		  __entry->cur_cap[1], __entry->cur_cap[2])
 );
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 /*
  * Tracepoint for schedtune_tasks_update
  */
@@ -1680,7 +1635,6 @@ TRACE_EVENT(sched_boost_task,
 /*
  * Tracepoint for system overutilized flag
 */
-<<<<<<< HEAD
 
 struct sched_domain;
 TRACE_EVENT_CONDITION(sched_overutilized,
@@ -1794,26 +1748,6 @@ TRACE_EVENT(sched_isolate,
 );
 
 #include "walt.h"
-=======
-TRACE_EVENT(sched_overutilized,
-
-	TP_PROTO(int overutilized),
-
-	TP_ARGS(overutilized),
-
-	TP_STRUCT__entry(
-		__field( int,  overutilized    )
-	),
-
-	TP_fast_assign(
-		__entry->overutilized   = overutilized;
-	),
-
-	TP_printk("overutilized=%d",
-		__entry->overutilized)
-);
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #endif /* CONFIG_SMP */
 #endif /* _TRACE_SCHED_H */
 

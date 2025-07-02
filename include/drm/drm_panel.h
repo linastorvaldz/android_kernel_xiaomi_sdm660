@@ -39,13 +39,10 @@ enum {
 	DRM_PANEL_BLANK_UNBLANK,
 	/* panel: power off */
 	DRM_PANEL_BLANK_POWERDOWN,
-<<<<<<< HEAD
 	/* panel: low power mode */
 	DRM_PANEL_BLANK_LP,
 	/* fps change */
 	DRM_PANEL_BLANK_FPS_CHANGE,
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 };
 
 struct drm_panel_notifier {

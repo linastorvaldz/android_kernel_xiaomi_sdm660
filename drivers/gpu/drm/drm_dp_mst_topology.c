@@ -485,11 +485,7 @@ static bool drm_dp_sideband_parse_enum_path_resources_ack(struct drm_dp_sideband
 {
 	int idx = 1;
 	repmsg->u.path_resources.port_number = (raw->msg[idx] >> 4) & 0xf;
-<<<<<<< HEAD
 	repmsg->u.path_resources.fec_capability = (raw->msg[idx]) & 0x1;
-=======
-	repmsg->u.path_resources.fec_capable = raw->msg[idx] & 0x1;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	idx++;
 	if (idx > raw->curlen)
 		goto fail_len;
@@ -1744,12 +1740,8 @@ static int drm_dp_send_enum_path_resources(struct drm_dp_mst_topology_mgr *mgr,
 			txmsg->reply.u.path_resources.full_payload_bw_number,
 			txmsg->reply.u.path_resources.avail_payload_bw_number);
 			port->available_pbn = txmsg->reply.u.path_resources.avail_payload_bw_number;
-<<<<<<< HEAD
 			port->fec_capability =
 				txmsg->reply.u.path_resources.fec_capability;
-=======
-			port->fec_capable = txmsg->reply.u.path_resources.fec_capable;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		}
 	}
 
@@ -1908,11 +1900,7 @@ int drm_dp_mst_update_dsc_info(struct drm_dp_mst_topology_mgr *mgr,
 		return -EINVAL;
 
 	memcpy(&port->dsc_info, dsc_info, sizeof(struct drm_dp_mst_dsc_info));
-<<<<<<< HEAD
 	drm_dp_put_port(port);
-=======
-		drm_dp_put_port(port);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	return 0;
 }
@@ -2118,11 +2106,7 @@ int drm_dp_send_dpcd_read(struct drm_dp_mst_topology_mgr *mgr,
 	}
 
 	len = build_dpcd_read(txmsg, port->port_num, offset, size);
-<<<<<<< HEAD
 	txmsg->dst = mstb;
-=======
-	txmsg->dst = port->parent;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	drm_dp_queue_down_tx(mgr, txmsg);
 	ret = drm_dp_mst_wait_tx_reply(mstb, txmsg);
@@ -2735,11 +2719,7 @@ bool drm_dp_mst_has_fec(struct drm_dp_mst_topology_mgr *mgr,
 	port = drm_dp_get_validated_port_ref(mgr, port);
 	if (!port)
 		return ret;
-<<<<<<< HEAD
 	ret = port->fec_capability;
-=======
-	ret = port->fec_capable;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	drm_dp_put_port(port);
 	return ret;
 }

@@ -608,7 +608,6 @@ config PSI_DEFAULT_DISABLED
 
 	  Say N if unsure.
 
-<<<<<<< HEAD
 config PSI_FTRACE
 	bool "Insert debug hooks for PSI ftrace events"
 	default n
@@ -619,8 +618,6 @@ config PSI_FTRACE
 	  If set, PSI ftrace events may be
 	  enabled.
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 endmenu # "CPU/Task time and stats accounting"
 
 config CPU_ISOLATION
@@ -2245,10 +2242,7 @@ config TRIM_UNUSED_KSYMS
 config UNUSED_KSYMS_WHITELIST
 	string "Whitelist of symbols to keep in ksymtab"
 	depends on TRIM_UNUSED_KSYMS
-<<<<<<< HEAD
 	default "scripts/lto-used-symbollist.txt" if LTO_CLANG
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	help
 	  By default, all unused exported symbols will be un-exported from the
 	  build when TRIM_UNUSED_KSYMS is selected.

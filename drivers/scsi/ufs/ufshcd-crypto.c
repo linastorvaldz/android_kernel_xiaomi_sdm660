@@ -127,13 +127,8 @@ static int ufshcd_program_key(struct ufs_hba *hba,
 
 	ufshcd_hold(hba, false);
 
-<<<<<<< HEAD
 	if (hba->var->vops->program_key) {
 		err = hba->var->vops->program_key(hba, cfg, slot);
-=======
-	if (hba->vops->program_key) {
-		err = hba->vops->program_key(hba, cfg, slot);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		goto out;
 	}
 
@@ -158,11 +153,7 @@ static int ufshcd_program_key(struct ufs_hba *hba,
 	wmb();
 	err = 0;
 out:
-<<<<<<< HEAD
 	ufshcd_release(hba, false);
-=======
-	ufshcd_release(hba);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return err;
 }
 
@@ -407,17 +398,12 @@ int ufshcd_prepare_lrbp_crypto_spec(struct ufs_hba *hba,
 
 	lrbp->crypto_enable = true;
 	lrbp->crypto_key_slot = bc->bc_keyslot;
-<<<<<<< HEAD
 	if (bc->is_ext4) {
 		lrbp->data_unit_num = (u64)cmd->request->bio->bi_iter.bi_sector;
 		lrbp->data_unit_num >>= 3;
 	} else {
 		lrbp->data_unit_num = bc->bc_dun[0];
 	}
-=======
-	lrbp->data_unit_num = bc->bc_dun[0];
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(ufshcd_prepare_lrbp_crypto_spec);

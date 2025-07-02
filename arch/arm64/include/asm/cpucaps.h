@@ -60,11 +60,6 @@
 #define ARM64_WORKAROUND_1742098		39
 #define ARM64_HAS_CRC32                         40
 
-<<<<<<< HEAD
 #define ARM64_NCAPS				41
-=======
-/* kabi: reserve 38 - 62 for future cpu capabilities */
-#define ARM64_NCAPS				62
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #endif /* __ASM_CPUCAPS_H */

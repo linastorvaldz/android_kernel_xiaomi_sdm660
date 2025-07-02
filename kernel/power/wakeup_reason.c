@@ -259,32 +259,19 @@ static void print_wakeup_sources(void)
 	capture_reasons = false;
 
 	if (suspend_abort) {
-<<<<<<< HEAD
 		pr_debug("Abort: %s\n", non_irq_wake_reason);
-=======
-		pr_info("Abort: %s\n", non_irq_wake_reason);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		spin_unlock_irqrestore(&wakeup_reason_lock, flags);
 		return;
 	}
 
 	if (!list_empty(&leaf_irqs))
 		list_for_each_entry(n, &leaf_irqs, siblings)
-<<<<<<< HEAD
 			pr_debug("Resume caused by IRQ %d, %s\n", n->irq,
 				n->irq_name);
 	else if (abnormal_wake)
 		pr_debug("Resume caused by %s\n", non_irq_wake_reason);
 	else
 		pr_debug("Resume cause unknown\n");
-=======
-			pr_info("Resume caused by IRQ %d, %s\n", n->irq,
-				n->irq_name);
-	else if (abnormal_wake)
-		pr_info("Resume caused by %s\n", non_irq_wake_reason);
-	else
-		pr_info("Resume cause unknown\n");
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	spin_unlock_irqrestore(&wakeup_reason_lock, flags);
 }

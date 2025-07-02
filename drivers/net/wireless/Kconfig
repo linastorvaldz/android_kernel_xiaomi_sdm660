@@ -121,7 +121,6 @@ config VIRT_WIFI
 	  This option adds support for ethernet connections to appear as if they
 	  are wifi connections through a special rtnetlink device.
 
-<<<<<<< HEAD
 config WCNSS_MEM_PRE_ALLOC
        tristate "WCNSS pre-alloc memory support"
        help
@@ -146,6 +145,4 @@ source "drivers/net/wireless/cnss2/Kconfig"
 source "drivers/net/wireless/cnss_utils/Kconfig"
 source "drivers/net/wireless/cnss_genl/Kconfig"
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 endif # WLAN

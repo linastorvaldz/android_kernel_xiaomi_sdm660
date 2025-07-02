@@ -929,11 +929,7 @@ SYM_FUNC_START_LOCAL(__relocate_kernel)
 #endif
 	ret
 
-<<<<<<< HEAD
 SYM_FUNC_END(__relocate_kernel)
-=======
-ENDPROC(__relocate_kernel)
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #endif
 
 SYM_FUNC_START_LOCAL(__primary_switch)

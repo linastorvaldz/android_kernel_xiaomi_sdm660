@@ -15,16 +15,12 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/sched/topology.h>
-<<<<<<< HEAD
 #include <linux/sched/sysctl.h>
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #include <linux/cpuset.h>
 
 DEFINE_PER_CPU(unsigned long, freq_scale) = SCHED_CAPACITY_SCALE;
 DEFINE_PER_CPU(unsigned long, max_cpu_freq);
 DEFINE_PER_CPU(unsigned long, max_freq_scale) = SCHED_CAPACITY_SCALE;
-<<<<<<< HEAD
 
 /*
  * Per-cpu for maximum available cap due to thermal events.
@@ -69,8 +65,6 @@ void arch_set_max_thermal_scale(struct cpumask *cpus,
 	}
 	spin_unlock_irqrestore(&max_thermal_freq_lock, flags);
 }
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
 			 unsigned long max_freq)

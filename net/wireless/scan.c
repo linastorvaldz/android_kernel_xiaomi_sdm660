@@ -104,27 +104,12 @@ static inline void bss_ref_get(struct cfg80211_registered_device *rdev,
 	lockdep_assert_held(&rdev->bss_lock);
 
 	bss->refcount++;
-<<<<<<< HEAD
 
 	if (bss->pub.hidden_beacon_bss)
 		bss_from_pub(bss->pub.hidden_beacon_bss)->refcount++;
 
 	if (bss->pub.transmitted_bss)
 		bss_from_pub(bss->pub.transmitted_bss)->refcount++;
-=======
-	if (bss->pub.hidden_beacon_bss) {
-		bss = container_of(bss->pub.hidden_beacon_bss,
-				   struct cfg80211_internal_bss,
-				   pub);
-		bss->refcount++;
-	}
-	if (bss->pub.transmitted_bss) {
-		bss = container_of(bss->pub.transmitted_bss,
-				   struct cfg80211_internal_bss,
-				   pub);
-		bss->refcount++;
-	}
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static inline void bss_ref_put(struct cfg80211_registered_device *rdev,
@@ -336,7 +321,6 @@ cfg80211_add_nontrans_list(struct cfg80211_bss *trans_bss,
 
 	rcu_read_unlock();
 
-<<<<<<< HEAD
 	/* This is a bit weird - it's not on the list, but already on another
 	 * one! The only way that could happen is if there's some BSSID/SSID
 	 * shared by multiple APs in their multi-BSSID profiles, potentially
@@ -345,8 +329,6 @@ cfg80211_add_nontrans_list(struct cfg80211_bss *trans_bss,
 	if (!list_empty(&nontrans_bss->nontrans_list))
 		return -EINVAL;
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	/* add to the list */
 	list_add_tail(&nontrans_bss->nontrans_list, &trans_bss->nontrans_list);
 	return 0;
@@ -707,15 +689,9 @@ const struct element *cfg80211_find_vendor_elem(unsigned int oui, int oui_type,
 	if (!elem || elem->datalen < 4)
 		return NULL;
 
-<<<<<<< HEAD
 	return elem;
 }
 EXPORT_SYMBOL(cfg80211_find_vendor_elem);
-=======
-	return ie;
-}
-EXPORT_SYMBOL(cfg80211_find_vendor_ie);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 /**
  * enum bss_compare_mode - BSS compare mode
@@ -1187,11 +1163,8 @@ cfg80211_bss_update(struct cfg80211_registered_device *rdev,
 		new->refcount = 1;
 		INIT_LIST_HEAD(&new->hidden_list);
 		INIT_LIST_HEAD(&new->pub.nontrans_list);
-<<<<<<< HEAD
 		/* we'll set this later if it was non-NULL */
 		new->pub.transmitted_bss = NULL;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 		if (rcu_access_pointer(tmp->pub.proberesp_ies)) {
 			hidden = rb_find_bss(rdev, tmp, BSS_CMP_HIDE_ZLEN);
@@ -1416,7 +1389,6 @@ cfg80211_inform_single_bss_data(struct wiphy *wiphy,
 		 */
 		if (cfg80211_add_nontrans_list(non_tx_data->tx_bss,
 					       &res->pub)) {
-<<<<<<< HEAD
 			if (__cfg80211_unlink_bss(rdev, res)) {
 				rdev->bss_generation++;
 				res = NULL;
@@ -1425,11 +1397,6 @@ cfg80211_inform_single_bss_data(struct wiphy *wiphy,
 
 		if (!res)
 			return NULL;
-=======
-			if (__cfg80211_unlink_bss(rdev, res))
-				rdev->bss_generation++;
-		}
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	}
 
 	trace_cfg80211_return_bss(&res->pub);
@@ -1585,11 +1552,7 @@ cfg80211_update_notlisted_nontrans(struct wiphy *wiphy,
 	size_t new_ie_len;
 	struct cfg80211_bss_ies *new_ies;
 	const struct cfg80211_bss_ies *old;
-<<<<<<< HEAD
 	size_t cpy_len;
-=======
-	u8 cpy_len;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	ie = mgmt->u.probe_resp.variable;
 

@@ -257,10 +257,7 @@ int snd_card_file_add(struct snd_card *card, struct file *file);
 int snd_card_file_remove(struct snd_card *card, struct file *file);
 #define snd_card_unref(card)	put_device(&(card)->card_dev)
 void snd_card_change_online_state(struct snd_card *card, int online);
-<<<<<<< HEAD
 bool snd_card_is_online_state(struct snd_card *card);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #define snd_card_set_dev(card, devptr) ((card)->dev = (devptr))
 

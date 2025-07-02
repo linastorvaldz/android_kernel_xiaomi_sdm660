@@ -82,7 +82,6 @@ void fscrypt_generate_iv(union fscrypt_iv *iv, u64 lblk_num,
 {
 	u8 flags = fscrypt_policy_flags(&ci->ci_policy);
 
-<<<<<<< HEAD
 	bool inlinecrypt = false;
 
 #ifdef CONFIG_FS_ENCRYPTION_INLINE_CRYPT
@@ -111,15 +110,6 @@ void fscrypt_generate_iv(union fscrypt_iv *iv, u64 lblk_num,
 	} else if ((flags & FSCRYPT_POLICY_FLAG_IV_INO_LBLK_32) &&
 		   !(fscrypt_policy_contents_mode(&ci->ci_policy) ==
 		     FSCRYPT_MODE_PRIVATE)) {
-=======
-	memset(iv, 0, ci->ci_mode->ivsize);
-
-	if (flags & FSCRYPT_POLICY_FLAG_IV_INO_LBLK_64) {
-		WARN_ON_ONCE(lblk_num > U32_MAX);
-		WARN_ON_ONCE(ci->ci_inode->i_ino > U32_MAX);
-		lblk_num |= (u64)ci->ci_inode->i_ino << 32;
-	} else if (flags & FSCRYPT_POLICY_FLAG_IV_INO_LBLK_32) {
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 		WARN_ON_ONCE(lblk_num > U32_MAX);
 		lblk_num = (u32)(ci->ci_hashed_ino + lblk_num);
 	} else if (flags & FSCRYPT_POLICY_FLAG_DIRECT_KEY) {

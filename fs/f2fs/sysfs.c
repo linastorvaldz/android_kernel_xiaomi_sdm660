@@ -11,19 +11,13 @@
 #include <linux/f2fs_fs.h>
 #include <linux/seq_file.h>
 #include <linux/unicode.h>
-<<<<<<< HEAD
 #include <linux/ioprio.h>
 #include <linux/sysfs.h>
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #include "f2fs.h"
 #include "segment.h"
 #include "gc.h"
-<<<<<<< HEAD
 #include "iostat.h"
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #include <trace/events/f2fs.h>
 
 static struct proc_dir_entry *f2fs_proc_root;
@@ -36,11 +30,7 @@ enum {
 	NM_INFO,	/* struct f2fs_nm_info */
 	F2FS_SBI,	/* struct f2fs_sb_info */
 #ifdef CONFIG_F2FS_STAT_FS
-<<<<<<< HEAD
 	STAT_INFO,	/* struct f2fs_stat_info */
-=======
-	STAT_INFO,      /* struct f2fs_stat_info */
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #endif
 #ifdef CONFIG_F2FS_FAULT_INJECTION
 	FAULT_INFO_RATE,	/* struct f2fs_fault_info */
@@ -95,13 +85,10 @@ static unsigned char *__struct_ptr(struct f2fs_sb_info *sbi, int struct_type)
 	else if (struct_type == STAT_INFO)
 		return (unsigned char *)F2FS_STAT(sbi);
 #endif
-<<<<<<< HEAD
 	else if (struct_type == CPRC_INFO)
 		return (unsigned char *)&sbi->cprc_info;
 	else if (struct_type == ATGC_INFO)
 		return (unsigned char *)&sbi->am;
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	return NULL;
 }
 
@@ -117,7 +104,6 @@ static ssize_t free_segments_show(struct f2fs_attr *a,
 {
 	return sprintf(buf, "%llu\n",
 			(unsigned long long)(free_segments(sbi)));
-<<<<<<< HEAD
 }
 
 static ssize_t ovp_segments_show(struct f2fs_attr *a,
@@ -125,8 +111,6 @@ static ssize_t ovp_segments_show(struct f2fs_attr *a,
 {
 	return sprintf(buf, "%llu\n",
 			(unsigned long long)(overprovision_segments(sbi)));
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static ssize_t lifetime_write_kbytes_show(struct f2fs_attr *a,
@@ -138,7 +122,6 @@ static ssize_t lifetime_write_kbytes_show(struct f2fs_attr *a,
 				sbi->sectors_written_start) >> 1)));
 }
 
-<<<<<<< HEAD
 static ssize_t sb_status_show(struct f2fs_attr *a,
 		struct f2fs_sb_info *sbi, char *buf)
 {
@@ -164,14 +147,6 @@ static ssize_t gc_mode_show(struct f2fs_attr *a,
 		struct f2fs_sb_info *sbi, char *buf)
 {
 	return sprintf(buf, "%s\n", gc_mode_names[sbi->gc_mode]);
-=======
-	if (!sb->s_bdev->bd_part)
-		return sprintf(buf, "0\n");
-
-	return sprintf(buf, "%llu\n",
-			(unsigned long long)(sbi->kbytes_written +
-			BD_PART_WRITTEN(sbi)));
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 static ssize_t features_show(struct f2fs_attr *a,
@@ -179,12 +154,6 @@ static ssize_t features_show(struct f2fs_attr *a,
 {
 	int len = 0;
 
-<<<<<<< HEAD
-=======
-	if (!sb->s_bdev->bd_part)
-		return sprintf(buf, "0\n");
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (f2fs_sb_has_encrypt(sbi))
 		len += scnprintf(buf, PAGE_SIZE - len, "%s",
 						"encryption");
@@ -221,12 +190,9 @@ static ssize_t features_show(struct f2fs_attr *a,
 	if (f2fs_sb_has_casefold(sbi))
 		len += scnprintf(buf + len, PAGE_SIZE - len, "%s%s",
 				len ? ", " : "", "casefold");
-<<<<<<< HEAD
 	if (f2fs_sb_has_readonly(sbi))
 		len += scnprintf(buf + len, PAGE_SIZE - len, "%s%s",
 				len ? ", " : "", "readonly");
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (f2fs_sb_has_compression(sbi))
 		len += scnprintf(buf + len, PAGE_SIZE - len, "%s%s",
 				len ? ", " : "", "compression");
@@ -240,7 +206,6 @@ static ssize_t current_reserved_blocks_show(struct f2fs_attr *a,
 					struct f2fs_sb_info *sbi, char *buf)
 {
 	return sprintf(buf, "%u\n", sbi->current_reserved_blocks);
-<<<<<<< HEAD
 }
 
 static ssize_t unusable_show(struct f2fs_attr *a,
@@ -313,74 +278,7 @@ static ssize_t main_blkaddr_show(struct f2fs_attr *a,
 {
 	return snprintf(buf, PAGE_SIZE, "%llu\n",
 			(unsigned long long)MAIN_BLKADDR(sbi));
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
-
-static ssize_t unusable_show(struct f2fs_attr *a,
-		struct f2fs_sb_info *sbi, char *buf)
-{
-	block_t unusable;
-
-	if (test_opt(sbi, DISABLE_CHECKPOINT))
-		unusable = sbi->unusable_block_count;
-	else
-		unusable = f2fs_get_unusable_blocks(sbi);
-	return sprintf(buf, "%llu\n", (unsigned long long)unusable);
-}
-
-static ssize_t encoding_show(struct f2fs_attr *a,
-		struct f2fs_sb_info *sbi, char *buf)
-{
-#ifdef CONFIG_UNICODE
-	struct super_block *sb = sbi->sb;
-
-	if (f2fs_sb_has_casefold(sbi))
-		return snprintf(buf, PAGE_SIZE, "%s (%d.%d.%d)\n",
-			sb->s_encoding->charset,
-			(sb->s_encoding->version >> 16) & 0xff,
-			(sb->s_encoding->version >> 8) & 0xff,
-			sb->s_encoding->version & 0xff);
-#endif
-	return sprintf(buf, "(none)");
-}
-
-static ssize_t mounted_time_sec_show(struct f2fs_attr *a,
-		struct f2fs_sb_info *sbi, char *buf)
-{
-	return sprintf(buf, "%llu", SIT_I(sbi)->mounted_time);
-}
-
-#ifdef CONFIG_F2FS_STAT_FS
-static ssize_t moved_blocks_foreground_show(struct f2fs_attr *a,
-				struct f2fs_sb_info *sbi, char *buf)
-{
-	struct f2fs_stat_info *si = F2FS_STAT(sbi);
-
-	return sprintf(buf, "%llu\n",
-		(unsigned long long)(si->tot_blks -
-			(si->bg_data_blks + si->bg_node_blks)));
-}
-
-static ssize_t moved_blocks_background_show(struct f2fs_attr *a,
-				struct f2fs_sb_info *sbi, char *buf)
-{
-	struct f2fs_stat_info *si = F2FS_STAT(sbi);
-
-	return sprintf(buf, "%llu\n",
-		(unsigned long long)(si->bg_data_blks + si->bg_node_blks));
-}
-
-static ssize_t avg_vblocks_show(struct f2fs_attr *a,
-		struct f2fs_sb_info *sbi, char *buf)
-{
-	struct f2fs_stat_info *si = F2FS_STAT(sbi);
-
-	si->dirty_count = dirty_segments(sbi);
-	f2fs_update_sit_info(sbi);
-	return sprintf(buf, "%llu\n", (unsigned long long)(si->avg_vblocks));
-}
-#endif
 
 static ssize_t f2fs_sbi_show(struct f2fs_attr *a,
 			struct f2fs_sb_info *sbi, char *buf)
@@ -595,7 +493,6 @@ out:
 		return count;
 	}
 
-<<<<<<< HEAD
 	if (!strcmp(a->attr.name, "max_ordered_discard")) {
 		if (t == 0 || t > MAX_PLIST_NUM)
 			return -EINVAL;
@@ -612,18 +509,10 @@ out:
 		return count;
 	}
 
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!strcmp(a->attr.name, "migration_granularity")) {
 		if (t == 0 || t > sbi->segs_per_sec)
 			return -EINVAL;
 	}
-<<<<<<< HEAD
-=======
-
-	if (!strcmp(a->attr.name, "trim_sections"))
-		return -EINVAL;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	if (!strcmp(a->attr.name, "gc_urgent")) {
 		if (t == 0) {
@@ -673,10 +562,7 @@ out:
 		return count;
 	}
 
-<<<<<<< HEAD
 #ifdef CONFIG_F2FS_IOSTAT
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	if (!strcmp(a->attr.name, "iostat_enable")) {
 		sbi->iostat_enable = !!t;
 		if (!sbi->iostat_enable)
@@ -692,7 +578,6 @@ out:
 		spin_unlock(&sbi->iostat_lock);
 		return count;
 	}
-<<<<<<< HEAD
 #endif
 
 #ifdef CONFIG_F2FS_FS_COMPRESSION
@@ -801,8 +686,6 @@ out:
 		*ui = (unsigned int)t;
 		return count;
 	}
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 	*ui = (unsigned int)t;
 
@@ -855,7 +738,6 @@ static void f2fs_sb_release(struct kobject *kobj)
 	complete(&sbi->s_kobj_unregister);
 }
 
-<<<<<<< HEAD
 /*
  * Note that there are three feature list entries:
  * 1) /sys/fs/f2fs/features
@@ -899,50 +781,6 @@ static struct f2fs_attr f2fs_attr_sb_##_name = {		\
 	.attr = {.name = __stringify(_name), .mode = 0444 },	\
 	.show	= f2fs_sb_feature_show,				\
 	.id	= F2FS_FEATURE_##_feat,				\
-=======
-enum feat_id {
-	FEAT_CRYPTO = 0,
-	FEAT_BLKZONED,
-	FEAT_ATOMIC_WRITE,
-	FEAT_EXTRA_ATTR,
-	FEAT_PROJECT_QUOTA,
-	FEAT_INODE_CHECKSUM,
-	FEAT_FLEXIBLE_INLINE_XATTR,
-	FEAT_QUOTA_INO,
-	FEAT_INODE_CRTIME,
-	FEAT_LOST_FOUND,
-	FEAT_VERITY,
-	FEAT_SB_CHECKSUM,
-	FEAT_CASEFOLD,
-	FEAT_COMPRESSION,
-	FEAT_TEST_DUMMY_ENCRYPTION_V2,
-	FEAT_ENCRYPTED_CASEFOLD,
-};
-
-static ssize_t f2fs_feature_show(struct f2fs_attr *a,
-		struct f2fs_sb_info *sbi, char *buf)
-{
-	switch (a->id) {
-	case FEAT_CRYPTO:
-	case FEAT_BLKZONED:
-	case FEAT_ATOMIC_WRITE:
-	case FEAT_EXTRA_ATTR:
-	case FEAT_PROJECT_QUOTA:
-	case FEAT_INODE_CHECKSUM:
-	case FEAT_FLEXIBLE_INLINE_XATTR:
-	case FEAT_QUOTA_INO:
-	case FEAT_INODE_CRTIME:
-	case FEAT_LOST_FOUND:
-	case FEAT_VERITY:
-	case FEAT_SB_CHECKSUM:
-	case FEAT_CASEFOLD:
-	case FEAT_COMPRESSION:
-	case FEAT_TEST_DUMMY_ENCRYPTION_V2:
-	case FEAT_ENCRYPTED_CASEFOLD:
-		return sprintf(buf, "supported\n");
-	}
-	return 0;
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 }
 
 #define F2FS_ATTR_OFFSET(_struct_type, _name, _mode, _show, _store, _offset) \
@@ -975,26 +813,12 @@ static struct f2fs_attr f2fs_attr_##_name = {			\
 	.offset = offsetof(struct _struct_name, _elname),       \
 }
 
-<<<<<<< HEAD
-=======
-#define F2FS_STAT_ATTR(_struct_type, _struct_name, _name, _elname)	\
-static struct f2fs_attr f2fs_attr_##_name = {			\
-	.attr = {.name = __stringify(_name), .mode = 0444 },	\
-	.show = f2fs_sbi_show,					\
-	.struct_type = _struct_type,				\
-	.offset = offsetof(struct _struct_name, _elname),       \
-}
-
-F2FS_RW_ATTR(GC_THREAD, f2fs_gc_kthread, gc_urgent_sleep_time,
-							urgent_sleep_time);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 F2FS_RW_ATTR(GC_THREAD, f2fs_gc_kthread, gc_min_sleep_time, min_sleep_time);
 F2FS_RW_ATTR(GC_THREAD, f2fs_gc_kthread, gc_max_sleep_time, max_sleep_time);
 F2FS_RW_ATTR(GC_THREAD, f2fs_gc_kthread, gc_no_gc_sleep_time, no_gc_sleep_time);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, gc_idle, gc_mode);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, gc_urgent, gc_mode);
 F2FS_RW_ATTR(SM_INFO, f2fs_sm_info, reclaim_segments, rec_prefree_segments);
-F2FS_RW_ATTR(SM_INFO, f2fs_sm_info, main_blkaddr, main_blkaddr);
 F2FS_RW_ATTR(DCC_INFO, discard_cmd_control, max_small_discards, max_discards);
 F2FS_RW_ATTR(DCC_INFO, discard_cmd_control, max_discard_request, max_discard_request);
 F2FS_RW_ATTR(DCC_INFO, discard_cmd_control, min_discard_issue_time, min_discard_issue_time);
@@ -1024,15 +848,10 @@ F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, discard_idle_interval,
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, gc_idle_interval, interval_time[GC_TIME]);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info,
 		umount_discard_timeout, interval_time[UMOUNT_DISCARD_TIMEOUT]);
-<<<<<<< HEAD
 #ifdef CONFIG_F2FS_IOSTAT
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, iostat_enable, iostat_enable);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, iostat_period_ms, iostat_period_ms);
 #endif
-=======
-F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, iostat_enable, iostat_enable);
-F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, iostat_period_ms, iostat_period_ms);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, readdir_ra, readdir_ra);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, max_io_bytes, max_io_bytes);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, gc_pin_file_thresh, gc_pin_file_threshold);
@@ -1043,28 +862,20 @@ F2FS_RW_ATTR(FAULT_INFO_TYPE, f2fs_fault_info, inject_type, inject_type);
 #endif
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, data_io_flag, data_io_flag);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, node_io_flag, node_io_flag);
-<<<<<<< HEAD
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, gc_remaining_trials, gc_remaining_trials);
 F2FS_RW_ATTR(CPRC_INFO, ckpt_req_control, ckpt_thread_ioprio, ckpt_thread_ioprio);
 F2FS_GENERAL_RO_ATTR(dirty_segments);
 F2FS_GENERAL_RO_ATTR(free_segments);
 F2FS_GENERAL_RO_ATTR(ovp_segments);
-=======
-F2FS_GENERAL_RO_ATTR(dirty_segments);
-F2FS_GENERAL_RO_ATTR(free_segments);
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 F2FS_GENERAL_RO_ATTR(lifetime_write_kbytes);
 F2FS_GENERAL_RO_ATTR(features);
 F2FS_GENERAL_RO_ATTR(current_reserved_blocks);
 F2FS_GENERAL_RO_ATTR(unusable);
 F2FS_GENERAL_RO_ATTR(encoding);
 F2FS_GENERAL_RO_ATTR(mounted_time_sec);
-<<<<<<< HEAD
 F2FS_GENERAL_RO_ATTR(main_blkaddr);
 F2FS_GENERAL_RO_ATTR(pending_discard);
 F2FS_GENERAL_RO_ATTR(gc_mode);
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #ifdef CONFIG_F2FS_STAT_FS
 F2FS_STAT_ATTR(STAT_INFO, f2fs_stat_info, cp_foreground_calls, cp_count);
 F2FS_STAT_ATTR(STAT_INFO, f2fs_stat_info, cp_background_calls, bg_cp_count);
@@ -1073,7 +884,6 @@ F2FS_STAT_ATTR(STAT_INFO, f2fs_stat_info, gc_background_calls, bg_gc);
 F2FS_GENERAL_RO_ATTR(moved_blocks_background);
 F2FS_GENERAL_RO_ATTR(moved_blocks_foreground);
 F2FS_GENERAL_RO_ATTR(avg_vblocks);
-<<<<<<< HEAD
 #endif
 
 #ifdef CONFIG_FS_ENCRYPTION
@@ -1082,21 +892,10 @@ F2FS_FEATURE_RO_ATTR(test_dummy_encryption_v2);
 #ifdef CONFIG_UNICODE
 F2FS_FEATURE_RO_ATTR(encrypted_casefold);
 #endif
-=======
-#endif
-
-#ifdef CONFIG_FS_ENCRYPTION
-F2FS_FEATURE_RO_ATTR(encryption, FEAT_CRYPTO);
-F2FS_FEATURE_RO_ATTR(test_dummy_encryption_v2, FEAT_TEST_DUMMY_ENCRYPTION_V2);
-#ifdef CONFIG_UNICODE
-F2FS_FEATURE_RO_ATTR(encrypted_casefold, FEAT_ENCRYPTED_CASEFOLD);
-#endif
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 #endif /* CONFIG_FS_ENCRYPTION */
 #ifdef CONFIG_BLK_DEV_ZONED
 F2FS_FEATURE_RO_ATTR(block_zoned);
 #endif
-<<<<<<< HEAD
 F2FS_FEATURE_RO_ATTR(atomic_write);
 F2FS_FEATURE_RO_ATTR(extra_attr);
 F2FS_FEATURE_RO_ATTR(project_quota);
@@ -1141,24 +940,6 @@ F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, revoked_atomic_block, revoked_atomic_block)
 /* For block age extent cache */
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, hot_data_age_threshold, hot_data_age_threshold);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, warm_data_age_threshold, warm_data_age_threshold);
-=======
-F2FS_FEATURE_RO_ATTR(atomic_write, FEAT_ATOMIC_WRITE);
-F2FS_FEATURE_RO_ATTR(extra_attr, FEAT_EXTRA_ATTR);
-F2FS_FEATURE_RO_ATTR(project_quota, FEAT_PROJECT_QUOTA);
-F2FS_FEATURE_RO_ATTR(inode_checksum, FEAT_INODE_CHECKSUM);
-F2FS_FEATURE_RO_ATTR(flexible_inline_xattr, FEAT_FLEXIBLE_INLINE_XATTR);
-F2FS_FEATURE_RO_ATTR(quota_ino, FEAT_QUOTA_INO);
-F2FS_FEATURE_RO_ATTR(inode_crtime, FEAT_INODE_CRTIME);
-F2FS_FEATURE_RO_ATTR(lost_found, FEAT_LOST_FOUND);
-#ifdef CONFIG_FS_VERITY
-F2FS_FEATURE_RO_ATTR(verity, FEAT_VERITY);
-#endif
-F2FS_FEATURE_RO_ATTR(sb_checksum, FEAT_SB_CHECKSUM);
-F2FS_FEATURE_RO_ATTR(casefold, FEAT_CASEFOLD);
-#ifdef CONFIG_F2FS_FS_COMPRESSION
-F2FS_FEATURE_RO_ATTR(compression, FEAT_COMPRESSION);
-#endif
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 
 #define ATTR_LIST(name) (&f2fs_attr_##name.attr)
 static struct attribute *f2fs_attrs[] = {
@@ -1197,15 +978,10 @@ static struct attribute *f2fs_attrs[] = {
 	ATTR_LIST(discard_idle_interval),
 	ATTR_LIST(gc_idle_interval),
 	ATTR_LIST(umount_discard_timeout),
-<<<<<<< HEAD
 #ifdef CONFIG_F2FS_IOSTAT
 	ATTR_LIST(iostat_enable),
 	ATTR_LIST(iostat_period_ms),
 #endif
-=======
-	ATTR_LIST(iostat_enable),
-	ATTR_LIST(iostat_period_ms),
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	ATTR_LIST(readdir_ra),
 	ATTR_LIST(max_io_bytes),
 	ATTR_LIST(gc_pin_file_thresh),
@@ -1216,16 +992,11 @@ static struct attribute *f2fs_attrs[] = {
 #endif
 	ATTR_LIST(data_io_flag),
 	ATTR_LIST(node_io_flag),
-<<<<<<< HEAD
 	ATTR_LIST(gc_remaining_trials),
 	ATTR_LIST(ckpt_thread_ioprio),
 	ATTR_LIST(dirty_segments),
 	ATTR_LIST(free_segments),
 	ATTR_LIST(ovp_segments),
-=======
-	ATTR_LIST(dirty_segments),
-	ATTR_LIST(free_segments),
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	ATTR_LIST(unusable),
 	ATTR_LIST(lifetime_write_kbytes),
 	ATTR_LIST(features),
@@ -1242,7 +1013,6 @@ static struct attribute *f2fs_attrs[] = {
 	ATTR_LIST(moved_blocks_background),
 	ATTR_LIST(avg_vblocks),
 #endif
-<<<<<<< HEAD
 #ifdef CONFIG_F2FS_FS_COMPRESSION
 	ATTR_LIST(compr_written_block),
 	ATTR_LIST(compr_saved_block),
@@ -1263,8 +1033,6 @@ static struct attribute *f2fs_attrs[] = {
 	ATTR_LIST(revoked_atomic_block),
 	ATTR_LIST(hot_data_age_threshold),
 	ATTR_LIST(warm_data_age_threshold),
-=======
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	NULL,
 };
 
@@ -1291,7 +1059,6 @@ static struct attribute *f2fs_feat_attrs[] = {
 	ATTR_LIST(verity),
 #endif
 	ATTR_LIST(sb_checksum),
-<<<<<<< HEAD
 #ifdef CONFIG_UNICODE
 	ATTR_LIST(casefold),
 #endif
@@ -1341,12 +1108,6 @@ static struct attribute *f2fs_sb_feat_attrs[] = {
 	ATTR_LIST(sb_casefold),
 	ATTR_LIST(sb_compression),
 	ATTR_LIST(sb_readonly),
-=======
-	ATTR_LIST(casefold),
-#ifdef CONFIG_F2FS_FS_COMPRESSION
-	ATTR_LIST(compression),
-#endif
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 	NULL,
 };
 
@@ -1494,104 +1255,6 @@ static int __maybe_unused segment_bits_seq_show(struct seq_file *seq,
 	return 0;
 }
 
-<<<<<<< HEAD
-=======
-void f2fs_record_iostat(struct f2fs_sb_info *sbi)
-{
-	unsigned long long iostat_diff[NR_IO_TYPE];
-	int i;
-
-	if (time_is_after_jiffies(sbi->iostat_next_period))
-		return;
-
-	/* Need double check under the lock */
-	spin_lock(&sbi->iostat_lock);
-	if (time_is_after_jiffies(sbi->iostat_next_period)) {
-		spin_unlock(&sbi->iostat_lock);
-		return;
-	}
-	sbi->iostat_next_period = jiffies +
-				msecs_to_jiffies(sbi->iostat_period_ms);
-
-	for (i = 0; i < NR_IO_TYPE; i++) {
-		iostat_diff[i] = sbi->rw_iostat[i] -
-				sbi->prev_rw_iostat[i];
-		sbi->prev_rw_iostat[i] = sbi->rw_iostat[i];
-	}
-	spin_unlock(&sbi->iostat_lock);
-
-	trace_f2fs_iostat(sbi, iostat_diff);
-}
-
-static int __maybe_unused iostat_info_seq_show(struct seq_file *seq,
-					       void *offset)
-{
-	struct super_block *sb = seq->private;
-	struct f2fs_sb_info *sbi = F2FS_SB(sb);
-	time64_t now = ktime_get_real_seconds();
-
-	if (!sbi->iostat_enable)
-		return 0;
-
-	seq_printf(seq, "time:		%-16llu\n", now);
-
-	/* print app write IOs */
-	seq_puts(seq, "[WRITE]\n");
-	seq_printf(seq, "app buffered:	%-16llu\n",
-				sbi->rw_iostat[APP_BUFFERED_IO]);
-	seq_printf(seq, "app direct:	%-16llu\n",
-				sbi->rw_iostat[APP_DIRECT_IO]);
-	seq_printf(seq, "app mapped:	%-16llu\n",
-				sbi->rw_iostat[APP_MAPPED_IO]);
-
-	/* print fs write IOs */
-	seq_printf(seq, "fs data:	%-16llu\n",
-				sbi->rw_iostat[FS_DATA_IO]);
-	seq_printf(seq, "fs node:	%-16llu\n",
-				sbi->rw_iostat[FS_NODE_IO]);
-	seq_printf(seq, "fs meta:	%-16llu\n",
-				sbi->rw_iostat[FS_META_IO]);
-	seq_printf(seq, "fs gc data:	%-16llu\n",
-				sbi->rw_iostat[FS_GC_DATA_IO]);
-	seq_printf(seq, "fs gc node:	%-16llu\n",
-				sbi->rw_iostat[FS_GC_NODE_IO]);
-	seq_printf(seq, "fs cp data:	%-16llu\n",
-				sbi->rw_iostat[FS_CP_DATA_IO]);
-	seq_printf(seq, "fs cp node:	%-16llu\n",
-				sbi->rw_iostat[FS_CP_NODE_IO]);
-	seq_printf(seq, "fs cp meta:	%-16llu\n",
-				sbi->rw_iostat[FS_CP_META_IO]);
-
-	/* print app read IOs */
-	seq_puts(seq, "[READ]\n");
-	seq_printf(seq, "app buffered:	%-16llu\n",
-				sbi->rw_iostat[APP_BUFFERED_READ_IO]);
-	seq_printf(seq, "app direct:	%-16llu\n",
-				sbi->rw_iostat[APP_DIRECT_READ_IO]);
-	seq_printf(seq, "app mapped:	%-16llu\n",
-				sbi->rw_iostat[APP_MAPPED_READ_IO]);
-
-	/* print fs read IOs */
-	seq_printf(seq, "fs data:	%-16llu\n",
-				sbi->rw_iostat[FS_DATA_READ_IO]);
-	seq_printf(seq, "fs gc data:	%-16llu\n",
-				sbi->rw_iostat[FS_GDATA_READ_IO]);
-	seq_printf(seq, "fs compr_data:	%-16llu\n",
-				sbi->rw_iostat[FS_CDATA_READ_IO]);
-	seq_printf(seq, "fs node:	%-16llu\n",
-				sbi->rw_iostat[FS_NODE_READ_IO]);
-	seq_printf(seq, "fs meta:	%-16llu\n",
-				sbi->rw_iostat[FS_META_READ_IO]);
-
-	/* print other IOs */
-	seq_puts(seq, "[OTHER]\n");
-	seq_printf(seq, "fs discard:	%-16llu\n",
-				sbi->rw_iostat[FS_DISCARD]);
-
-	return 0;
-}
-
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
 static int __maybe_unused victim_bits_seq_show(struct seq_file *seq,
 						void *offset)
 {

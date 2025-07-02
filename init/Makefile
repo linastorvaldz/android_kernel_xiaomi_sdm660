@@ -33,8 +33,4 @@ include/generated/compile.h: FORCE
 	@$($(quiet)chk_compile.h)
 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkcompile_h $@	\
 	"$(UTS_MACHINE)" "$(CONFIG_SMP)" "$(CONFIG_PREEMPT)"	\
-<<<<<<< HEAD
 	$(CONFIG_CC_VERSION_TEXT) "$(LD)"
-=======
-	"$(CC) $(KBUILD_CFLAGS)" "$(LD)"
->>>>>>> 5958b69937a3 (Merge 4.19.289 into android-4.19-stable)
