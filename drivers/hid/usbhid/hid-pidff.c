@@ -274,22 +274,10 @@ static void pidff_set_envelope_report(struct pidff_device *pidff,
 static int pidff_needs_set_envelope(struct ff_envelope *envelope,
 				    struct ff_envelope *old)
 {
-	bool needs_new_envelope;
-	needs_new_envelope = envelope->attack_level  != 0 ||
-			     envelope->fade_level    != 0 ||
-			     envelope->attack_length != 0 ||
-			     envelope->fade_length   != 0;
-
-	if (!needs_new_envelope)
-		return false;
-
-	if (!old)
-		return needs_new_envelope;
-
-	return envelope->attack_level  != old->attack_level  ||
-	       envelope->fade_level    != old->fade_level    ||
+	return envelope->attack_level != old->attack_level ||
+	       envelope->fade_level != old->fade_level ||
 	       envelope->attack_length != old->attack_length ||
-	       envelope->fade_length   != old->fade_length;
+	       envelope->fade_length != old->fade_length;
 }
 
 /*
@@ -604,9 +592,11 @@ static int pidff_upload_effect(struct input_dev *dev, struct ff_effect *effect,
 			pidff_set_effect_report(pidff, effect);
 		if (!old || pidff_needs_set_constant(effect, old))
 			pidff_set_constant_force_report(pidff, effect);
-		if (pidff_needs_set_envelope(&effect->u.constant.envelope,
-					old ? &old->u.constant.envelope : NULL))
-			pidff_set_envelope_report(pidff, &effect->u.constant.envelope);
+		if (!old ||
+		    pidff_needs_set_envelope(&effect->u.constant.envelope,
+					&old->u.constant.envelope))
+			pidff_set_envelope_report(pidff,
+					&effect->u.constant.envelope);
 		break;
 
 	case FF_PERIODIC:
@@ -641,9 +631,11 @@ static int pidff_upload_effect(struct input_dev *dev, struct ff_effect *effect,
 			pidff_set_effect_report(pidff, effect);
 		if (!old || pidff_needs_set_periodic(effect, old))
 			pidff_set_periodic_report(pidff, effect);
-		if (pidff_needs_set_envelope(&effect->u.periodic.envelope,
-					old ? &old->u.periodic.envelope : NULL))
-			pidff_set_envelope_report(pidff, &effect->u.periodic.envelope);
+		if (!old ||
+		    pidff_needs_set_envelope(&effect->u.periodic.envelope,
+					&old->u.periodic.envelope))
+			pidff_set_envelope_report(pidff,
+					&effect->u.periodic.envelope);
 		break;
 
 	case FF_RAMP:
@@ -657,9 +649,11 @@ static int pidff_upload_effect(struct input_dev *dev, struct ff_effect *effect,
 			pidff_set_effect_report(pidff, effect);
 		if (!old || pidff_needs_set_ramp(effect, old))
 			pidff_set_ramp_force_report(pidff, effect);
-		if (pidff_needs_set_envelope(&effect->u.ramp.envelope,
-					old ? &old->u.ramp.envelope : NULL))
-			pidff_set_envelope_report(pidff, &effect->u.ramp.envelope);
+		if (!old ||
+		    pidff_needs_set_envelope(&effect->u.ramp.envelope,
+					&old->u.ramp.envelope))
+			pidff_set_envelope_report(pidff,
+					&effect->u.ramp.envelope);
 		break;
 
 	case FF_SPRING:
