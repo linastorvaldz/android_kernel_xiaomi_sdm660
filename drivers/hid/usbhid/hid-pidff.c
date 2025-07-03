@@ -33,7 +33,6 @@
 #include "usbhid.h"
 
 #define	PID_EFFECTS_MAX		64
-#define	PID_INFINITE		0xffff
 
 /* Report usage table used to put reports into an array */
 
@@ -314,12 +313,7 @@ static void pidff_set_effect_report(struct pidff_device *pidff,
 		pidff->block_load[PID_EFFECT_BLOCK_INDEX].value[0];
 	pidff->set_effect_type->value[0] =
 		pidff->create_new_effect_type->value[0];
-
-	/* Convert infinite length from Linux API (0)
-	   to PID standard (NULL) if needed */
-	pidff->set_effect[PID_DURATION].value[0] =
-		effect->replay.length == 0 ? PID_INFINITE : effect->replay.length;
-
+	pidff->set_effect[PID_DURATION].value[0] = effect->replay.length;
 	pidff->set_effect[PID_TRIGGER_BUTTON].value[0] = effect->trigger.button;
 	pidff->set_effect[PID_TRIGGER_REPEAT_INT].value[0] =
 		effect->trigger.interval;
