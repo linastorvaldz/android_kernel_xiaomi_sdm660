@@ -4107,7 +4107,7 @@ static void validate_options(void)
  */
 static int __init st_setup(char *str)
 {
-	int i, len, ints[ARRAY_SIZE(parms) + 1];
+	int i, len, ints[5];
 	char *stp;
 
 	stp = get_options(str, ARRAY_SIZE(ints), ints);
