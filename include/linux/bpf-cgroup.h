@@ -151,6 +151,9 @@ void bpf_cgroup_storage_release(struct bpf_prog *prog, struct bpf_map *map);
 int __cgroup_bpf_run_filter_sysctl(struct ctl_table_header *head,
 				   struct ctl_table *table, int write,
 				   enum bpf_attach_type type);
+int bpf_percpu_cgroup_storage_copy(struct bpf_map *map, void *key, void *value);
+int bpf_percpu_cgroup_storage_update(struct bpf_map *map, void *key,
+				     void *value, u64 flags);
 
 /* Wrappers for __cgroup_bpf_run_filter_skb() guarded by cgroup_bpf_enabled. */
 #define BPF_CGROUP_RUN_PROG_INET_INGRESS(sk, skb)			      \
@@ -286,6 +289,37 @@ int cgroup_bpf_prog_query(const union bpf_attr *attr,
 	__ret;								       \
 })
 
+#define BPF_CGROUP_RUN_PROG_SETSOCKOPT(sock, level, optname, optval, optlen,   \
+                       kernel_optval)                  \
+({                                         \
+    int __ret = 0;                                 \
+    if (cgroup_bpf_enabled)                            \
+        __ret = __cgroup_bpf_run_filter_setsockopt(sock, level,        \
+                               optname, optval,    \
+                               optlen,         \
+                               kernel_optval);     \
+    __ret;                                     \
+})
+#define BPF_CGROUP_GETSOCKOPT_MAX_OPTLEN(optlen)                   \
+({                                         \
+    int __ret = 0;                                 \
+    if (cgroup_bpf_enabled)                            \
+        get_user(__ret, optlen);                       \
+    __ret;                                     \
+})
+#define BPF_CGROUP_RUN_PROG_GETSOCKOPT(sock, level, optname, optval, optlen,   \
+                       max_optlen, retval)             \
+({                                         \
+    int __ret = retval;                            \
+    if (cgroup_bpf_enabled)                            \
+        __ret = __cgroup_bpf_run_filter_getsockopt(sock, level,        \
+                               optname, optval,    \
+                               optlen, max_optlen, \
+                               retval);        \
+    __ret;                                     \
+})
+
+
 #else
 
 struct bpf_prog;
@@ -383,6 +417,13 @@ static inline int bpf_percpu_cgroup_storage_update(struct bpf_map *map,
 #define BPF_CGROUP_RUN_PROG_SOCK_OPS(sock_ops) ({ 0; })
 #define BPF_CGROUP_RUN_PROG_DEVICE_CGROUP(type,major,minor,access) ({ 0; })
 #define BPF_CGROUP_RUN_PROG_SYSCTL(head, table, write) ({ 0; })
+#define BPF_CGROUP_GETSOCKOPT_MAX_OPTLEN(optlen) ({ 0; })
+#define BPF_CGROUP_RUN_PROG_GETSOCKOPT(sock, level, optname, optval, \
+				       optlen, max_optlen, retval) ({ retval; })
+#define BPF_CGROUP_RUN_PROG_SETSOCKOPT(sock, level, optname, optval, optlen, \
+				       kernel_optval) ({ 0; })
+
+#define for_each_cgroup_storage_type(stype) for (; false; )
 
 #endif /* CONFIG_CGROUP_BPF */
 
