@@ -568,6 +568,28 @@ static int dev_map_delete_elem(struct bpf_map *map, void *key)
 	return 0;
 }
 
+static int dev_map_hash_delete_elem(struct bpf_map *map, void *key)
+{
+	struct bpf_dtab *dtab = container_of(map, struct bpf_dtab, map);
+	struct bpf_dtab_netdev *old_dev;
+	int k = *(u32 *)key;
+	unsigned long flags;
+	int ret = -ENOENT;
+
+	spin_lock_irqsave(&dtab->index_lock, flags);
+
+	old_dev = __dev_map_hash_lookup_elem_dtab(map, k);
+	if (old_dev) {
+		dtab->items--;
+		hlist_del_init_rcu(&old_dev->index_hlist);
+		call_rcu(&old_dev->rcu, __dev_map_entry_free);
+		ret = 0;
+	}
+	spin_unlock_irqrestore(&dtab->index_lock, flags);
+
+	return ret;
+}
+
 static struct bpf_dtab_netdev *__dev_map_alloc_node(struct net *net,
 						    struct bpf_dtab *dtab,
 						    u32 ifindex,
@@ -597,6 +619,7 @@ static int dev_map_update_elem(struct bpf_map *map, void *key, void *value,
 {
 	struct bpf_dtab *dtab = container_of(map, struct bpf_dtab, map);
 	struct net *net = current->nsproxy->net_ns;
+	gfp_t gfp = GFP_ATOMIC | __GFP_NOWARN;
 	struct bpf_dtab_netdev *dev, *old_dev;
 	u32 i = *(u32 *)key;
 	u32 ifindex = *(u32 *)value;
@@ -611,9 +634,26 @@ static int dev_map_update_elem(struct bpf_map *map, void *key, void *value,
 	if (!ifindex) {
 		dev = NULL;
 	} else {
-		dev = __dev_map_alloc_node(net, dtab, ifindex, i);
-		if (IS_ERR(dev))
-			return PTR_ERR(dev);
+		dev = kmalloc_node(sizeof(*dev), gfp, map->numa_node);
+		if (!dev)
+			return -ENOMEM;
+
+		dev->bulkq = __alloc_percpu_gfp(sizeof(*dev->bulkq),
+						sizeof(void *), gfp);
+		if (!dev->bulkq) {
+			kfree(dev);
+			return -ENOMEM;
+		}
+
+		dev->dev = dev_get_by_index(net, ifindex);
+		if (!dev->dev) {
+			free_percpu(dev->bulkq);
+			kfree(dev);
+			return -EINVAL;
+		}
+
+		dev->bit = i;
+		dev->dtab = dtab;
 	}
 
 	/* Use call_rcu() here to ensure rcu critical sections have completed
