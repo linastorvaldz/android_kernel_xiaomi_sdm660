@@ -245,6 +245,7 @@ struct iov_iter;
 struct napi_struct;
 struct bpf_prog;
 union bpf_attr;
+struct skb_ext;
 
 #if defined(CONFIG_NF_CONNTRACK) || defined(CONFIG_NF_CONNTRACK_MODULE)
 struct nf_conntrack {
