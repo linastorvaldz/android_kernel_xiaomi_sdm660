@@ -23,9 +23,9 @@
 #include <linux/msm-bus.h>
 #endif
 
-#include "../mi_ufs/mi-ufshcd.h"
-#include "../mi_ufs/mi-ufshcd-pltfrm.h"
-#include "../mi_ufs/mi-unipro.h"
+#include "ufshcd.h"
+#include "ufshcd-pltfrm.h"
+#include "unipro.h"
 #include "ufs-qcom.h"
 #include "ufshci.h"
 #include "ufs-qcom-debugfs.h"
@@ -1458,9 +1458,6 @@ static u32 ufs_qcom_get_ufs_hci_version(struct ufs_hba *hba)
 static void ufs_qcom_advertise_quirks(struct ufs_hba *hba)
 {
 	struct ufs_qcom_host *host = ufshcd_get_variant(hba);
-#ifdef CONFIG_UFS_EBUFF
-	u32 value = 0;
-#endif
 
 	if (host->hw_ver.major == 0x1) {
 		hba->quirks |= UFSHCD_QUIRK_DELAY_BEFORE_DME_CMDS
@@ -1496,9 +1493,6 @@ static void ufs_qcom_advertise_quirks(struct ufs_hba *hba)
 static void ufs_qcom_set_caps(struct ufs_hba *hba)
 {
 	struct ufs_qcom_host *host = ufshcd_get_variant(hba);
-#ifdef CONFIG_UFS_EBUFF
-	u32 value = 0;
-#endif
 
 	if (!host->disable_lpm) {
 		hba->caps |= UFSHCD_CAP_CLK_GATING;
@@ -1527,18 +1521,6 @@ static void ufs_qcom_set_caps(struct ufs_hba *hba)
 		 */
 		host->caps |= UFS_QCOM_CAP_SVS2;
 	}
-#ifdef CONFIG_UFS_EBUFF
-	if (ebuff_value_u32("caps", &value)) {
-		u32 mask = 0;
-		if (ebuff_value_u32("caps_mask", &mask)) {
-			dev_info(hba->dev, "%s: ebuff origin caps 0x%x value 0x%x mask 0x%x\n", __func__, hba->caps, value, mask);
-			hba->caps = (hba->caps & (~mask)) | (value & mask);
-		} else {
-			dev_info(hba->dev, "%s: ebuff origin caps 0x%x value 0x%x\n", __func__, host->caps, value);
-			host->caps |= value;
-		}
-	}
-#endif
 }
 
 /**
@@ -2962,10 +2944,6 @@ static int ufs_qcom_probe(struct platform_device *pdev)
 	    strlen(android_boot_dev) &&
 	    strcmp(android_boot_dev, dev_name(dev)))
 		return -ENODEV;
-
-#ifdef CONFIG_UFS_EBUFF
-	of_obtain_ebuffha_info();
-#endif
 
 	/* Perform generic probe */
 	err = ufshcd_pltfrm_init(pdev, &ufs_hba_qcom_variant);

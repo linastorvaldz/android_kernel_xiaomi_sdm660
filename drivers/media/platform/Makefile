@@ -97,4 +97,3 @@ obj-y					+= meson/
 obj-y                                   += msm/
 obj-y					+= cros-ec-cec/
 obj-y					+= msm/
-obj-y					+= xiaomi/

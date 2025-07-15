@@ -17,7 +17,6 @@
 //    o Delayed power down of audio subsystem to reduce pops between a quick
 //      device reopen.
 
-#define DEBUG
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <linux/init.h>

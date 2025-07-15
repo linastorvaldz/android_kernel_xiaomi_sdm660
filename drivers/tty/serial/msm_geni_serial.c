@@ -2244,21 +2244,6 @@ static irqreturn_t msm_geni_wakeup_isr(int isr, void *dev)
 	struct tty_struct *tty;
 	unsigned long flags;
 
-	if (port->edge_count == 0) {
-		first_irq_ts = ktime_get_boottime();
-	}
-	if (port->edge_count == 2) {
-		last_irq_ts = ktime_get_boottime();
-		diff_ns = ktime_to_ns(ktime_sub(last_irq_ts, first_irq_ts));
-		if (diff_ns >= ((u64)irq_ms_to_trigger_panic * 1000000)) {
-			UART_LOG_DBG(port->ipc_log_rx, uport->dev, "%s: Edge-Count %d diff_ms > 200ms, spurious irq, clear count!\n", __func__,
-			port->edge_count);
-			port->edge_count = 0;
-			first_irq_ts = 0;
-			last_irq_ts = 0;
-		}
-	}
-
 	spin_lock_irqsave(&uport->lock, flags);
 	IPC_LOG_MSG(port->ipc_log_rx, "%s: Edge-Count %d\n", __func__,
 							port->edge_count);
@@ -3695,8 +3680,6 @@ static int msm_geni_serial_runtime_suspend(struct device *dev)
 
 	if (port->wakeup_irq > 0) {
 		port->edge_count = 0;
-		first_irq_ts = 0;
-		last_irq_ts = 0;
 		enable_irq(port->wakeup_irq);
 	}
 	IPC_LOG_MSG(port->ipc_log_pwr, "%s: End\n", __func__);

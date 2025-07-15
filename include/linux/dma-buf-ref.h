@@ -23,8 +23,6 @@ static inline int dma_buf_ref_show(struct seq_file *s, struct dma_buf *dmabuf)
 {
 	return -ENOMEM;
 }
-struct msm_dma_buf *msm_dma_buf_create(struct dma_buf *dma_buf) { return ERR_PTR(-ENOMEM); }
-void msm_dma_buf_destroy(struct dma_buf *dma_buf) {}
 #endif
 
 

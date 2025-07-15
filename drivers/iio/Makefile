@@ -40,4 +40,3 @@ obj-y += proximity/
 obj-y += resolver/
 obj-y += temperature/
 obj-y += trigger/
-obj-$(CONFIG_HEALTH_GOODIX) += goodix_health/

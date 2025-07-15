@@ -6,8 +6,8 @@
 #ifndef _UFSHCD_CRYPTO_QTI_H
 #define _UFSHCD_CRYPTO_QTI_H
 
-#include "../mi_ufs/mi-ufshcd.h"
-#include "../mi_ufs/mi-ufshcd-crypto.h"
+#include "ufshcd.h"
+#include "ufshcd-crypto.h"
 
 void ufshcd_crypto_qti_enable(struct ufs_hba *hba);
 

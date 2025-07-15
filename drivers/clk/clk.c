@@ -4089,7 +4089,6 @@ static int __clk_core_init(struct clk_core *core)
 		return -EINVAL;
 
 	clk_prepare_lock();
-	core->hw->core = core;
 
 	ret = clk_pm_runtime_get(core);
 	if (ret)

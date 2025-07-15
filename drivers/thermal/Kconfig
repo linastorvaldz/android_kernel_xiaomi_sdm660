@@ -504,13 +504,6 @@ depends on (ARCH_QCOM && OF) || COMPILE_TEST
 source "drivers/thermal/qcom/Kconfig"
 endmenu
 
-config MI_THERMAL_INTERFACE
-	tristate "xiaomi thermal control interface"
-	depends on THERMAL
-	default n
-	help
-	  This is xiaomi thermal control interface.
-
 config ZX2967_THERMAL
 	tristate "Thermal sensors on zx2967 SoC"
 	depends on ARCH_ZX || COMPILE_TEST
@@ -528,9 +521,3 @@ config UNIPHIER_THERMAL
 	  thermal framework. The driver supports CPU thermal zone temperature
 	  reporting and a couple of trip points.
 endif
-
-config HAVE_MULTI_SCREEN
-	bool "Have multi screen"
-	default n
-	help
-		Enable register two screen in driver
